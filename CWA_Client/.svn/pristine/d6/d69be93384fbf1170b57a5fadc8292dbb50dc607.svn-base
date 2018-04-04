@@ -1,0 +1,263 @@
+package com.cwa.client.utils;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.codec.binary.Base64;
+
+import com.cwa.client.dto.RuturnMessageDto;
+
+
+public class Tools implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/** 
+	 * B64解密
+	 * @param str 
+	 * @return 
+	 */  
+	public static String b64Decode(String str) {
+		try {
+            if (null == str) {
+                return null;
+            }
+            return new String(Base64.decodeBase64(str.getBytes("utf-8")), "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
+	}  
+	
+	/** 
+	 * B64解密
+	 * @param str 
+	 * @return 
+	 */
+	public static String b64Encode(String str) {
+        try {
+            if (null == str) {
+                return null;
+            }
+            return new String(Base64.encodeBase64(str.getBytes("utf-8")), "utf-8");
+        } catch (UnsupportedEncodingException e) {
+           e.printStackTrace();
+        }
+        return null;
+    }
+	
+	/**
+	 * 生成订单号
+	 * @param fourEndMobile 登录账号后四位
+	 * @param userType 用户类型
+	 * @param payType 支付方式
+	 * @return
+	 */
+	public static synchronized String createSerialNumber(String fourEndMobile,String userType,String payType){
+		// 时间(14位)
+		StringBuffer sb = new StringBuffer(SERIAL_YMDHMS.format(new Date()));
+		// 支付方式(2位)
+		sb.append(payType);
+		// 手机号后四位(4位)
+		sb.append(fourEndMobile);
+		// 用户类型(1位)
+		sb.append(userType);
+		// 随机数(8位)
+		sb.append((int)(Math.random()*Math.pow(10, 8)));
+		return sb.toString();
+	}
+	
+	/**
+	 * 根据当前用户类型切换为订单状态的类型
+	 * @param userType
+	 * @return
+	 */
+	public static String changeUserType(String userType){
+		if(userType.equals(USERTYPE_CUSTOMER)){
+			userType = SERIAL_ACCOUNT_TYPE_CUSTOMER+"";
+		}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			userType = SERIAL_ACCOUNT_TYPE_ADVERTISER+"";
+		}
+		return userType;
+	}
+	
+	/**
+	 * 判断字节数组是否是图片
+	 * @param byte
+	 * @return
+	 */
+	public static Map<String,Object> judgeImage(byte[] bytes){
+		Map<String,Object> map = new HashMap<String,Object>();
+		boolean isImage = false;
+		String type = "";
+		if(bytes == null || bytes.length<=0){
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		
+		// 获取该文件的十六进制
+		for(int i=0;i<bytes.length;++i){
+			int v = bytes[i] & 0XFF;
+			String hv = Integer.toHexString(v);
+			if(hv.length()<2){
+				sb.append(0);
+			}
+			sb.append(hv);
+		}
+		
+		String fileHex = sb.toString();
+		
+		// JPG,JPEG,PNG,BMP,GIF的头部信息
+		String[] allImageSignature = new String[]{
+		    "FFD8FFE2",//JPEG
+		    "FFD8FFE3",//JPEG
+		    "FFD8FFE0",//JPEG,JPG
+		    "FFD8FFE1",//JPG
+		    "FFD8FFE8",//JPG
+		    "89504E47",//PNG
+		    "47494638",//GIF
+		    "424D"//BMP
+		};
+		
+		// 根据文件头判断是否是图片,如果判断不是图片则返回结果,如果是,则继续往下判断
+		boolean judgeImageBySignature = false;
+		for(int i=0;i<allImageSignature.length;++i){
+			if(fileHex.toUpperCase().startsWith(allImageSignature[i])){
+				judgeImageBySignature = true;
+				// 记录文件类型
+				switch(i){
+				case 0:
+				case 1:
+					type = "jpeg";
+					break;
+				case 2:
+				case 3:
+				case 4:
+					type = "jpg";
+					break;
+				case 5:
+					type = "png";
+					break;
+				case 6:
+					type = "gif";
+					break;
+				case 7:
+					type = "bmp";
+					break;
+				}
+				break;
+			}
+		}
+		
+		if(judgeImageBySignature==false){
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		
+		//通过缩放来判断，可以缩放的为图片，不可以的则不是
+		BufferedImage bi = null;
+		try {
+			bi = ImageIO.read(new ByteArrayInputStream(bytes));
+			if(bi == null){
+				isImage = false;
+				map.put("isImage",isImage);
+				map.put("type",type);
+				return map;
+			}
+			int width = bi.getWidth();  
+	        int height = bi.getHeight();  
+	        if(width==0 || height==0){  
+	        	isImage = false;  
+            }else {  
+            	isImage = true;  
+            }  
+		} catch (Exception e) {
+			e.printStackTrace();
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		map.put("isImage",isImage);
+		map.put("type",type);
+		return map;
+	}
+	 // \b 是单词边界(连着的两个(字母字符 与 非字母字符) 之间的逻辑上的间隔),    
+    // 字符串在编译时会被转码一次,所以是 "\\b"    
+    // \B 是单词内部逻辑间隔(连着的两个字母字符之间的逻辑上的间隔)    
+    static String phoneReg = "\\b(ip(hone|od)|android|opera m(ob|in)i"    
+            +"|windows (phone|ce)|blackberry"    
+            +"|s(ymbian|eries60|amsung)|p(laybook|alm|rofile/midp"    
+            +"|laystation portable)|nokia|fennec|htc[-_]"    
+            +"|mobile|up.browser|[1-4][0-9]{2}x[1-4][0-9]{2})\\b";    
+    static String tableReg = "\\b(ipad|tablet|(Nexus 7)|up.browser"    
+            +"|[1-4][0-9]{2}x[1-4][0-9]{2})\\b";    
+      
+    //移动设备正则匹配：手机端、平板  
+    static Pattern phonePat = Pattern.compile(phoneReg, Pattern.CASE_INSENSITIVE);    
+    static Pattern tablePat = Pattern.compile(tableReg, Pattern.CASE_INSENSITIVE);    
+        
+    /** 
+     * 检测是否是移动设备访问 
+     *  
+     * @Title: check 
+     * @Date : 2014-7-7 下午01:29:07 
+     * @param userAgent 浏览器标识 
+     * @return true:移动设备接入，false:pc端接入 
+     */  
+    //loginType 1:pc 2:adr手机浏览器 3:ios手机浏览器 4:微信公众号 5安卓app 6ios APP
+    public static String checkLoginType(HttpServletRequest req,String loginType){  
+    	logWriteUtil.writeLog("", "begin loginType:"+loginType, LOGLEVEL_INFO, Tools.class);
+    	String userAgent=req.getHeader( "USER-AGENT" ).toLowerCase();
+    	System.out.println(req.getHeader( "USER-AGENT" ));
+		if(!RegUtil.getUtil().isNull(loginType)){
+			return loginType;
+		}
+        // 匹配    
+        Matcher matcherPhone = phonePat.matcher(userAgent);    
+        Matcher matcherTable = tablePat.matcher(userAgent);    
+        if(matcherPhone.find() || matcherTable.find()){  
+        	if(userAgent.indexOf("android")>0){
+        		loginType="2";
+        	}else{
+        		loginType="3";
+        	}
+        } else {    
+        	loginType="1";
+        }
+        if (userAgent.indexOf("micromessenger") > 0) {// 是微信浏览器  
+        	loginType="4";
+		}
+        logWriteUtil.writeLog("", "end loginType:"+loginType, LOGLEVEL_INFO, Tools.class);
+        return loginType;
+    }
+    
+    /**
+     * 返回对象
+     * @param code
+     * @param info
+     * @return
+     */
+    public static RuturnMessageDto returnObj(String code,Object info){
+    	RuturnMessageDto rmd = new RuturnMessageDto();
+    	rmd.setMsg(code);
+    	rmd.setData(info);
+    	return rmd;
+    }
+    
+}

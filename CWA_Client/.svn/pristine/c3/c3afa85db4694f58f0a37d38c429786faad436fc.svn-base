@@ -1,0 +1,80 @@
+package com.cwa.client.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
+import com.cwa.client.dto.OrderDetailDto;
+import com.cwa.client.model.Tb_Order_Detail;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.web.AdQueryController;
+
+/**
+ * 查询广告信息数据层
+ */
+public class AdvertiseOrderDetailDao extends BaseDao<Tb_Order_Detail, OrderDetailDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 批量生成订单详情
+	 * @param batchInsertOrder 生成订单详情数据
+	 * @return
+	 */
+	public int[] batchInsertOrderDetail(List<Object[]> batchInsertOrderDetail)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"INSERT INTO tb_order_detail(SERIAL_NUMBER,DEVICE_ID,BEGIN_TIME,END_TIME,COMMIT_TIME,PLAY_DATE,ACCOUNT_ID)VALUES (?,?,?,?,?,?,?)",
+	 				batchInsertOrderDetail);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	/**
+	 * 批量删除订单详情
+	 * @param batchInsertOrder 生成订单数据
+	 * @return
+	 */
+	public int[] batchDeleteOrderDetail(List<Object[]> batchDeleteOrderDetail)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"delete from tb_order_detail where serial_number=?",
+	 				batchDeleteOrderDetail);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	/**
+	 * 根据订单号查询订单详情
+	 * @param orderNO 订单号
+	 * @return
+	 */
+	public List<OrderDetailDto> queryEffectualTimeByOrderNo(String orderNo,String accountId,String beginTime,String endTime)throws Exception {
+		String sql="select * from tb_order_detail where serial_number=? and account_id=? ";
+		String param=orderNo+","+accountId;
+		if(beginTime!=null){
+			sql+="and play_date>=? ";
+			param+=","+beginTime;
+		}
+		if(endTime!=null){
+			sql+="and play_date<=? ";
+			param+=","+endTime;
+		}
+		List<OrderDetailDto> list=new ArrayList<>();
+		try {
+			logWriteUtil.writeLog("", "====sql:"+sql+"====param:"+param, LOGLEVEL_INFO, AdvertiseOrderDetailDao.class);
+			list=jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(OrderDetailDto.class),param.split(","));
+		} catch (Exception e) {
+			 throw e;
+		}
+		return list;
+	}
+}

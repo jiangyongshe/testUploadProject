@@ -1,0 +1,12 @@
+//获取当前语言
+var language = location.href.substring(location.href.indexOf(location.host)).split('/')[1];
+
+var html='<link rel="shortcut icon" href="/'+language+'/images/logo.ico" type="image/x-icon">';
+html+='<link rel="stylesheet" href="/'+language+'/css/font-awesome.min.css">';
+html+='<link rel="stylesheet" href="/'+language+'/css/public.css">';
+html+='<link rel="stylesheet" href="/'+language+'/css/neiye.css">'; 
+html+="<script src=\"/js/jquery.min.js\"></script>\n";
+html+="<script src=\"/js/globalVar.js\"></script>\n";// 全局变量
+html+="<script src=\"/js/common.js\"></script>\n";// 公共方法
+ 	
+document.writeln(html);

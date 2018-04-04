@@ -1,0 +1,114 @@
+/*var	html='<script src="'+languageMobile+'/js/iscroll.js"></script>\n';// 全局变量
+ 	
+document.write(html);
+
+*//********** ISCROLL ****************//*
+
+var myScroll,
+pullUpEl, 
+pullUpOffset,
+generatedCount = 0,
+pageNo=1,
+isData=true;
+
+function pullUpAction () {
+	turnoff('tc-eject');
+	hideEmplyDiv();
+	pageNo ++;
+	if(isData){
+		upCallback();
+	}
+	//myScroll.refresh();
+}
+
+function loaded() {
+pullUpEl = document.getElementById('pullUp');	
+pullUpOffset = 10;
+myScroll = new iScroll('wrapper', {
+	useTransition: true,
+	onRefresh: function () {
+		if (pullUpEl.className.match('loading')) {
+			pullUpEl.className = '';
+			pullUpEl.querySelector('.pullUpLabel').innerHTML = 'Pull up to load more...';
+		}
+		
+		document.getElementById("pullUp").style.display="none";
+	},
+	onScrollMove: function () {
+		if ( this.scrollerH < this.wrapperH && this.y < (this.minScrollY-pullUpOffset) || this.scrollerH > this.wrapperH && this.y < (this.maxScrollY - pullUpOffset) ) {
+			document.getElementById("pullUp").style.display="";
+			pullUpEl.className = 'flip';
+			pullUpEl.querySelector('.pullUpLabel').innerHTML = '';
+		} 
+		 if (this.scrollerH < this.wrapperH && this.y > (this.minScrollY-pullUpOffset) && pullUpEl.className.match('flip') || this.scrollerH > this.wrapperH && this.y > (this.maxScrollY - pullUpOffset) && pullUpEl.className.match('flip')) {
+			document.getElementById("pullUp").style.display="none";
+			pullUpEl.className = '';
+			pullUpEl.querySelector('.pullUpLabel').innerHTML = 'Pull up to load more...';
+		}
+	},
+	onScrollEnd: function () {
+		 if (pullUpEl.className.match('flip')) {
+			pullUpEl.className = 'loading';
+			pullUpEl.querySelector('.pullUpLabel').innerHTML = 'Loading...';		
+			pullUpAction();	// Execute custom function (ajax call?)
+		}
+	}
+});
+
+}
+
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+document.addEventListener('DOMContentLoaded', function () { setTimeout(loaded, 200); }, false);
+
+
+function scrollCommonMethod(){
+	$("#dataList").html("");
+	pageNo=0;
+	pullUpAction();//初始化下拉控件
+}
+*/
+
+
+
+var html='<link rel="stylesheet" href="'+languageMobile+'/css/mescroll.css">';
+	html+='<script src="'+languageMobile+'/js/mescroll.js"></script>\n';
+	html+='<script src="'+languageMobile+'/js/mescroll-option.js"></script>\n';// 全局变量
+ 	
+document.write(html);
+
+
+
+function initMescroll(){
+	
+	//创建MeScroll对象
+	mescroll = new MeScroll("mescroll", {
+		down:{
+			auto:false,//是否在初始化完毕之后自动执行下拉回调callback; 默认true
+			use:false,
+			callback:function(){
+				
+			}//下拉刷新的回调
+		},
+		up: {
+			toTop: {
+				src: "/"+language+"/images/t-btn.png" //回到顶部按钮的图片路径
+			},
+			loadFull:{
+				use:true,
+				delay:100
+			},
+			auto:true,//初始化完毕,是否自动触发上拉加载的回调
+			isBoth: false, //上拉加载时,如果滑动到列表顶部是否可以同时触发下拉刷新;默认false,两者不可同时触发; 这里为了演示改为true,不必等列表加载完毕才可下拉;
+			callback: upCallback //上拉加载的回调
+		}
+	});
+}
+
+function scrollCommonMethod(){
+	turnoff('tc-eject');
+	hideEmplyDiv();
+	$("#dataList").html("");
+	mescroll.resetUpScroll(false);//初始化下拉控件
+	mescroll.scrollTo(0,100);//回到顶部
+}

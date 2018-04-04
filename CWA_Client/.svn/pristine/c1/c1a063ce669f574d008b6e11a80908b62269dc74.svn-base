@@ -1,0 +1,8 @@
+$(function(){
+	$('.p7').find('img').on('click',function(){
+		var cloneImg = this.cloneNode(true);
+		cloneImg.style.height = '300px';
+		$(this).parents('li').find('.a1>img').remove();
+		$(this).parents('li').find('.a1').prepend(cloneImg);
+	});
+})

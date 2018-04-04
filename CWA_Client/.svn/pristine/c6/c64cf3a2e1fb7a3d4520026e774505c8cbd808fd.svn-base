@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播——共享广告平台，注册/投放广告/商家合作/联系我们</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="body1">
+<div id="mescroll" class="mescroll">
+
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12 col-fff">
+  <ul id="dataList" class="ggcx-list">
+  </ul>
+  
+  <div class="ggcx-db text-c col-fff pad-t2">
+    <span class="dis-in width48">设备报修电话<br /><span class="red font13 pad-l10">13928622678</span></span>
+    <span class="dis-in width48">客服电话<br /><span class="red font13 pad-l10">400-0018-128</span></span>
+  </div>
+</div>
+
+<div class="hei44"></div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+</div>
+<script src="/chinese/mobile/js/core/deviceDetail.js"></script><!--公用底部JS-->
+</body>
+</html>

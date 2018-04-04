@@ -1,0 +1,33 @@
+package com.cwa.client.dao;
+
+import java.util.List;
+
+import com.cwa.client.dto.OrderDetailDto;
+import com.cwa.client.model.Tb_Order_Detail;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+/**
+ * 查询广告信息数据层
+ */
+public class AdvertiseOrderDetailDao extends BaseDao<Tb_Order_Detail, OrderDetailDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 批量生成订单详情
+	 * @param batchInsertOrder 生成订单详情数据
+	 * @return
+	 */
+	public int[] batchInsertOrderDetail(List<Object[]> batchInsertOrderDetail)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"INSERT INTO tb_order_detail(SERIAL_NUMBER,DEVICE_ID,BEGIN_TIME,END_TIME,COMMIT_TIME,PLAY_DATE,ACCOUNT_ID)VALUES (?,?,?,?,?,?,?)",
+	 				batchInsertOrderDetail);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+}

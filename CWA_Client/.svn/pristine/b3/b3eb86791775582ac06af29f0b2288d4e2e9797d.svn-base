@@ -1,0 +1,49 @@
+package com.cwa.client.constant;
+
+/**
+ * 1开头：全局通用
+ * 2开头：账户内容
+ */
+public enum AppRetunCode {
+	
+	SUCCESS("10000","操作成功"),
+	FAILD("100001","操作失败"),
+	/**登录**/
+	LOGIN_PARAMS_ERROR_FORMAT("20001","登录参数格式不正确"),
+	LOGIN_TYPE_ILLEGAL("20002","登录类型异常，非IOS和Andriod"),
+	LOGIN_NOT_ENTER_ACCOUNT_ID("20003","未输入登录账号"),
+	ACCOUNT_ID_NOT_EXIST("20004","账户不存在"),
+	ACCOUNT_ID_WAS_DISABLED("20005","账户被禁用"),
+	LOGIN_NOT_ENTER_PWD("20006","未输入登录密码"),
+	ACCOUNT_OR_PWD_MISTAKE("20007","账户或者密码错误"),
+	/**注册**/
+	GET_REGISTER_CODE_NOT_ENTER_MOBILE("20008","获取注册验证码时未输入手机号"),
+	GET_REGISTER_CODE_MOBILE_ERROR_FORMAT("20009","获取注册验证码时输入的手机号格式错误");
+	
+	private String code;
+	
+	private String describe;
+	
+	AppRetunCode(String code,String describe){
+		this.code = code;
+		this.describe = describe;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public String getDescribe() {
+		return describe;
+	}
+
+	public void setDescribe(String describe) {
+		this.describe = describe;
+	}
+	
+	
+}

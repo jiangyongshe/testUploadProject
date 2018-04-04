@@ -1,0 +1,25 @@
+package com.cwa.client.web;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+
+import com.cwa.client.utils.GobalProperties;
+
+
+
+public class AutoLoadPropertiesServlet extends HttpServlet{
+
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5762066681080170217L;
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		String filePath=config.getInitParameter("filePath");
+		GobalProperties.getGobalConfig().loadPropertiesFromPath(filePath);// 从classpath加载acp_sdk.properties文件
+		super.init();
+	}
+}

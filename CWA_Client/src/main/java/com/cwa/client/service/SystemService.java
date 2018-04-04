@@ -1,0 +1,46 @@
+package com.cwa.client.service;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.SystemSetDao;
+import com.cwa.client.redis.UserRedis;
+
+/**
+ * system表操作
+ * @author HZK
+ */
+@Service
+public class SystemService {
+
+	@Resource
+	private UserRedis userRedis;
+
+	@Resource
+	private SystemSetDao systemSetDao;
+
+	/**
+	 * 获取全局变量
+	 * @param key
+	 * @return
+	 */
+	public String getKeyByValue(String key){
+		/*Object obj = userRedis.getObj(key);
+		String value;
+		if(obj==null||obj.toString().trim().equals("")){
+			synchronized (this) {
+				obj = userRedis.getObj(key);
+				if(obj==null||obj.toString().trim().equals("")){
+					value = systemSetDao.getSystemValueByKey(key);
+					userRedis.set(key, value);
+				}else{
+					value = obj.toString();
+				}
+			}
+		}else{
+			value = obj.toString();
+		}*/
+		return systemSetDao.getSystemValueByKey(key);
+	}
+}

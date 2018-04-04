@@ -1,0 +1,65 @@
+var html="<div class=\"left\">\n";
+	html+="<div class=\"menu-pc\">\n";
+	html+="<span class=\"menu01\">广告管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"gotoChangeToAd\"><a href=\"/chinese/forward/AD/gotoChangeToAd.do\">我要成为广告商<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"queryAD\"><a href=\"/chinese/forward/AD/queryAD.do\">广告查询<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="<span class=\"menu01\">账户管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"recommendFriend\"><a href=\"/chinese/forward/AD/recommendFriend.do\">推荐好友<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"commission\"><a href=\"/chinese/forward/AD/commission.do\">广告佣金<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"withdraw\"><a href=\"/chinese/forward/AD/withdraw.do\">出金<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"adProfile\"><a href=\"/chinese/forward/AD/adProfile.do\">我的资料<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"adUpdatePwd\"><a href=\"/chinese/forward/AD/adUpdatePwd.do\">修改密码<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="<span class=\"menu01\">设备管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"deviceMonitoring\"><a href=\"/chinese/forward/AD/deviceMonitoring.do\">设备监控<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"deviceDetail\"><a href=\"/chinese/forward/AD/deviceDetail.do\">设备详情<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="</div>\n";
+	html+="<div class=\"menu00\">\n";
+	html+="<span class=\"menu01\">广告管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"gotoChangeToAd\"><a href=\"/chinese/forward/AD/gotoChangeToAd.do\">成为广告商<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"queryAD\"><a href=\"/chinese/forward/AD/queryAD.do\">广告查询<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="</div>\n";
+	html+="<div class=\"menu00\">\n";
+	html+="<span class=\"menu01\">账户管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"recommendFriend\"><a href=\"/chinese/forward/AD/recommendFriend.do\">推荐好友<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"commission\"><a href=\"/chinese/forward/AD/commission.do\">广告佣金<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"withdraw\"><a href=\"/chinese/forward/AD/withdraw.do\">出金<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"adProfile\"><a href=\"/chinese/forward/AD/adProfile.do\">我的资料<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"adUpdatePwd\"><a href=\"/chinese/forward/AD/adUpdatePwd.do\">修改密码<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="</div>\n";
+	html+="<div class=\"menu00\">\n";
+	html+="<span class=\"menu01\">设备管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"deviceMonitoring\"><a href=\"/chinese/forward/AD/deviceMonitoring.do\">设备监控<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"deviceDetail\"><a href=\"/chinese/forward/AD/deviceDetail.do\">设备详情<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="</div>\n";
+	html+="</div>\n";
+document.writeln(html);
+//根据页面url修改选中状态
+var urlStr = window.location.href.split("/");
+var menuName = urlStr[urlStr.length-1].split(".")[0];
+var menuNameEles = document.getElementsByName(menuName);
+for(var i=0;i<menuNameEles.length;++i){
+	menuNameEles[i].setAttribute('class','active');
+}
+$(".menu00").click(function() { //弹出垂直菜单
+	if ($(this).hasClass("cura")) {
+		$(this).children(".menu02").hide();
+		$(".menu00").removeClass("cura");
+	} else {
+		$(".menu00").removeClass("cura");
+		$(this).addClass("cura");
+		$(".menu00").children(".menu02").slideUp("fast");
+		$(this).children(".menu02").slideDown("fast");
+	}
+});  

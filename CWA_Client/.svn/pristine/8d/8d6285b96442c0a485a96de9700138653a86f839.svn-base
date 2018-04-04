@@ -1,0 +1,163 @@
+package com.cwa.client.web;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cwa.client.dao.SystemSetDao;
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.dto.VedioPlayHistoryDto;
+import com.cwa.client.service.AdvertiseInfoService;
+import com.cwa.client.service.VedioPlayHistoryService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.DateUtils;
+import com.cwa.client.utils.GsonUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.RespCodeEnum;
+
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/*/customer")
+public class AdQueryController extends BaseController<GobalRespParameter> implements Constant{
+
+	@Resource// 普通用户service层
+	private AdvertiseInfoService advertiseInfoService;
+	
+	@Resource
+	private VedioPlayHistoryService vedioPlayHistoryService;
+	
+	@Resource// 普通用户service层
+	private SystemSetDao systemSetDao;
+	
+	@RequestMapping("/queryAdvertiseInfo.do")
+	public void queryAdvertiseInfo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		//获取请求参数并判断是否为空getPageModel
+		String pageSize= getParameter(req, "pageSize");
+		String pageNo= getParameter(req, "pageNo");
+		try {
+			if(pageSize==null){//每页大写为空则默认5条
+				pageSize=FIVE+"";
+			}
+			if(pageNo==null){//当前页为空则默认首页
+				pageNo=ONE+"";
+			}
+			if(util.isNumber(pageSize)&&util.isNumber(pageNo)){//判断参数是否正确
+				Double discount = queryUserDiscount(req, 0);
+				AdvertiseInfoDto dto=new AdvertiseInfoDto();
+				dto.setPageNo(Integer.parseInt(pageNo));
+				dto.setPageSize(Integer.parseInt(pageSize));
+				dto.setMailing_address(getParameter(req, "mailingAddress"));//查询地址
+				writeLog("", "==== mailingAddress:"+getParameter(req, "mailingAddress"), LOGLEVEL_INFO, AdQueryController.class);
+				PageModel<AdvertiseInfoDto> pageModel = advertiseInfoService.getPageModel(dto);
+				parameter.setMsg(discount+"");
+				parameter.setData(pageModel);
+				parameter.setSuccess(true);
+				writeLog("", "query advertise info success! data:"+JSONObject.fromObject(pageModel), LOGLEVEL_INFO, AdQueryController.class);
+			}
+		} catch (Exception e) {
+			parameter.setData(RespCodeEnum.global_unknow_expiration.getCode());
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	@RequestMapping("/queryConfimBuyAdvertiseInfo.do")
+	public void queryConfimBuyAdvertiseInfo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		//获取请求参数并判断是否为空getPageModel
+		Map<String,String[]> map = getAllParameter(req,"queryConfimBuyAdvertiseInfo.do","checkAdvertiseId","deviceId","timeInterval");
+		//RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				List<AdvertiseInfoDto> list = getOrderList(req,map,null);
+				if(list.size()>0){
+					Double discount = queryUserDiscount(req, list.size());
+					writeLog("","===disCount:"+discount, LOGLEVEL_INFO, AdQueryController.class);
+					parameter.setData(list);
+					parameter.setSuccess(true);
+					parameter.setMsg(discount+"");
+					writeLog("","query advertise info success! data:"+GsonUtil.dtoToJson(list), LOGLEVEL_INFO, AdQueryController.class);
+				}
+				
+			}else{//请求参数无效
+				parameter.setData(RespCodeEnum.global_parameter_isnull.getCode());
+			}
+		} catch (Exception e) {
+			parameter.setData(RespCodeEnum.global_unknow_expiration.getCode());
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	@RequestMapping("/queryVedioPlayHistory.do")
+	public void queryVedioPlayHistory(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		//获取请求参数并判断是否为空getPageModel
+		String pageSize= getParameter(req, "pageSize");
+		String pageNo= getParameter(req, "pageNo");
+		try {
+			if(pageSize==null){//每页大写为空则默认5条
+				pageSize=FIVE+"";
+			}
+			if(pageNo==null){//当前页为空则默认首页
+				pageNo=ONE+"";
+			}
+			if(util.isNumber(pageSize)&&util.isNumber(pageNo)){//判断参数是否正确
+				CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+				VedioPlayHistoryDto dto=new VedioPlayHistoryDto();
+				dto.setPageNo(Integer.parseInt(pageNo));
+				dto.setPageSize(Integer.parseInt(pageSize));
+				if(getParameter(req, "beginTime")!=null){
+					dto.setBegin_time(DateUtils.string2Time(getParameter(req, "beginTime"),DateUtils.DATE_FORMAT_YYYY_MM_dd));
+				}
+				if(getParameter(req, "endTime")!=null){
+					dto.setEnd_time(DateUtils.string2Time(getParameter(req, "endTime"),DateUtils.DATE_FORMAT_YYYY_MM_dd));
+				}
+				dto.setAccountId(customerDto.getAccount_id());
+				writeLog("", "==== beginTime:"+dto.getBegin_time()+"====endTime:"+dto.getEnd_time(), LOGLEVEL_INFO, AdQueryController.class);
+				PageModel<VedioPlayHistoryDto> pageModel = vedioPlayHistoryService.getPageModel(dto);
+				parameter.setData(pageModel);
+				parameter.setSuccess(true);
+				writeLog("", "query advertise info success! data:"+pageModel, LOGLEVEL_INFO, AdQueryController.class);
+			}
+		} catch (Exception e) {
+			parameter.setData(new PageModel<>());
+			parameter.setMsg(RespCodeEnum.global_unknow_expiration.getCode());
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	
+	/**
+	 * 获取广告年月周折扣优惠
+	 * @param request
+	 */
+	@RequestMapping(value="/queryUserYMWDiscount.do")
+	public void queryUserYMWDiscountController(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		Map<String, String> map=queryUserYMWDiscount();//获取所有折扣
+		parameter.setSuccess(true);
+		parameter.setData(map);
+		writeLog("","====query discount and num success ! map:"+JSONObject.fromObject(map),LOGLEVEL_INFO,BaseController.class);
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+}

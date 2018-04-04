@@ -1,0 +1,355 @@
+package com.cwa.client.service;
+
+
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.ADCommissionDao;
+import com.cwa.client.dao.ClientInOutMoneyDao;
+import com.cwa.client.dao.CustomerCommReportDao;
+import com.cwa.client.dao.CustomerWalletDao;
+import com.cwa.client.dao.CustomerWalletFlowDao;
+import com.cwa.client.dto.BankServerTcpDto;
+import com.cwa.client.dto.CustomerWalletFlow;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.dto.UnPayOpenAndConsumeDto;
+import com.cwa.client.model.Tb_Bank_Card_Info;
+import com.cwa.client.model.Tb_Customer_Wallet;
+import com.cwa.client.model.Tb_Customer_Wallet_Flow;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.model.Tb_customer_comm_report;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.DateUtils;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.PageVars;
+import com.cwa.client.utils.RegUtil;
+import com.cwa.client.utils.RespCodeEnum;
+import com.cwa.client.utils.UniqId;
+import com.cwa.client.utils.ipUtil;
+import com.cwa.client.web.nettytcpsocket.AliPayDirDto;
+import com.cwa.client.web.nettytcpsocket.PayUtil;
+import com.cwa.client.web.nettytcpsocket.RespMsgDto;
+import com.cwa.client.web.nettytcpsocket.WebChatDirPayDto;
+
+import net.sf.json.JSONObject;
+
+@Service
+public class CustomerWalletService implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private CustomerWalletDao customerWalletDao;
+	
+	@Resource
+	private CustomerWalletFlowDao customerWalletFlowDao;
+	
+	@Resource
+	private ClientInOutMoneyDao clientInOutMoneyDao;
+	
+	@Resource
+	private CustomerCommReportDao customerCommReportDao;
+	
+	@Resource
+	private ADCommissionDao adCommissionDao;
+	
+	@Resource
+	private BankServerTcpDto bankApiServer;
+	
+	@Resource
+	private SystemService systemService;
+	
+	@Resource
+	private WithdrawService withdrawService;
+	
+  
+	public Tb_Customer_Wallet findById(Integer id){
+		return customerWalletDao.findById(id);
+	}
+	
+	public void save(Tb_Customer_Wallet entity) throws Exception{
+		customerWalletDao.save(entity);
+	}
+	
+	
+	public void update(Tb_Customer_Wallet entity) throws Exception {
+		customerWalletDao.update(entity);
+	}
+	
+	public void deleteFlow(String accountId,String ids){
+		customerWalletFlowDao.deleteByAccountId(accountId, ids);
+	}
+	
+	public Tb_Customer_Wallet findByAccountId(String accountId){
+		return customerWalletDao.findByAccountId(accountId);
+	}
+	
+	public RuturnMessageDto walletRecharge(CustomerWalletFlow dto,HttpServletRequest req) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false); 
+		String loginType=req.getSession().getAttribute(LOGINTYPE).toString();
+		Tb_Customer_Wallet walletDto = customerWalletDao.findByAccountId(dto.getCUSTOMER_ID());
+		if(walletDto==null){
+			parameter.setMsg(RespCodeEnum.wallet_withOut_error2.getCode());
+			return parameter;
+		}else{
+			if(walletDto.getSTATE()==2){
+				parameter.setMsg(RespCodeEnum.wallet_withOut_error1.getCode());
+				return parameter;
+			}
+		}
+		/**********************判断是否在入金时间 start*******************/
+		// 获取入金开始时间
+		String withdrawBeginTime = systemService.getKeyByValue(SYSTEM_KEY_DEPOSIT_BEGIN_TIME);
+		// 获取入金结束时间
+		String withdrawEndTime = systemService.getKeyByValue(SYSTEM_KEY_DEPOSIT_END_TIME);
+		// 获取当前时间
+		Calendar calendar = Calendar.getInstance();
+		StringBuffer nowSb = new StringBuffer("");
+		nowSb.append(calendar.get(Calendar.HOUR_OF_DAY));
+		nowSb.append(":");
+		nowSb.append(calendar.get(Calendar.MINUTE));
+		String now = nowSb.toString();
+		// 不在出金时间范围内
+		if(time_to_sec(now) < time_to_sec(withdrawBeginTime) || time_to_sec(now) > time_to_sec(withdrawEndTime)){
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Not withdraw time,now time is "+now +",withdraw is "+withdrawBeginTime+"-"+withdrawEndTime+".", LOGLEVEL_INFO, WithdrawService.class);
+			parameter.setMsg(RespCodeEnum.wallet_withOut_error3.getCode());
+			parameter.setData(withdrawBeginTime+"-"+withdrawEndTime);
+			return parameter;
+		}
+		logWriteUtil.writeLog(LOGTYPE_SERVICE, "Now time is "+now+",withdraw time is "+withdrawBeginTime+"-"+withdrawEndTime+".", LOGLEVEL_INFO, WithdrawService.class);
+		/**********************判断是否在入金时间 end*******************/
+		logWriteUtil.writeLog("", "insert Tb_Customer_Wallet success CustomerWallet:"+JSONObject.fromObject(walletDto), LOGLEVEL_INFO, CustomerWalletService.class);
+		String payType = dto.getPay_type();// TODO 订单支付方式
+		String accountId=dto.getCUSTOMER_ID();
+		String currDate=DateUtils.TimestamptoString(new Timestamp(System.currentTimeMillis()),DateUtils.DATE_FORMAT_YYYYMMDDHHMMSSSSS);
+		String serialNumber=currDate.substring(2)+dto.getUserId()+WALLET_RECHARGE+payType+UniqId.getallSymbolArrayStr(2); 
+		Tb_client_in_out_money tb_client_in_out_money = new Tb_client_in_out_money();//出金流水
+		tb_client_in_out_money.setSerial_number(serialNumber);
+		tb_client_in_out_money.setAccount_id(accountId);
+		//tb_client_in_out_money.setIn_out_type(dto.getFLOW_TYPE()==1?IN_OUT_TYPE_RECHARGE:IN_OUT_TYPE_WITHDRAW);
+		tb_client_in_out_money.setAmount(dto.getAMOUNT());
+		tb_client_in_out_money.setOpen_date(new Timestamp(new Date().getTime()));
+		tb_client_in_out_money.setCommit_account_id(accountId);
+		tb_client_in_out_money.setPay_type(payType);
+		tb_client_in_out_money.setAccount_type(SIX);
+		// 判断是否大于审核阈值
+		tb_client_in_out_money.setStatus(ONE);
+		tb_client_in_out_money.setIn_out_type(FOUR);
+		logWriteUtil.writeLog("", "insert Tb_client_in_out_money success! begin pay!!!! inOutEntity:"+JSONObject.fromObject(tb_client_in_out_money), LOGLEVEL_INFO, CustomerWalletService.class);
+		if(ALIPAY_TYPE1.equals(payType)){
+			AliPayDirDto aliPayDto=new AliPayDirDto();
+			aliPayDto.setTimestamp(DateUtils.getNowDay(DateUtils.DATE_FORMAT_DEFAULT));
+			aliPayDto.setSubject("翔云余额充值");
+			if(req.getSession().getAttribute(PAGE_LOGIN_TYPE)!=null){
+				if("1".equals(req.getSession().getAttribute(PAGE_LOGIN_TYPE).toString())){//判断是否手机版
+					aliPayDto.setReturn_url(MOBILE_ALIPAY_RETURN_URL);
+				}
+			}else{
+				aliPayDto.setReturn_url(ALIPAY_RETURN_URL);
+			}
+			aliPayDto.setNotify_url(ALIPAY_NOTIFY_UTL);
+			
+			RespMsgDto aliPayDir = new PayUtil(bankApiServer).aliPayDir(tb_client_in_out_money, aliPayDto, loginType);
+			
+			logWriteUtil.writeLog("", "alipay end!!!! payType:"+payType+" RespMsgDto:"+JSONObject.fromObject(aliPayDir), LOGLEVEL_INFO, CustomerWalletService.class);
+			if(RespCodeEnum.SUCCESS.getCode().equals(aliPayDir.getRespCode())){
+				parameter.setSuccess(true);
+				parameter.setData(aliPayDir.getRespContent());
+				parameter.setMsg(RespCodeEnum.SUCCESS.getCode());
+			}else{
+				tb_client_in_out_money.setRemark("支付宝支付 翔云余额充值失败");
+				parameter.setMsg(RespCodeEnum.FAILD.getCode());
+				parameter.setData(aliPayDir.getMessage());
+			}
+		}else if(WECHATTPAY1_TYPE.equals(payType)){
+			WebChatDirPayDto chatpayDto=new WebChatDirPayDto();
+			chatpayDto.setNonce_str(UniqId.getallSymbolArrayStr(32));
+			chatpayDto.setSpbill_create_ip(ipUtil.getIpAddress(req));
+			chatpayDto.setNotify_url(WECHATPAY_NOTIFY_UTL);
+			chatpayDto.setBody("翔云余额充值");
+			chatpayDto.setAttach(accountId);
+			if(req.getSession().getAttribute(SESSION_OPENID)!=null){
+				chatpayDto.setOpenid(req.getSession().getAttribute(SESSION_OPENID).toString());
+			}
+			chatpayDto.setTime_start(DateUtils.getNowDay(DateUtils.DATE_FORMAT_YYYYMMDDHHMMSS));
+			
+			RespMsgDto wechatPayDir = new PayUtil(bankApiServer).chatpayDir(tb_client_in_out_money, chatpayDto, loginType);
+			
+			logWriteUtil.writeLog("", "wechat end!!!! payType:"+payType+" RespMsgDto:"+JSONObject.fromObject(wechatPayDir), LOGLEVEL_INFO, CustomerWalletService.class);
+			if(RespCodeEnum.SUCCESS.getCode().equals(wechatPayDir.getRespCode())){
+				parameter.setSuccess(true);
+				parameter.setData(wechatPayDir.getRespContent());
+				parameter.setMsg(serialNumber);
+			}else{
+				tb_client_in_out_money.setRemark("微信支付 翔云余额充值失败");
+				parameter.setMsg(RespCodeEnum.FAILD.getCode());
+				parameter.setData(wechatPayDir.getMessage());
+			}
+		}else if(UNPAY_TYPE.equals(payType)){
+			String cardCode=dto.getCardCode();
+			String mobile= dto.getMobile();
+			String tranNo=dto.getTranNo();
+			logWriteUtil.writeLog("", "union pay request param!  cardCode:"+cardCode+"==mobile:"+mobile+"==tranNo:"+tranNo, LOGLEVEL_INFO, CustomerWalletService.class);
+			if(RegUtil.getUtil().isNull(cardCode)||(!RegUtil.getUtil().isBankCard(cardCode)&&cardCode.indexOf("*")<0)){
+				parameter.setMsg(RespCodeEnum.wallet_withOut_error4.getCode());
+				return parameter;
+			}
+			if(!RegUtil.getUtil().isNull(tranNo)){
+				tb_client_in_out_money.setSerial_number(tranNo);
+			}
+			int isFirst=ONE;
+			Tb_Bank_Card_Info bankCardInfo=null;
+			if(cardCode.indexOf("*")>=0){
+				List<Tb_Bank_Card_Info> list = adCommissionDao.queryBankCardInfo(accountId,null,FOUR);
+				for (Tb_Bank_Card_Info tb_Bank_Card_Info : list) {
+					String enCardCode=RegUtil.getUtil().replaceNumToX(tb_Bank_Card_Info.getBank_card_code(), THREE);
+					if(enCardCode.equals(cardCode)){
+						bankCardInfo=tb_Bank_Card_Info;
+						isFirst=TWO;
+						break;
+					}
+				}
+			}else{
+				List<Tb_Bank_Card_Info> list = adCommissionDao.queryBankCardInfo(null,cardCode,FOUR);
+				bankCardInfo = list.size()>0?list.get(0):null;
+			}
+			if(bankCardInfo==null){
+				bankCardInfo=new Tb_Bank_Card_Info();
+				bankCardInfo.setAccount_id(accountId);
+				bankCardInfo.setAccount_type(FIVE);
+				bankCardInfo.setAudit_datetime(new Timestamp(DateUtils.string2UtilTime("2001-01-01 00:00:00.0", DateUtils.DATE_FORMAT_DEFAULT).getTime()));
+				bankCardInfo.setAudit_id("");
+				bankCardInfo.setBank_card_code(cardCode);
+				bankCardInfo.setBank_card_name("");
+				bankCardInfo.setBank_code("");
+				bankCardInfo.setBranch_name("");
+				bankCardInfo.setCard_type(FOUR);
+				bankCardInfo.setCommit_account_id(accountId);
+				bankCardInfo.setCommit_datetime(new Timestamp(System.currentTimeMillis()));
+				bankCardInfo.setIp(ipUtil.getIpAddress(req));
+				bankCardInfo.setMobile(mobile);
+				bankCardInfo.setOpen_account_bank_name("");
+				bankCardInfo.setPapers_code("");
+				bankCardInfo.setPapers_type(ONE);
+				bankCardInfo.setStatus(ZERO);
+				bankCardInfo.setBank_account_type(ONE);
+				bankCardInfo.setBank_card_type(ONE);
+				withdrawService.commissionBankCardInfo(bankCardInfo);
+			}
+			logWriteUtil.writeLog("", "union pay cardInfoEntity:"+JSONObject.fromObject(bankCardInfo), LOGLEVEL_INFO, CustomerWalletService.class);
+			UnPayOpenAndConsumeDto unionPayDto=new UnPayOpenAndConsumeDto(bankCardInfo,isFirst,req.getParameter("smsCode"),MOBILE_ALIPAY_RETURN_URL);
+			unionPayDto.setBackUrl(UNION_RECHARGE_NOTIFY_UTL);
+			RespMsgDto unionPayDir = new PayUtil(bankApiServer).unPayNoJumpDesposite(tb_client_in_out_money, unionPayDto, loginType);
+			if(RespCodeEnum.SUCCESS.getCode().equals(unionPayDir.getRespCode())){
+				parameter.setSuccess(true);
+				parameter.setMsg(RespCodeEnum.SUCCESS.getCode());
+				if(isFirst==ONE){
+					parameter.setData(unionPayDir.getRespContent());
+				}else{
+					if(RegUtil.getUtil().isNull(req.getParameter("smsCode"))){//发送短信
+						parameter.setData(tb_client_in_out_money.getSerial_number());
+						return parameter;
+					}
+				}
+				tb_client_in_out_money.setStatus(FIVE);
+			}else{
+				tb_client_in_out_money.setRemark("银联支付 翔云余额充值失败");
+				parameter.setMsg(RespCodeEnum.FAILD.getCode());
+				parameter.setData(unionPayDir.getMessage());
+			}
+		}
+		clientInOutMoneyDao.insert(tb_client_in_out_money);
+		return parameter;
+	}
+	/**
+	 * 时:分 转为秒
+	 * @param str
+	 * @return
+	 */
+	public long time_to_sec(String str){
+		return Long.parseLong(str.split(":")[0])*3600+Long.parseLong(str.split(":")[1])*60;
+	}
+	public void notifySaveInfo(Tb_client_in_out_money inOutInfo) throws Exception{
+		Tb_Customer_Wallet_Flow entity =new Tb_Customer_Wallet_Flow();//钱包流水
+		entity.setAMOUNT(inOutInfo.getAmount());
+		entity.setCUSTOMER_ID(inOutInfo.getAccount_id());
+		entity.setFLOW_TYPE(ONE);
+		entity.setOPEN_DATE(inOutInfo.getOpen_date());
+		entity.setSerial_number(inOutInfo.getSerial_number());
+		customerWalletFlowDao.save(entity);//钱包流水
+		logWriteUtil.writeLog("", "insert Tb_Customer_Wallet_Flow success CustomerWalletFlow:"+JSONObject.fromObject(entity), LOGLEVEL_INFO, CustomerWalletService.class);
+		inOutInfo.setStatus(TWO);
+		clientInOutMoneyDao.update(inOutInfo);//出入金流水状态
+		Tb_customer_comm_report repEntity = clientInOutMoneyDao.queryInOutInfo(inOutInfo.getAccount_id());
+		if (repEntity != null) {
+			if (entity.getFLOW_TYPE() == 1) {// 充值
+				repEntity.setDeposit(repEntity.getDeposit().add(entity.getAMOUNT()));
+				repEntity.setWALLET_DEPOSIT(repEntity.getWALLET_DEPOSIT().add(entity.getAMOUNT()));
+			}
+			customerCommReportDao.update(repEntity);//报表
+		}
+		logWriteUtil.writeLog("",
+				"update Tb_customer_comm_report success repEntity:" + JSONObject.fromObject(repEntity), LOGLEVEL_INFO,
+				CustomerWalletService.class);
+		Tb_Customer_Wallet walletDto = customerWalletDao.findByAccountId(inOutInfo.getAccount_id());
+		if (entity.getFLOW_TYPE() == 1) {
+			walletDto.setAMOUNT(walletDto.getAMOUNT().add(entity.getAMOUNT()));
+		}
+		customerWalletDao.update(walletDto);//更新金额
+	}
+	
+	public PageModel<CustomerWalletFlow> getPageModel(CustomerWalletFlow dto){
+    	PageVars pvNm=this.getVars(dto,1);
+		PageVars pvlist=this.getVars(dto,0);
+		PageModel<CustomerWalletFlow> pm=customerWalletFlowDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    	
+    }
+    
+    
+    private PageVars getVars(CustomerWalletFlow dto,int type){
+    	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+    	 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from Tb_Customer_Wallet_Flow f where 1=1");
+    	 } else {
+    		 sbStr.append("select * from Tb_Customer_Wallet_Flow f where 1=1");
+    	 }
+    	 if(!RegUtil.getUtil().isNull(dto.getCUSTOMER_ID())){
+    		 sbStr.append(" and f.CUSTOMER_ID=:CUSTOMER_ID ");
+    		 params.put("CUSTOMER_ID", dto.getCUSTOMER_ID());
+    	 }
+    	 if(dto.getFLOW_TYPE()!=null){
+    		 sbStr.append(" and f.flow_type=:flow_type ");
+    		 params.put("flow_type", dto.getFLOW_TYPE());
+    	 }
+    	 if(dto.getBeginDate()!=null){
+    		 sbStr.append(" AND DATE_FORMAT(f.open_date,'"+MYSQL_DATE_FORMAT_YMD+"')>=DATE_FORMAT(:beginDate,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+    		 params.put("beginDate", dto.getBeginDate());
+    	 }
+    	 if(dto.getEndDate()!=null){
+    		 sbStr.append(" AND DATE_FORMAT(f.open_date,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(:endDate,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+    		 params.put("endDate", dto.getEndDate());
+    	 }
+    	  if (type!=1) {
+				sbStr.append(" ORDER BY f.id desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+		  }
+    	  logWriteUtil.writeLog("", "pageQuery sql:"+sbStr.toString()+"===param:"+JSONObject.fromObject(dto), LOGLEVEL_INFO, CustomerWalletService.class);
+    	  System.out.println("sql:"+sbStr.toString());
+    	  pv.setSbstr(sbStr);
+	      pv.setParams(params);
+		 
+		 return pv;
+    }	
+}

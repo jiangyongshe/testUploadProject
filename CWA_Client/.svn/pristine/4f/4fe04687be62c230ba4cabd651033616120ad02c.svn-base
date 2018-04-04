@@ -1,0 +1,183 @@
+var ADPage = 1;// 默认初始页码
+var ADCount = 20;// 每页显示的数量
+
+$(function(){
+	// 搜索按钮
+	searchBtn();
+	// 加载广告数据
+	loadADData({ pageNo:ADPage });
+})
+
+/**
+ * 关闭视频
+ * @returns
+ */
+function closeVideo(){
+	var videoDIV = document.getElementById('videoDIV');
+	var childNodes = videoDIV.childNodes;
+	var videoEle;
+	for(var i=0;i<childNodes.length;++i){
+		if(childNodes[i].nodeName.toLowerCase()==='video'){
+			videoEle = childNodes[i];
+			break;
+		}
+	}
+	videoEle.pause();
+	videoDIV.style.display = 'none';
+}
+
+/**
+ * 播放视频
+ * @param videoPath
+ * @returns
+ */
+function playVideo(videoPath){
+	videoPath = videoUrl+videoPath;
+	var videoDIV = document.getElementById('videoDIV');
+	if(videoDIV) videoDIV.parentNode.removeChild(videoDIV);
+	var videoDIVNew = document.createElement('div');
+	videoDIVNew.setAttribute('id','videoDIV');
+	videoDIVNew.setAttribute('class','tanchu3');
+	videoDIVNew.innerHTML = '<div class="tanchu-bt">'+
+								'<a class="tanchu-close text-c" title="close" onclick="javascript:closeVideo(\'videoDIV\')">'+
+								'<i class="fa fa-close" aria-hidden="true"></i></a>'+
+							'</div>'+
+							'<video poster="/chinese/images/black.jpg" class="tanchu3-nr text-c" width=100% autoplay controls src="'+videoPath+'"></video>';
+	document.getElementsByTagName('body')[0].appendChild(videoDIVNew);
+	videoDIV = document.getElementById('videoDIV');
+	var childNodes = videoDIV.childNodes;
+	var videoEle;
+	for(var i=0;i<childNodes.length;++i){
+		if(childNodes[i].nodeName.toLowerCase()==='video'){
+			videoEle = childNodes[i];
+			break;
+		}
+	}
+	videoEle.setAttribute('src',videoPath);
+	// 获取滚动距离
+	var scrollHeight = getPageScroll()[1];
+	var winHeight;
+	//获取窗口高度
+	if (window.innerHeight)
+	winHeight = window.innerHeight;
+	else if ((document.body) && (document.body.clientHeight))
+	winHeight = document.body.clientHeight;
+	// 居中
+	videoDIV.style.top = (winHeight-videoDIV.offsetHeight)/2+scrollHeight + 'px';
+	videoDIV.style.marginTop = 0;
+	// 播放
+	videoEle.play();
+	videoDIV.style.display = 'block';
+}
+
+/**
+ * 加载广告数据
+ * @param obj.page 页码
+ * @param obj.servial_number 订单编号
+ * @param obj.begin_time 播放开始时间，时:分:秒 hh:mm:ss
+ * @param obj.end_time 播放结束时间，时:分:秒 hh:mm:ss
+ * @param obj.order_status 订单状态
+ * @returns
+ */
+function loadADData(obj){
+	jsonAjax('/'+language+'/AD/query.do',
+	{pageNo:obj.pageNo,
+	 pageSize:ADCount,
+	 begin_time:obj.begin_time,
+	 end_time:obj.end_time,
+	 order_status:obj.order_status,
+	 serial_number:obj.serial_number
+	},
+	function(res){
+		var data = res.data;
+		// 清空数据
+		$('#adData').empty();
+		// 清空页码
+		$('#adPageTurn').empty();
+		if(data&&data.length>0){
+			var adDataHTML = '';
+			for(var i=0;i<data.length;++i){
+				adDataHTML += '' 
+					       + '<tr>'
+					       + '<td>'+((Number(obj.pageNo)-1)*Number(ADCount)+i+1)+'</td>'
+						   + '<td>'+data[i].advertiser_id+'</td>'
+						   + '<td>'+data[i].device_id+'</td>'
+						   + '<td title="'+data[i].serial_number+'">'+data[i].serial_number.substring(0,8)+'...</td>'
+						   + function(obj){
+								// 视频名称
+								var videoName;
+								switch(obj.order_status){
+								case '申请中':
+								case '审核不通过':
+								case '已取消':
+								case '已关闭':
+									videoName = obj.notPassVideoName;
+									break;
+								default:
+									videoName = obj.passVideoName;
+								}
+								// 视频路径
+								var videoPath;
+								switch(obj.order_status){
+								case '申请中':
+								case '审核不通过':
+								case '已取消':
+								case '已关闭':
+									videoPath = obj.notPassVideoPath;
+									break;
+								default:
+									videoPath = obj.passVideoPath;
+								}
+								// 返回元素
+								if(videoName && videoPath){
+									return '<td onclick="javascript:playVideo(\''+videoPath+'\')" class="suspendPointer red" style="text-decoration:underline;"><a href="#" title="'+videoName+'">'+videoName.substring(0,8)+'</a></td>';
+								}else{
+									return '<td></td>';
+								}
+							 }(data[i])
+						   + '<td>'+data[i].begin_time+'-'+data[i].end_time+'</td>'
+						   + '<td>'+data[i].price+'</td>'
+						   + '<td>'+data[i].play_begin_time+'</td>'
+						   + '<td>'+data[i].play_end_time+'</td>'
+						   + '<td>'+data[i].order_status+ '</td>'
+						   + '</tr>';
+			}
+			$('#adData').html(adDataHTML);
+			// 添加页码HTML代码
+			pageNumber(res.count,obj,loadADData,ADCount,'ad');
+		}
+	},
+	function(){});
+}
+
+/**
+ * 搜索按钮
+ * @returns
+ */
+function searchBtn(){
+	$('#search').bind('click',function(){
+		// 获取广告编号
+		var adNumber = $('#adNumber').val().trim();
+		// 获取播放时段
+		var timeQuantum = $('#timeQuantum').find('option:selected').text().trim();
+		// 获取广告状态
+		var adStatus = $('#adStatus').find('option:selected').val().trim();
+		// 查询参数
+		var param = {};
+		if(adNumber&&adNumber!=''){
+			param.serial_number = adNumber;
+		}
+		if(timeQuantum&&timeQuantum.indexOf('-')!=-1){
+			param.begin_time = timeQuantum.split('-')[0];
+			param.end_time = timeQuantum.split('-')[1];
+		}
+		if(adStatus&&adStatus!=''){
+			param.order_status = adStatus;
+		}
+		param.pageNo = ADPage;
+		param.pageSize = ADCount;
+		// 查询数据
+		loadADData(param);
+	});
+	
+}

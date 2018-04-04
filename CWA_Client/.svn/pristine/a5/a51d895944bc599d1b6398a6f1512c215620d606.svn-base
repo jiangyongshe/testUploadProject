@@ -1,0 +1,60 @@
+package com.cwa.client.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import com.cwa.client.dto.AdvertiserDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.DeviceVedioPlanDto;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.model.Tb_Customer;
+import com.cwa.client.model.Tb_Device_Vedio_Plan;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import net.sf.json.JSONArray;
+
+/**
+ * 设备视频播放计划数据层
+ */
+public class DeviceVedioPlanDao extends BaseDao<Tb_Device_Vedio_Plan, DeviceVedioPlanDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 查询广告用户
+	 * @param advertiserDto 查询条件
+	 * @return
+	 */
+	public List<DeviceVedioPlanDto> queryAdvertiser(DeviceVedioPlanDto advertiserDto){
+		// 返回结果
+		List<DeviceVedioPlanDto> tbAdvertiserList = null;
+		StringBuffer sql = new StringBuffer(
+				"SELECT A.ID,A.SHOP_NAME,A.MOBILE,A.STREET,A.SCOPE,A.PASSWORD,"+
+				"A.MAILING_ADDRESS,A.USER_STATUS,A.OPEN_DATE,A.EMAIL,A.REAL_NAME,"+
+				"A.ACCOUNT_ID,A.AUDIT_DATETIME,A.AUDIT_STATUS,A.REMARK,A.REFERRALS_TYPE "+
+				"FROM tb_advertiser A ");
+		// 拼接where查询条件
+		Map<String,Object> map = packageWhereSQL(advertiserDto, "A");
+		String joinWhereSQL = map.get("sql").toString();
+		@SuppressWarnings("unchecked")
+		List<Object> params = (List<Object>) map.get("params");
+		sql.append(joinWhereSQL);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryAdvertiser sql:"+sql+";params:"+JSONArray.fromObject(params),LOGLEVEL_INFO,DeviceVedioPlanDao.class);
+		try {
+			if(params.size()!=0){
+				tbAdvertiserList = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(DeviceVedioPlanDto.class),params.toArray());
+			}else{
+				tbAdvertiserList = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(DeviceVedioPlanDto.class));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryAdvertiser exception '"+e.getMessage()+"'",LOGLEVEL_ERROR, DeviceVedioPlanDao.class);
+			tbAdvertiserList = new ArrayList<DeviceVedioPlanDto>();
+			throw e;
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryAdvertiser query size "+tbAdvertiserList.size()+", result " + JSONArray.fromObject(tbAdvertiserList),LOGLEVEL_INFO,DeviceVedioPlanDao.class);
+		return tbAdvertiserList;
+	}
+	
+}

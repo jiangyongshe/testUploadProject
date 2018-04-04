@@ -1,0 +1,89 @@
+package com.cwa.client.web;
+
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import com.cwa.client.dao.ADCommissionDao;
+import com.cwa.client.dao.ClientInOutMoneyDao;
+import com.cwa.client.dao.CommissionDetailDao;
+import com.cwa.client.dto.ADCommissionDetailDto;
+import com.cwa.client.dto.AdvertiserCommissionDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.InOutMoneyParamDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+/**
+ * 广告资金相关
+ * @author HZK
+ */
+@Controller
+@RequestMapping("/*/AD/")
+public class ADCapitalController extends BaseController<GobalRespParameter> implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private ADCommissionDao adCommissionDao;
+	
+	@Resource
+	private CommissionDetailDao commissionDetailDao;
+	
+	@Resource
+	private ClientInOutMoneyDao clientInOutMoneyDao;
+	
+	@Resource
+	private UserService userService;
+	
+	/**
+	 * 佣金查询
+	 */
+	@RequestMapping("/query/commission.do")
+	public void commissionQuery(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" query commission .", LOGLEVEL_INFO, ADCapitalController.class);
+		CustomerDto sessionUser = (CustomerDto)req.getSession().getAttribute(SESSION_USER);
+		RuturnMessageDto rt = new RuturnMessageDto();
+		AdvertiserCommissionDto data = adCommissionDao.queryADCommission(sessionUser.getAccount_id());
+		rt.setData(data);
+		writeJSON(res, rt);
+	}
+	
+	/**
+	 * 佣金明细查询
+	 */
+	@RequestMapping("/query/commissionDetail.do")
+	public void commissionDetailQuery(HttpServletRequest req, HttpServletResponse res,ADCommissionDetailDto param) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" query commission detail.", LOGLEVEL_INFO, ADCapitalController.class);
+		CustomerDto sessionUser = (CustomerDto)req.getSession().getAttribute(SESSION_USER);
+		param.setAccount_id(sessionUser.getAccount_id());
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("data", commissionDetailDao.queryADCommissionDetail(param));
+		map.put("count", commissionDetailDao.queryADCommissionDetailCount(param));
+		writeJSON(res, map);
+	}
+	
+	/**
+	 * 出金查询
+	 */
+	@RequestMapping("/query/withdrawDetail.do")
+	public void withdrawDetailQuery(HttpServletRequest req, HttpServletResponse res,InOutMoneyParamDto param) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" query withdraw detail.", LOGLEVEL_INFO, ADCapitalController.class);
+		String userType = req.getSession().getAttribute(SESSION_USER_TYPE).toString();
+		CustomerDto sessionUser = (CustomerDto)req.getSession().getAttribute(SESSION_USER);
+		param.setAccount_id(Integer.parseInt(userType)==TWO?sessionUser.getAccount_id():sessionUser.getLogin_id());
+		param.setAccount_type(sessionUser.getT_type());
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("data", clientInOutMoneyDao.queryDetail(param));
+		map.put("count", clientInOutMoneyDao.queryDetailCount(param));
+		writeJSON(res, map);
+	}
+}

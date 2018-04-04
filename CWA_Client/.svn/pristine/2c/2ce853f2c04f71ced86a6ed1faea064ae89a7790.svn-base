@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=yes" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播——共享广告平台，注册/投放广告/商家合作/联系我们</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+  <ul class="kefu col-fff">
+        <li>
+          <span class=""><i class="fa fa-phone-square pad-r8" aria-hidden="true"></i>电话</span>
+          <span class="fr">400-0018-128</span>
+        </li>
+        
+        <li>
+          <span class=""><i class="fa fa-qq pad-r8" aria-hidden="true"></i>QQ</span>
+          <span class="fr">97423177</span>
+        </li>
+        
+        <li>
+          <span class=""><i class="fa fa-envelope-o pad-r8" aria-hidden="true"></i>邮箱</span>
+          <span class="fr">support@luckicloud.com</span>
+        </li>
+  </ul>
+      
+  <p class="pad-q10 pad-t20 col-fff">
+    <span class="yellow">温馨提示：</span>为保证您的申诉能第一时间得到处理，请您在邮件中写明您的联系方式及投诉涉及的订单号或用户名，非常感谢。
+  </p>
+</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript">
+	$(function(){
+		$("#headerTitle").text("客服中心");
+	})
+</script>
+</body>
+</html>

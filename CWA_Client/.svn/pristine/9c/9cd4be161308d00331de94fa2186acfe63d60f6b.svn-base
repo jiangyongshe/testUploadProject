@@ -1,0 +1,285 @@
+package com.cwa.client.service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Map;
+import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.RequestContext;
+import com.cwa.client.dao.FileManagerDao;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.model.Tb_file_manager;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.Encypter;
+import com.cwa.client.utils.ImgCompress;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.Tools;
+
+/**
+ * 文件管理
+ * @author HZK
+ */
+@Service
+public class FileService implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private FileManagerDao fileManagerDao;
+	
+	/**
+	 * 图片最大限制
+	 */
+	private static final String MAX_PIC_SIZE = "maxPicSize";
+	
+	/**
+	 * 图片基础路径
+	 */
+	private static final String IMG_BASE_UPLOAD_PATH = "baseUploadPath";
+	
+	/**
+	 * 文件基础路径
+	 */
+	private static final String BASE_UPLOAD_PATH = "STREAM_FILE_REPOSITORY";
+	
+	/**
+	 * 上传图片
+	 * @param req
+	 * @param file
+	 * @param path 文件路径，不包含base upload path和文件名
+	 * @param fileName 文件名
+	 * @throws Exception
+	 * @return
+	 */
+	public RuturnMessageDto uploadPicFile (HttpServletRequest req,MultipartFile file,String path) throws Exception{
+		// 返回的消息对象
+		RuturnMessageDto rt = new RuturnMessageDto();
+		// 语言包
+		RequestContext reqCt= new RequestContext(req);
+		try {
+			// 判断是否上传了文件
+			if (file.isEmpty()) {
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "Not upload file", LOGLEVEL_INFO, FileService.class);
+				rt.setMsg(reqCt.getMessage("file.tip.notUploadFile"));
+				return rt;
+			}
+			// 判断文件是否太大
+			byte[] bytes = file.getBytes();
+			if (bytes.length > Long.parseLong(Encypter.getValueByKey(MAX_PIC_SIZE))) {
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "File too big size is "+bytes.length+",max size is "+Long.parseLong(Encypter.getValueByKey(MAX_PIC_SIZE)), LOGLEVEL_INFO, FileService.class);
+				rt.setMsg(reqCt.getMessage("file.tip.fileTooBig")+(Long.parseLong(Encypter.getValueByKey(MAX_PIC_SIZE))/1024/1024)+"m");
+				return rt;
+			}
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "File size is "+bytes.length, LOGLEVEL_INFO, FileService.class);
+			// 判断是否是图片
+			Map<String, Object> mapJudeg = Tools.judgeImage(bytes);
+			if (!(boolean) mapJudeg.get("isImage")) {
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "File type not picture", LOGLEVEL_INFO, FileService.class);
+				rt.setMsg(reqCt.getMessage("file.tip.fileNotPic"));
+				return rt;
+			}
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "File type is "+mapJudeg.get("type"), LOGLEVEL_INFO, FileService.class);
+			// 判断目录是否存在
+			String dirPath = Encypter.getValueByKey(IMG_BASE_UPLOAD_PATH) + path;
+			File fileDir = new File(dirPath);
+			if(!fileDir.exists()){
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "Creat dir "+dirPath, LOGLEVEL_INFO, FileService.class);
+				fileDir.mkdirs();
+			}
+			// 判断当前日期的目录是否存在
+			String dateStr = NORMAL_YMD.format(new Date()) + "/";
+			String dirPathDate = dirPath + dateStr;
+			File fileDirDate = new File(dirPathDate);
+			if(!fileDirDate.exists()){
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "Creat dir "+fileDirDate, LOGLEVEL_INFO, FileService.class);
+				fileDirDate.mkdirs();
+			}
+			String userType = req.getSession().getAttribute(SESSION_USER_TYPE).toString();
+			Object sessionUser = req.getSession().getAttribute(SESSION_USER);
+			Field accountIdField = sessionUser.getClass().getDeclaredField("account_id");
+			accountIdField.setAccessible(true);
+			String accountId = accountIdField.get(sessionUser).toString();
+			// 文件名
+			String fileName = accountId+userType+new Date().getTime()+"."+PIC_TYPE_PNG;;
+			// 文件路径
+			String filePath = dirPathDate + fileName;
+			// 转存文件
+			ImgCompress ic=new ImgCompress(file);
+			ic.resizeFix(filePath);
+			//file.transferTo(new File(filePath));
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Upload save success,filePath is "+filePath, LOGLEVEL_INFO, FileService.class);
+			// 插入数据
+			String dataPath = path+ dateStr +fileName;// 数据库路径
+			Tb_file_manager tb_file_manager = new Tb_file_manager();
+			tb_file_manager.setAccountId(accountId);
+			tb_file_manager.setAccountType(Integer.parseInt(Tools.changeUserType(userType)));
+			tb_file_manager.setFilePath(dataPath);
+			tb_file_manager.setStatus(FILE_MANAGER_STATUS_UNDISPOSE);
+			tb_file_manager.setUploadTime(new Timestamp(new Date().getTime()));
+			fileManagerDao.save(tb_file_manager);
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Insert file data success", LOGLEVEL_INFO, FileService.class);
+			rt.setMsg(reqCt.getMessage("file.tip.fileUploadSuccess"));
+			rt.setData(dataPath);
+			rt.setSuccess(true);
+		} catch (Exception e) {
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Upload save exception,"+e.getMessage(), LOGLEVEL_ERROR, FileService.class);
+			rt.setMsg(reqCt.getMessage("file.tip.fileUploadFail"));
+			rt.setSuccess(false);
+		}
+		return rt;
+	}
+
+	/**
+	 * 加载图片
+	 * @param res
+	 * @param filePath 不包括base upload path
+	 * @throws Exception
+	 */
+	public void loadPicFile(HttpServletResponse res,String filePath) throws Exception{
+		ServletOutputStream out = null;
+		FileInputStream ips = null;
+		try {
+			// 将文件的流返回前台
+			res.setContentType("multipart/form-data");
+			// 读取文件流
+			int len = 0;
+			byte[] buffer = new byte[1024 * 10];
+			out = res.getOutputStream();
+			ips = new FileInputStream(new File(Encypter.getValueByKey(IMG_BASE_UPLOAD_PATH) +filePath));
+			while ((len = ips.read(buffer)) != -1) {
+				out.write(buffer, 0, len);
+			}
+			out.flush();
+		} catch (Exception e) {
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "load pic exception,"+e.getMessage(), LOGLEVEL_ERROR, FileService.class);
+			e.printStackTrace();
+		} finally {
+			if (out != null)
+				out.close();
+			if (ips != null)
+				ips.close();
+		}
+	}
+
+	/**
+	 * 上传文件
+	 * @param req
+	 * @param file
+	 * @param path
+	 * @param maxSize
+	 * @return
+	 */
+	public RuturnMessageDto uploadFile(HttpServletRequest req,MultipartFile file,String path,Long maxSize){
+		// 返回的消息对象
+		RuturnMessageDto rt = new RuturnMessageDto();
+		// 语言包
+		RequestContext reqCt= new RequestContext(req);
+		try {
+			// 判断是否上传了文件
+			if (file.isEmpty()) {
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "Not upload file", LOGLEVEL_INFO, FileService.class);
+				rt.setMsg(reqCt.getMessage("file.tip.notUploadFile"));
+				return rt;
+			}
+			// 判断文件是否太大
+			byte[] bytes = file.getBytes();
+			if (bytes.length > maxSize) {
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "File too big size is "+bytes.length+",max size is "+maxSize, LOGLEVEL_INFO, FileService.class);
+				rt.setMsg(reqCt.getMessage("file.tip.fileTooBig")+(maxSize/1024/1024)+"m");
+				return rt;
+			}
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "File size is "+bytes.length, LOGLEVEL_INFO, FileService.class);
+			// 判断目录是否存在
+			String dirPath = Encypter.getValueByKey(BASE_UPLOAD_PATH) + "/" + path;
+			File fileDir = new File(dirPath);
+			if(!fileDir.exists()){
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "Creat dir "+dirPath, LOGLEVEL_INFO, FileService.class);
+				fileDir.mkdirs();
+			}
+			// 判断当前日期的目录是否存在
+			String dateStr = NORMAL_YMD.format(new Date()) + "/";
+			String dirPathDate = dirPath + dateStr;
+			File fileDirDate = new File(dirPathDate);
+			if(!fileDirDate.exists()){
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "Creat dir "+fileDirDate, LOGLEVEL_INFO, FileService.class);
+				fileDirDate.mkdirs();
+			}
+			String userType = req.getSession().getAttribute(SESSION_USER_TYPE).toString();
+			Object sessionUser = req.getSession().getAttribute(SESSION_USER);
+			Field accountIdField = sessionUser.getClass().getDeclaredField("account_id");
+			accountIdField.setAccessible(true);
+			String accountId = accountIdField.get(sessionUser).toString();
+			// 文件名
+			String fileName = accountId+userType+new Date().getTime()+"."+file.getOriginalFilename().split("\\.")[file.getOriginalFilename().split("\\.").length-1];;
+			// 文件路径
+			String filePath = dirPathDate + fileName;
+			// 转存文件
+			file.transferTo(new File(filePath));
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Upload save success,filePath is "+filePath, LOGLEVEL_INFO, FileService.class);
+			// 插入数据
+			String dataPath = path+ dateStr +fileName;// 数据库路径
+			Tb_file_manager tb_file_manager = new Tb_file_manager();
+			tb_file_manager.setAccountId(accountId);
+			tb_file_manager.setAccountType(Integer.parseInt(Tools.changeUserType(userType)));
+			tb_file_manager.setFilePath(dataPath);
+			tb_file_manager.setStatus(FILE_MANAGER_STATUS_UNDISPOSE);
+			tb_file_manager.setUploadTime(new Timestamp(new Date().getTime()));
+			fileManagerDao.save(tb_file_manager);
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Insert file data success", LOGLEVEL_INFO, FileService.class);
+			rt.setMsg(reqCt.getMessage("file.tip.fileUploadSuccess"));
+			rt.setData(dataPath);
+			rt.setSuccess(true);
+		} catch (Exception e) {
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Upload save exception,"+e.getMessage(), LOGLEVEL_ERROR, FileService.class);
+			rt.setMsg(reqCt.getMessage("file.tip.fileUploadFail"));
+			rt.setSuccess(false);
+		}
+		return rt;
+	}
+
+	/**
+	 * 加载文件
+	 * @param res
+	 * @param filePath
+	 * @param contentType
+	 */
+	public void loadFile(HttpServletResponse res,String filePath,String contentType){
+		ServletOutputStream out = null;
+		FileInputStream ips = null;
+		try {
+			// 将文件的流返回前台
+			res.setContentType(contentType);
+			// 读取文件流
+			int len = 0;
+			byte[] buffer = new byte[1024 * 10];
+			out = res.getOutputStream();
+			String filePath2 = Encypter.getValueByKey(BASE_UPLOAD_PATH) + "/" +filePath;
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "File path is "+filePath2, LOGLEVEL_INFO, FileService.class);
+			ips = new FileInputStream(new File(filePath2));
+			while ((len = ips.read(buffer)) != -1) {
+				out.write(buffer, 0, len);
+			}
+			out.flush();
+		} catch (Exception e) {
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "load file exception,"+e.getMessage(), LOGLEVEL_ERROR, FileService.class);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (out != null)
+					out.close();
+				if (ips != null)
+					ips.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}

@@ -1,0 +1,813 @@
+package com.cwa.client.web;
+
+import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dao.AdvertiseOrderDao;
+import com.cwa.client.dao.AdvertiserDao;
+import com.cwa.client.dao.BuyInformationDao;
+import com.cwa.client.dao.CustomerDao;
+import com.cwa.client.dto.AgentDto;
+import com.cwa.client.dto.BranchDto;
+import com.cwa.client.dto.OrderDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.dto.SalesmanDto;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.model.Tb_Customer;
+import com.cwa.client.model.Tb_Order;
+import com.cwa.client.model.Tb_Partner;
+import com.cwa.client.model.Tb_buy_information;
+import com.cwa.client.redis.RegPhoneRandomNumDto;
+import com.cwa.client.redis.UserRedis;
+import com.cwa.client.service.AdvertiserService;
+import com.cwa.client.service.AgentService;
+import com.cwa.client.service.PartnerService;
+import com.cwa.client.service.SalesmanService;
+import com.cwa.client.service.ShoppCartService;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.Encypter;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.RespCodeEnum;
+import com.cwa.client.utils.Tools;
+import com.cwa.client.utils.UniqId;
+
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/*/user/")
+public class UserController extends BaseController<GobalRespParameter> implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private UserRedis userRedis;
+	
+	@Resource// 普通用户service层
+	private UserService userService;
+	
+	@Resource//代理service层
+	private AgentService agentService;
+	
+	@Resource//合伙人service层
+	private PartnerService partnerService;
+	
+	@Resource//销售员service层
+	private SalesmanService salesmanService;
+	
+	@Resource// 广告商service层
+	private AdvertiserService advertiserService;
+	
+	@Resource// 广告商数据层
+	private AdvertiserDao advertiserDao;
+	
+	@Resource// 普通用户数据层
+	private CustomerDao customerDao;
+	
+	@Resource// 广告求购信息
+	private BuyInformationDao buyInformationDao;
+	
+	@Resource// 购物车
+	private ShoppCartService shoppCartService;
+	
+	@Resource
+	private AdvertiseOrderDao advertiseOrderDao;
+	
+	/**
+	 * 加载用户信息
+	 * @throws Exception
+	 */
+	@RequestMapping("/loadUser.do")
+	public void loadUserMsg(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();
+		// 判断用户是否登录
+		HttpSession session = req.getSession();
+		Object sessionObj = session.getAttribute(SESSION_USER);
+		if(session.getAttribute(SESSION_USER_TYPE)==null||sessionObj==null){
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		String userType = session.getAttribute(SESSION_USER_TYPE).toString();
+		Field accountIdField = sessionObj.getClass().getDeclaredField("account_id");
+		accountIdField.setAccessible(true);
+		String accountId = accountIdField.get(sessionObj).toString();
+		Object userObj = userService.queryUserObjByAccountIdAndUserType(accountId, USERTYPE_CUSTOMER);
+		
+		Field shoppCount = userObj.getClass().getDeclaredField("shoppCount");//购物车数量
+		shoppCount.setAccessible(true);
+		shoppCount.set(userObj, shoppCartService.findShopCartCountByAccountId(accountId));
+		
+		Field mobileField = userObj.getClass().getDeclaredField("mobile");
+		mobileField.setAccessible(true);
+		Field fullMbField = userObj.getClass().getDeclaredField("fullMb");
+		fullMbField.setAccessible(true);
+		fullMbField.set(userObj, mobileField.get(userObj).toString());
+		
+		mobileField.set(userObj, mobileField.get(userObj).toString().substring(mobileField.get(userObj).toString().length()-FOUR));
+		
+		// 返回用户信息
+		ruturnMessageDto.setMsg(userType);
+		ruturnMessageDto.setData(userObj);
+		this.writeJSON(res, ruturnMessageDto);
+	}
+	
+	/**
+	 * 登录
+	 * @throws Exception
+	 */
+	@RequestMapping("/login.do")
+	public void login(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();
+		// 获取请求参数
+		String accountId = ServletRequestUtils.getStringParameter(req, "accountId","").trim();
+		String pwd = ServletRequestUtils.getStringParameter(req, "pwd","").trim();
+		// 返回消息语言包
+		RequestContext reqCt= new RequestContext(req);
+		// 验证登录号是否为空
+		if(accountId.equals("")){
+			String accountIdEmpty = reqCt.getMessage("login.tip.accountIdEmpty");
+			ruturnMessageDto.setMsg(accountIdEmpty);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login accountId is "+accountId, LOGLEVEL_INFO, UserController.class);
+		// 验证密码是否为空
+		if(pwd.equals("")){
+			String passwordEmpty = reqCt.getMessage("login.tip.passwordEmpty");
+			ruturnMessageDto.setMsg(passwordEmpty);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login password is "+Encypter.getEncryptValue(pwd), LOGLEVEL_INFO, UserController.class);
+		// 根据用户登录账号和用户类型查询用户
+		Object userObj = userService.queryUserObjByAccountIdAndUserType(accountId, USERTYPE_CUSTOMER);
+		if(userObj==null){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login accountId not exist.", LOGLEVEL_INFO, UserController.class);
+			// 账号错误
+			String accountIdOrPwdMistake = reqCt.getMessage("login.tip.accountIdOrPwdMistake");
+			ruturnMessageDto.setMsg(accountIdOrPwdMistake);
+			// 返回
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断该用户是否禁用
+		Field userStatusField = userObj.getClass().getDeclaredField("user_status");
+		userStatusField.setAccessible(true);
+		Integer userStatus = Integer.parseInt(userStatusField.get(userObj).toString());
+		if(userStatus==ONE){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login accountId forbidden.", LOGLEVEL_INFO, UserController.class);
+			// 账号被禁用
+			String accountIdForbidden = reqCt.getMessage("login.tip.accountIdForbidden");
+			ruturnMessageDto.setMsg(accountIdForbidden);
+			// 返回
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 解密查询出来的密码
+		Field pwdField = userObj.getClass().getDeclaredField("password");
+		pwdField.setAccessible(true);
+		String queryPwd = Encypter.getDecryptValue(pwdField.get(userObj).toString());
+		// 判断密码是否一致
+		if(pwd.equals(queryPwd)){// 密码正确
+			// ID field
+			Field idField = userObj.getClass().getDeclaredField("id");
+			idField.setAccessible(true);
+			// 记录session
+			req.getSession().setAttribute(SESSION_USER, userObj);
+			// 判断该用户是否激活为店主
+			String userTypeName = null;
+			if(userService.queryUserObjByAccountIdAndUserType(accountId, USERTYPE_CUSTOMER_ADVERTISER)==null){
+				// 如果没有激活则用户类型为广告主
+				req.getSession().setAttribute(SESSION_USER_TYPE, USERTYPE_CUSTOMER);
+				userTypeName = "customer";
+			}else{
+				// 如果激活则用户类型为店主+广告主
+				req.getSession().setAttribute(SESSION_USER_TYPE, USERTYPE_CUSTOMER_ADVERTISER);
+				userTypeName = "customer && advertiser";
+			}
+			// user name
+			String userName = accountId+"("+"id="+idField.get(userObj)+",type="+userTypeName+")";
+			req.getSession().setAttribute(SESSION_USER_NAME, userName);
+			req.getSession().setAttribute(LOGINTYPE,Tools.checkLoginType(req, req.getParameter("loginType")));
+			// 返回
+			ruturnMessageDto.setSuccess(true);
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" login success.", LOGLEVEL_INFO, UserController.class);
+			this.writeJSON(res, ruturnMessageDto);
+		}else{
+			// 密码错误
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Password mistake.", LOGLEVEL_INFO, UserController.class);
+			String accountIdOrPwdMistake = reqCt.getMessage("login.tip.accountIdOrPwdMistake");
+			ruturnMessageDto.setMsg(accountIdOrPwdMistake);
+		}
+		// 返回
+		this.writeJSON(res, ruturnMessageDto);
+	}
+	
+	/**
+	 * 退出登录
+	 * @throws Exception
+	 */
+	@RequestMapping("/exit.do")
+	public void exit(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		GobalRespParameter parameter=new GobalRespParameter();
+		Object objUserName = req.getSession().getAttribute(SESSION_USER_NAME);
+		if(objUserName==null){
+			parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+			writeJSON(res, parameter);
+			parameter=null;
+			return;
+		}
+		String userName = objUserName.toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" exit .", LOGLEVEL_INFO, UserController.class);
+		// 清除session
+		req.getSession().invalidate();
+		parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	/**
+	 * 获取手机验证码(忘记密码时调用的方法)
+	 * @throws Exception
+	 */
+	@RequestMapping("/getMobileVerification.do")
+	public void getMobileVerificationForForget (HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();
+		// 获取手机号码
+		String mobile = ServletRequestUtils.getStringParameter(req, "mobile","").trim();
+		// 返回消息
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		// 验证手机号是否为空
+		if(mobile.equals("")){
+			String mobileEmpty = reqCt.getMessage("forgetPwd.tip.mobileEmpty");
+			ruturnMessageDto.setMsg(mobileEmpty);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 验证手机号是否合法
+		if(!Pattern.matches(REG_POSITIVE_MOBILE, mobile)){
+			String mobileWrong = reqCt.getMessage("forgetPwd.tip.mobileWrong");
+			ruturnMessageDto.setMsg(mobileWrong);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" query data.", LOGLEVEL_INFO, UserController.class);
+		// 根据用户手机号和角色类型查询改用户是否存在
+		Object obj = userService.getUser(mobile, USERTYPE_CUSTOMER);
+		// 手机号不存在
+		if(obj==null){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" is not exist.", LOGLEVEL_INFO, UserController.class);
+			String mobileNotExist = reqCt.getMessage("forgetPwd.tip.mobileNotExist");
+			ruturnMessageDto.setMsg(mobileNotExist);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断该手机是否发送过验证码
+		String redisKey = FORGET_PWD+mobile;
+		Object phoneVerificationObj = userRedis.getObj(redisKey);
+		if(
+		   // 未发送验证码
+		   phoneVerificationObj==null
+				||
+		   // 已经过期
+		   (System.currentTimeMillis()-((RegPhoneRandomNumDto)phoneVerificationObj).getTimeStamp())/1000>VERIFICATION_VALID_TIME
+			){
+			RegPhoneRandomNumDto regdto=new RegPhoneRandomNumDto();
+			regdto.setVaildCode(UniqId.getRandomPwd(6));//生成验证码
+			regdto.setMovePhone(mobile);
+			regdto.setTimeStamp(new Date().getTime());
+			if(sendMessage(ZERO, regdto)){
+				//把验证码对象放入redis
+				userRedis.set(redisKey, regdto,VERIFICATION_REDIS_TIME);
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" get verification "+regdto.getVaildCode()+".", LOGLEVEL_INFO, UserController.class);
+				// 将验证码对象返回
+				String verificationSendSuccess = reqCt.getMessage("forgetPwd.tip.verificationSendSuccess");
+				ruturnMessageDto.setMsg(RespCodeEnum.SUCCESS.getCode());
+				ruturnMessageDto.setData(verificationSendSuccess+'-'+VERIFICATION_VALID_TIME);
+				this.writeJSON(res, ruturnMessageDto);
+				return;
+			}else{
+				ruturnMessageDto.setMsg(RespCodeEnum.register_mobile_invalidcode.getCode());
+				ruturnMessageDto.setData(reqCt.getMessage("register.text.SendSMSFail"));
+				this.writeJSON(res, ruturnMessageDto);
+				return;
+			}
+			
+		}
+		// 验证码未过期
+		String verificationValid = reqCt.getMessage("forgetPwd.tip.verificationValid");
+		RegPhoneRandomNumDto regdto = (RegPhoneRandomNumDto)phoneVerificationObj;
+		Long time = VERIFICATION_VALID_TIME - (System.currentTimeMillis()-regdto.getTimeStamp())/1000;
+		ruturnMessageDto.setMsg(RespCodeEnum.update_password_verificationValid.getCode());
+		ruturnMessageDto.setData(verificationValid+'-'+time);
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" repetition get verification,need wait "+time+" s.", LOGLEVEL_INFO, UserController.class);
+		this.writeJSON(res, ruturnMessageDto);
+		return;
+	}
+	
+	/**
+	 * 查询最新订单
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/queryNewestOrder.do")
+	public void queryNewestOrder(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 获取分页参数
+		String pageNo = ServletRequestUtils.getStringParameter(req, "pageNo","");
+		String pageSize = ServletRequestUtils.getStringParameter(req, "pageSize","");
+		Integer pageNoI = 0;
+		try {
+			pageNoI = Integer.parseInt(pageNo);
+		} catch (Exception e) {
+			pageNoI = 0;
+		}
+		Integer pageSizeI = 0;
+		try {
+			pageSizeI = Integer.parseInt(pageSize);
+		} catch (Exception e) {
+			pageSizeI = 0;
+		}
+		OrderDto orderDto = new OrderDto();
+		if(pageNoI>0&&pageSizeI>0){
+			orderDto.setPageNo(pageNoI);
+			orderDto.setPageSize(pageSizeI);
+		}
+		List<Tb_Order> list = advertiseOrderDao.queryAllOrder(orderDto);
+		// 隐藏accountId中间四位
+		for(Tb_Order tbOrder : list){
+			tbOrder.setAccount_id(tbOrder.getAccount_id().substring(ZERO,THREE)+"****"+tbOrder.getAccount_id().substring(SEVEN));
+		}
+		// 返回数据
+		this.writeJSON(res, list);
+	}
+	
+	/**
+	 * 修改密码(忘记密码时调用的方法)
+	 */
+	@RequestMapping("/forgetPwdToUpdate.do")
+	public void forgetPwdToUpdate(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();
+		// 获取手机号码
+		String mobile = ServletRequestUtils.getStringParameter(req, "mobile","").trim();
+		// 获取验证码
+		String verification = ServletRequestUtils.getStringParameter(req, "verification","").trim();
+		// 获取新密码
+		String pwd = ServletRequestUtils.getStringParameter(req, "pwd","").trim();
+		// 返回消息
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		// 验证手机号是否为空
+		if(mobile.equals("")){
+			String mobileEmpty = reqCt.getMessage("forgetPwd.tip.mobileEmpty");
+			ruturnMessageDto.setMsg(mobileEmpty);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 验证手机号是否合法
+		if(!Pattern.matches(REG_POSITIVE_MOBILE, mobile)){
+			String mobileWrong = reqCt.getMessage("forgetPwd.tip.mobileWrong");
+			ruturnMessageDto.setMsg(mobileWrong);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断验证码是否为空
+		if(verification.equals("")){
+			ruturnMessageDto.setMsg(reqCt.getMessage("forgetPwd.tip.verificationEmpty"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断新密码是否为空
+		if(pwd.equals("")){
+			ruturnMessageDto.setMsg(reqCt.getMessage("forgetPwd.tip.pwdEmpty"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile"+mobile+" update password by verification.", LOGLEVEL_INFO, UserController.class);
+		// 根据用户手机号和角色类型查询改用户是否存在
+		Object obj = userService.getUser(mobile, USERTYPE_CUSTOMER);
+		// 手机号不存在
+		if(obj==null){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" is not exist.", LOGLEVEL_INFO, UserController.class);
+			String mobileNotExist = reqCt.getMessage("forgetPwd.tip.mobileNotExist");
+			ruturnMessageDto.setMsg(mobileNotExist);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断验证码是否正确
+		String redisKey = FORGET_PWD+mobile;
+		Object phoneVerificationObj = userRedis.getObj(redisKey);
+		if(
+		   // 未发送验证码
+		   phoneVerificationObj==null
+			  ||
+		   // 验证码不一致
+		   !verification.equals(((RegPhoneRandomNumDto)phoneVerificationObj).getVaildCode())
+		){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" input verification("+verification+") in vain.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("forgetPwd.tip.verificationMistake"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		if( // 已经过期
+			(System.currentTimeMillis()-((RegPhoneRandomNumDto)phoneVerificationObj).getTimeStamp())/1000>VERIFICATION_VALID_TIME
+			){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" input verification("+verification+") in vain.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("register.text.invalidcode"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 获取accountId
+		Field accountIdField = obj.getClass().getDeclaredField("account_id");
+		accountIdField.setAccessible(true);
+		// 修改密码(用户表和广告表同时修改)
+		boolean status_C = userService.updatePwdByAccountIdAndUserType(accountIdField.get(obj).toString(), pwd, USERTYPE_CUSTOMER);
+		boolean status_C_AD = userService.updatePwdByAccountIdAndUserType(accountIdField.get(obj).toString(), pwd, USERTYPE_CUSTOMER_ADVERTISER);
+		if(status_C&&status_C_AD){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" update password success.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(RespCodeEnum.SUCCESS.getCode());
+			ruturnMessageDto.setData(reqCt.getMessage("forgetPwd.tip.updatePwdSuccess"));
+			this.writeJSON(res, ruturnMessageDto);
+		}else{
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" update password fail.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("forgetPwd.tip.updatePwdFail"));
+			this.writeJSON(res, ruturnMessageDto);
+		}
+	}
+	
+	
+	
+	/**
+	 * 发布求购信息
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/issueMsg.do")
+	public void issueMsg(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 语言包
+		RequestContext reqCt= new RequestContext(req);
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();	
+		// 获取页面参数
+		String company = ServletRequestUtils.getStringParameter(req,"company","").trim();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "company:"+company, LOGLEVEL_INFO, UserController.class);
+		if(company==null||company.equals("")){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "company is empty.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.company.empty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断长度是否过长
+		if(company.length()>40){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "company too long.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.company.tooLong"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		String budget = ServletRequestUtils.getStringParameter(req,"budget","").trim();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "budget:"+budget, LOGLEVEL_INFO, UserController.class);
+		if(budget==null||budget.equals("")){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "budget is empty", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.budget.empty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断长度是否过长
+		if(budget.length()>10){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "budget too long.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.budget.tooLong"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		String contacts = ServletRequestUtils.getStringParameter(req,"contacts","").trim();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "contacts:"+contacts, LOGLEVEL_INFO, UserController.class);
+		if(contacts==null||contacts.equals("")){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "contacts is empty", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.contacts.empty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断长度是否过长
+		if(contacts.length()>20){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "contacts too long.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.contacts.tooLong"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		String contactWay = ServletRequestUtils.getStringParameter(req,"contactWay","").trim();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "contactWay:"+contactWay, LOGLEVEL_INFO, UserController.class);
+		if(contactWay==null||contactWay.equals("")){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "contactWay is empty", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.contactWay.empty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断长度是否过长
+		if(contactWay.length()<8||contactWay.length()>20){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "contactWay too long or short.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.contactWay.tooLong"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		String describe = ServletRequestUtils.getStringParameter(req,"describe","").trim();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "describe:"+describe, LOGLEVEL_INFO, UserController.class);
+		if(describe==null||describe.equals("")){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "describe is empty", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.describe.empty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断长度是否过长
+		if(describe.length()>40){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "describe too long.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.describe.tooLong"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 插入数据库
+		Tb_buy_information entity = new Tb_buy_information();
+		entity.setCompany_name(company);
+		entity.setBudget(budget);
+		entity.setContacts(contacts);
+		entity.setContact_information(contactWay);
+		entity.setInformation_desc(describe);
+		entity.setOpen_date(new Timestamp(new Date().getTime()));
+		buyInformationDao.insert(entity);
+		// 返回
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "issue success.", LOGLEVEL_INFO, UserController.class);
+		ruturnMessageDto.setMsg(reqCt.getMessage("askToBuy.tip.success"));
+		ruturnMessageDto.setSuccess(true);
+		writeJSON(res, ruturnMessageDto);
+	}
+	
+	/**
+	 * 注册
+	 * @throws Exception
+	 * 四种情况(1.无参数、2.referrals_id、3.agent_id、4.salesman_id)
+	 */
+	@RequestMapping("/registerUser.do")
+	public void registerUser(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		GobalRespParameter parameter=new GobalRespParameter();
+		//获取请求参数并判断是否为空
+		Map<String,String[]> map = getAllParameter(req,"registerUser.do","mobile","validCode","passWord","passWord1","registerType");
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				String mobile=map.get("mobile")[0];//手机号
+				if(util.isMobileNum(mobile)&&!"2".equals(map.get("registerType")[0])){
+					Object userObj = userService.queryUserObjByAccountIdAndMobile(mobile);//查询手机是否已注册
+					if(userObj==null){
+						Object obj = userRedis.getObj(mobile);//redies 获取手机验证码
+						RegPhoneRandomNumDto randomDto=null;
+						if(obj!=null){
+							randomDto=(RegPhoneRandomNumDto)obj;
+							writeLog("", randomDto.toString(), LOGLEVEL_INFO, UserController.class);
+						}
+						if(randomDto==null||!map.get("validCode")[0].equals(randomDto.getVaildCode())){//判断验证码是是否正确
+							parameter.setRespCode(RespCodeEnum.register_mobile_invaliderror.getCode());
+							parameter.setRespMessge(reqCt.getMessage("register.text.invaliderror"));
+							writeJSON(res, parameter);
+							parameter=null;
+							return;
+						}
+						if(System.currentTimeMillis()-randomDto.getTimeStamp()>(2*60*1000)){//判断验证码是否超过2分钟失效，如失效需要重新获取
+							parameter.setRespCode(RespCodeEnum.register_mobile_invalidcode.getCode());
+							parameter.setRespMessge(reqCt.getMessage("register.text.invalidcode"));
+							writeJSON(res, parameter);
+							parameter=null;
+							return;
+						}
+						if(!map.get("passWord")[0].equals(map.get("passWord1")[0])){//判断两次密码是否一致
+							parameter.setRespCode(RespCodeEnum.register_passWord_invaliderror.getCode());
+							parameter.setRespMessge(reqCt.getMessage("register.text.passWordError"));
+							writeJSON(res, parameter);
+							parameter=null;
+							return;
+						}
+						if("2".equals(map.get("registerType")[0])){//合伙人注册
+							int count = partnerService.findAdminByAccountId(mobile);
+							if(count>0){//判断手机号是否已注册
+								parameter.setRespCode(RespCodeEnum.register_mobile_existed.getCode());
+								parameter.setRespMessge(reqCt.getMessage("register.text.existed"));
+								writeJSON(res, parameter);
+								parameter=null;
+								return;
+							}
+							String inviteCode=getParameter(req,"inviteCode");//邀请码
+							writeLog("", "find admin by mobile listSize:"+count+"====inviteCode:"+inviteCode, LOGLEVEL_INFO, UserController.class);
+							if(inviteCode!=null){
+								Tb_Partner entity=new Tb_Partner();
+								entity.setAccount_id(mobile);
+								entity.setPartner_name("");
+								entity.setCertificate_type(1);
+								entity.setId_number("");
+								entity.setEmail("");
+								entity.setUser_status(2);
+								entity.setMobile(mobile);
+								entity.setAudit_status(1);
+								entity.setCommit_id("");
+								entity.setCommit_time(new Timestamp(System.currentTimeMillis()));
+								entity.setAudit_id("");
+								entity.setAudit_datetime(new Timestamp(System.currentTimeMillis()));
+								entity.setSalesman_id("");//需要默认的
+								entity.setPartner_class(1);
+								entity.setP_id(0);
+								entity.setPassword(map.get("passWord")[0]);
+								if(inviteCode.length()==5){//合伙人链接注册
+									Tb_Partner pEntity = partnerService.findById(Integer.parseInt(inviteCode));
+									if(pEntity!=null){
+										entity.setPartner_class(2);
+										entity.setP_id(pEntity.getId());
+										entity.setSalesman_id(pEntity.getSalesman_id());
+									}
+								}else if(inviteCode.length()==8){//推荐人链接注册
+									SalesmanDto sEntity = salesmanService.findBySalesmanid(inviteCode);
+									if(sEntity!=null){
+										entity.setSalesman_id(sEntity.getSalesman_id());
+									}
+								}
+								partnerService.registerPartner(entity);
+							}
+						}else if("1".equals(map.get("registerType")[0])){
+							saveCustomerInfo(map,req);//保存用户表信息
+						}
+						parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+					}else{
+						parameter.setRespCode(RespCodeEnum.register_mobile_existed.getCode());
+						parameter.setRespMessge(reqCt.getMessage("register.text.existed"));
+					}
+				}else{//手机格式错误
+					parameter.setRespCode(RespCodeEnum.register_mobile_formaterror.getCode());
+					parameter.setRespMessge(reqCt.getMessage("register.text.formaterror"));
+				}
+			}else{//请求参数无效
+				parameter.setRespCode(RespCodeEnum.global_parameter_isnull.getCode());
+				parameter.setRespMessge(reqCt.getMessage("common.exception.parameter"));
+			}
+		} catch (Exception e) {
+			parameter.setRespCode(RespCodeEnum.global_unknow_expiration.getCode());
+			parameter.setRespMessge(reqCt.getMessage("common.exception.unknow"));
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	//用户注册数据入库
+	public void saveCustomerInfo(Map<String,String[]> map,HttpServletRequest req)throws Exception{
+		String mobile=map.get("mobile")[0];
+		Tb_Customer entity=new Tb_Customer();
+		entity.setAccount_id(mobile);
+		entity.setCertificate_type(1);
+		entity.setMobile(mobile);
+		entity.setUser_status(TWO);
+		entity.setOpen_date(new Timestamp(System.currentTimeMillis()));
+		entity.setPassword(Encypter.getEncryptValue(map.get("passWord")[0]));
+		
+		entity.setAgent_id("");
+		entity.setReferrals_id("");
+		entity.setCompany_id(DEFALT_COMPANY);
+		entity.setReferrals_type(1);
+		String inviteCode=getParameter(req,"inviteCode");//邀请码
+		writeLog("", "reigster domestic consumer start!  inviteCode:"+inviteCode, LOGLEVEL_INFO, UserController.class);
+		if(inviteCode!=null){
+			if(inviteCode.length()==8){//推荐人链接注册
+				Tb_Customer cEntity = userService.findById(inviteCode);
+				if(cEntity!=null){
+					entity.setReferrals_id(cEntity.getId()+"");
+					entity.setCompany_id(cEntity.getCompany_id());
+					entity.setReferrals_type(2);
+				}
+			}else if(inviteCode.length()==7){//代理链接注册
+				AgentDto aEntity = agentService.findAgentByAgentId(inviteCode);
+				if(aEntity!=null){
+					entity.setAgent_id(aEntity.getAGENT_ID());
+					entity.setReferrals_id(aEntity.getAGENT_ID());
+					entity.setCompany_id(aEntity.getCOMPANY_ID());
+					entity.setReferrals_type(3);
+				}
+			}else if(inviteCode.length()<=4){//运营中心链接注册
+				BranchDto sEntity = salesmanService.findBranchByCmpId(inviteCode);
+				if(sEntity!=null){
+					entity.setCompany_id(sEntity.getCompany_id());
+					entity.setReferrals_id(sEntity.getCompany_id());
+					entity.setReferrals_type(4);
+				}
+			}else if(inviteCode.length()==6){//广告商链接注册
+				Tb_Advertiser aEntity = advertiserService.findById(Integer.parseInt(inviteCode));
+				if(aEntity!=null){
+					entity.setReferrals_id(aEntity.getId()+"");
+					entity.setCompany_id(aEntity.getCompany_id());
+					entity.setReferrals_type(5);
+				}
+			}else if(inviteCode.length()==5){
+				Tb_Partner pEntity = partnerService.findById(Integer.parseInt(inviteCode));
+				if(pEntity!=null){
+					entity.setReferrals_id(pEntity.getId()+"");
+					entity.setReferrals_type(6);
+				}
+			}
+		}
+		//没有用到的属性不能为空  给默认值
+		entity.setEmail("");
+		entity.setId_number("");
+		entity.setOpenid("");
+		entity.setUser_name("");
+		writeLog("", "reigster domestic consumer end! entity:"+JSONObject.fromObject(entity), LOGLEVEL_INFO, UserController.class);
+		userService.registerAndInit(entity);
+	}
+	/**
+	 * 短信验证码
+	 * @throws Exception
+	 */
+	@RequestMapping("/phoneVildate.do")
+	public void phoneVildate(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		GobalRespParameter parameter=new GobalRespParameter();
+		//获取请求参数并判断是否为空
+		Map<String,String[]> map = getAllParameter(req,"phoneVildate.do","mobile");
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				String mobile = map.get("mobile")[0];//手机号
+				if(util.isMobileNum(mobile)){
+					Object userObj = userService.queryUserObjByAccountIdAndMobile(mobile);//查询手机是否已注册
+					if(userObj==null){
+						RegPhoneRandomNumDto regdto=new RegPhoneRandomNumDto();
+						
+						if(userRedis.getObj(mobile)!=null){
+							regdto=(RegPhoneRandomNumDto)userRedis.getObj(mobile);//redis获取验证码对象
+							Long currTime=System.currentTimeMillis();
+							if(regdto!=null&&(currTime-regdto.getTimeStamp())/1000<=VERIFICATION_VALID_TIME){
+								parameter.setRespCode(RespCodeEnum.register_mobile_invalidcode.getCode());
+								parameter.setRespMessge(reqCt.getMessage("register.text.invalidTime"));
+								writeJSON(res, parameter);
+								parameter=null;
+								return;
+							}
+						}
+						regdto.setVaildCode(UniqId.getRandomPwd(6));//生成验证码
+						regdto.setTimeStamp(System.currentTimeMillis());
+						regdto.setMovePhone(mobile);
+						writeLog("", "++++mobile:"+mobile+"---viladateCode:"+regdto.getVaildCode(), LOGLEVEL_INFO, UserController.class);
+						
+						if(sendMessage(ZERO, regdto)){
+							userRedis.set(mobile, regdto,VERIFICATION_REDIS_TIME);
+							//parameter.setUserName(regdto.getVaildCode());
+							parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+							//parameter.setRespMessge(regdto.getVaildCode());
+						}else{
+							parameter.setRespCode(RespCodeEnum.register_mobile_invalidcode.getCode());
+							parameter.setRespMessge(reqCt.getMessage("register.text.SendSMSFail"));
+						}
+						
+						
+					}else{//手机号已注册
+						parameter.setRespCode(RespCodeEnum.register_mobile_existed.getCode());
+						parameter.setRespMessge(reqCt.getMessage("register.text.existed"));
+					}
+				}else{//手机号格式错误
+					parameter.setRespCode(RespCodeEnum.register_mobile_formaterror.getCode());
+					parameter.setRespMessge(reqCt.getMessage("register.text.formaterror"));
+				}
+			}else{//请求参数无效
+				parameter.setRespCode(RespCodeEnum.global_parameter_isnull.getCode());
+				parameter.setRespMessge(reqCt.getMessage("common.exception.parameter"));
+			}
+		} catch (Exception e) {
+			parameter.setRespCode(RespCodeEnum.global_unknow_expiration.getCode());
+			parameter.setRespMessge(reqCt.getMessage("common.exception.unknow"));
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	/**
+	 * 进入注册页面
+	 * @throws Exception
+	 */
+	@RequestMapping("/reg.do")
+	public String reg(HttpServletRequest req, HttpServletResponse res,Model model) throws Exception{
+		return "register";
+	}
+	
+}

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>翔云媒体</title>
+</head>
+
+<body>
+  <div style="width:100%;height:100%;text-align:center;" id="img">
+    <img src="${imgUrl}"  id="imgUpl"/>
+  </div>
+  <end />
+</body>
+</html>

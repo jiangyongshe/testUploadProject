@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+<script>
+$(document).ready(function(){
+  $(".dian-close").click(function(){
+  $(".dian-xq").hide(1000);
+  });
+  
+  $('.dian-bt').on("click", function () {
+		$(this).next().slideToggle(100);
+		$('.dian-xq').not($(this).next()).slideUp('fast');
+	});
+});
+
+//点击关闭层
+  function turnoff(obj){
+   document.getElementById(obj).style.display="none";
+    }
+//点击显示层
+  function elementDisplay(objid){
+   var obj=document.getElementById(objid);{
+    obj.style.display='inline-block';
+    }
+   }
+</script>
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <ul class="jindu font16">
+        <li class="active">购买广告时段<span class="pos-a">1</span></li>
+        <li class="">上传视频<span class="pos-a">2</span></li>
+        <li class="">审核通过<span class="pos-a">3</span></li>
+      </ul>
+      
+      <h2 class="clear font18 pad-t40 pad-b10 bor-b">选择广告投放区域</h2>
+      
+      <div class="ggtf-city pad-t20">
+        <div class="pos-r font14 ggtf-city-list">
+          <span class="pos-a ggtf-city-bt">省份</span>
+          <select name="" class="font14 xlb03">
+            <option>全部</option>
+            <option>广东省</option>
+          </select>
+        </div>
+        
+        <div class="pos-r font14 ggtf-city-list">
+          <span class="pos-a ggtf-city-bt">城市</span>
+          <select name="" class="font14 xlb03">
+            <option>全部</option>
+            <option>深圳市</option>
+          </select>
+        </div>
+        
+        <div class="pos-r font14 ggtf-city-list">
+          <span class="pos-a ggtf-city-bt">区域</span>
+          <select name="" class="font14 xlb03">
+            <option>全部</option>
+            <option>罗湖区</option>
+          </select>
+        </div>
+        
+        <div class="pos-r font14 ggtf-city-list">
+          <span class="pos-a ggtf-city-bt">商圈</span>
+          <select name="" class="font14 xlb03">
+            <option>全部</option>
+            <option>金光华广场</option>
+          </select>
+        </div>
+      </div>
+      
+      <h2 class="clear font18 pad-t40 pad-b10 bor-b">选择广告投放时段</h2>
+      
+      <div class="rmgg-table rmgg-table2 font13">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th>序号</th>
+    <th>设备编号</th>
+    <th>店铺详情</th>
+    <th>空闲时段</th>
+    <th>广告时长</th>
+    <th>播放次数</th>
+    <th>价格（元/天）</th>
+    <th>播放周期</th>
+    <th>费用（元）</th>
+    <th>操作</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>GGKZQ0001</td>
+    <td>
+      <div class="pos-r dian">
+        <span class="red dian-bt">天虹商场</span>
+        
+        <div class="pos-a dian-xq">
+          <p class="pos-a dian-close text-c"><i class="fa fa-close" aria-hidden="true"></i></p>
+          <p><b>店铺名称：</b>天虹商场</p>
+          <p><b>详细地址：</b>广东省深圳市罗湖区金光华广场</p>
+          <p class="dian-xq-img">
+            <img src="images/jgh.jpg" />
+            <img src="images/jgh.jpg" />
+            <img src="images/jgh.jpg" />
+            <img src="images/jgh.jpg" />
+            <img src="images/jgh.jpg" />
+          </p>
+        </div>
+      </div>
+    </td>
+    <td>19:00:00-20:00:00</td>
+    <td>15秒</td>
+    <td>12次</td>
+    <td>30</td>
+    <td>
+     <select name="" class="xlb02">
+      <option>一个月</option>
+      <option>二个月</option>
+     </select>
+    </td>
+    <td>900</td>
+    <td><label class="checkbox"><input type="checkbox" name="checkbox" id="" checked><i>✓</i></label></td>
+  </tr>
+</table>
+      </div>
+      
+      <div class="fenye font14 text-c">
+        <a href="#" class="btn-fy"><i class="fa fa-chevron-left"></i></a>
+        <a href="#" class="btn-fy active">1</a>
+        <a href="#" class="btn-fy">2</a>
+        <a href="#" class="btn-fy">3</a>
+        <a href="#" class="btn-fy">...</a>
+        <a href="#" class="btn-fy">9</a>
+        <a href="#" class="btn-fy">10</a>
+        <a href="#" class="btn-fy"><i class="fa fa-chevron-right"></i></a>
+      </div>
+      
+      <h2 class="clear font18 pad-t40 pad-b10 bor-b">选择支付方式</h2>
+      
+      <ul class="zf-xz clear">
+        <li class="active"><a href="#"><img src="images/zf01.jpg" /></a></li>
+        <li><a href="#"><img src="images/zf02.jpg" /></a></li>
+        <li><a href="#"><img src="images/zf03.jpg" /></a></li>
+      </ul>
+      
+      <div class="text-r pad-t30 clear ggtf-gm">
+        <span class="dis-in font14">费用总计：<span class="red font18">900元</span></span>
+        
+        <input name="" type="button" value="加入购物车" class="btn btn01 bg-yellow font16 mar-l15" onclick="elementDisplay('gwcdiv')" />
+        
+        <input name="" type="button" value="提交" class="btn btn01 bg-red font16 mar-l15" onclick="location='tfgg01.html'" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+
+<!--加入购物车提示宽-->
+<div class="shade" id="gwcdiv" style="display: ;">
+  <div class="tanchu tanchu2">
+    <div class="tanchu-bt"><span>加入购物车</span><a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('gwcdiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-nr text-c">
+      <p class="pad-t10"><i class="fa fa-smile-o fa-3x green" aria-hidden="true"></i></p>
+      <p class="pad-t10">加入成功，您可要通过点击 <a href="gwc.html" class="red">我的购物车</a> 完成支付</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

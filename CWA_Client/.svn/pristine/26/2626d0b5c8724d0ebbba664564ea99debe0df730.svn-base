@@ -1,0 +1,217 @@
+package com.cwa.client.dto;
+
+import java.math.BigDecimal;
+
+public class AdvertiseInfoDto extends BaseDto{
+
+	private Integer id;
+	private String shop_name;
+	private String device_id;
+	private BigDecimal ad_price ;
+	private Integer ad_length;
+	private Integer play_number;
+	private String idle_time;
+	private String serial_number;
+
+	private String mailing_address;
+	private Integer userId;
+	
+	//播放周期开始时间
+	private String startDate;
+	//播放周期结束时间
+	private String endDate;
+	private String sumPrice;//小计
+	
+	private String cycleType;//周期类型
+	private String playCycle;//周期间隔
+	private BigDecimal disCount;//折扣
+	
+	private Integer order_type;//订单类型
+	
+	private String isInterCut;//是否插播
+	
+	
+	
+	
+	public String getIsInterCut() {
+		return isInterCut;
+	}
+	public void setIsInterCut(String isInterCut) {
+		this.isInterCut = isInterCut;
+	}
+	public Integer getOrder_type() {
+		return order_type;
+	}
+	public void setOrder_type(Integer order_type) {
+		this.order_type = order_type;
+	}
+	
+	
+	public Integer getUserId() {
+		return userId;
+	}
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+	public BigDecimal getDisCount() {
+		return disCount;
+	}
+	public void setDisCount(BigDecimal disCount) {
+		this.disCount = disCount;
+	}
+	//时间间隔
+	private Integer days;
+	private Integer order_status;
+	private Integer vedio_id;
+	
+	private String adName;
+	
+	private String shoppId;
+	
+	
+	
+	
+	public String getCycleType() {
+		return cycleType;
+	}
+	public void setCycleType(String cycleType) {
+		this.cycleType = cycleType;
+	}
+	public String getPlayCycle() {
+		return playCycle;
+	}
+	public void setPlayCycle(String playCycle) {
+		this.playCycle = playCycle;
+	}
+	public String getShoppId() {
+		return shoppId;
+	}
+	public void setShoppId(String shoppId) {
+		this.shoppId = shoppId;
+	}
+	public String getAdName() {
+		return adName;
+	}
+	public void setAdName(String adName) {
+		this.adName = adName;
+	}
+	private String pics;
+	
+	
+	
+	public String getPics() {
+		return pics;
+	}
+	public void setPics(String pics) {
+		this.pics = pics;
+	}
+	public Integer getVedio_id() {
+		return vedio_id;
+	}
+	public void setVedio_id(Integer vedio_id) {
+		this.vedio_id = vedio_id;
+	}
+	public String getSerial_number() {
+		return serial_number;
+	}
+	public void setSerial_number(String serial_number) {
+		this.serial_number = serial_number;
+	}
+	public Integer getDays() {
+		return days;
+	}
+	public void setDays(Integer days) {
+		this.days = days;
+	}
+	public Integer getOrder_status() {
+		return order_status;
+	}
+	public void setOrder_status(Integer order_status) {
+		this.order_status = order_status;
+	}
+	//用户id
+	private String account_id;
+	//用户ip
+	private String account_IP;
+	
+
+	public String getAccount_IP() {
+		return account_IP;
+	}
+	public void setAccount_IP(String account_IP) {
+		this.account_IP = account_IP;
+	}
+	public String getAccount_id() {
+		return account_id;
+	}
+	public void setAccount_id(String account_id) {
+		this.account_id = account_id;
+	}
+	public String getStartDate() {
+		return startDate;
+	}
+	public void setStartDate(String startDate) {
+		this.startDate = startDate;
+	}
+	public String getEndDate() {
+		return endDate;
+	}
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}
+	public String getSumPrice() {
+		return sumPrice;
+	}
+	public void setSumPrice(String sumPrice) {
+		this.sumPrice = sumPrice;
+	}
+	public String getMailing_address() {
+		return mailing_address;
+	}
+	public void setMailing_address(String mailing_address) {
+		this.mailing_address = mailing_address;
+	}
+	public BigDecimal getAd_price() {
+		return ad_price;
+	}
+	public void setAd_price(BigDecimal ad_price) {
+		this.ad_price = ad_price;
+	}
+	public Integer getAd_length() {
+		return ad_length;
+	}
+	public void setAd_length(Integer ad_length) {
+		this.ad_length = ad_length;
+	}
+	public Integer getPlay_number() {
+		return play_number;
+	}
+	public void setPlay_number(Integer play_number) {
+		this.play_number = play_number;
+	}
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getDevice_id() {
+		return device_id;
+	}
+	public void setDevice_id(String device_id) {
+		this.device_id = device_id;
+	}
+	public String getShop_name() {
+		return shop_name;
+	}
+	public void setShop_name(String shop_name) {
+		this.shop_name = shop_name;
+	}
+	public String getIdle_time() {
+		return idle_time;
+	}
+	public void setIdle_time(String idle_time) {
+		this.idle_time = idle_time;
+	}
+	
+}

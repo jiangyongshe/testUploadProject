@@ -1,0 +1,173 @@
+package com.cwa.client.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
+import com.cwa.client.dto.ClientInOutMoneyDto;
+import com.cwa.client.dto.InOutMoneyParamDto;
+import com.cwa.client.model.Tb_Order_Number;
+import com.cwa.client.model.Tb_advertiser_comm_report;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.model.Tb_customer_comm_report;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+public class ClientInOutMoneyDao extends BaseDao<Tb_client_in_out_money, ClientInOutMoneyDto> implements Constant {
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 查询出金明细
+	 * @param param
+	 * @return
+	 */
+	public List<ClientInOutMoneyDto> queryDetail(InOutMoneyParamDto param){
+		String startTime = param.getStartTime();
+		String endTime = param.getEndTime();
+		Integer pageNo = param.getPageNo();
+		Integer pageSize = param.getPageSize();
+		List<Object> params = new ArrayList<Object>();
+		params.add(param.getAccount_id());
+		if(param.getAccount_type()==FOUR){//代理
+			params.add(FOUR);
+		}else if(param.getAccount_type()==FIVE){//业务员
+			params.add(THREE);
+		}else if(param.getAccount_type()==TWO){//店主
+			params.add(FIVE);
+		}
+		StringBuffer sql = new StringBuffer(
+			    "SELECT A.AMOUNT,A.STATUS,A.OPEN_DATE,(case when A.ACCOUNT_TYPE=5 then 1 when A.ACCOUNT_TYPE=3 then 2 when A.ACCOUNT_TYPE=4 then 3 end) account_type FROM tb_client_in_out_money A "
+			   +"WHERE A.IN_OUT_TYPE='1' AND A.ACCOUNT_ID = ? and A.ACCOUNT_TYPE=? ");
+		// 判断是否根据开始时间查询
+		if(startTime!=null&&!"".equals(startTime)){
+			sql.append("AND DATE_FORMAT(A.OPEN_DATE,'"+MYSQL_DATE_FORMAT_YMD+"')>=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+			params.add(startTime);
+		}
+		// 判断是否根据结束时间查询
+		if(endTime!=null&&!"".equals(endTime)){
+			sql.append("AND DATE_FORMAT(A.OPEN_DATE,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+			params.add(endTime);
+		}
+		//出金类型
+		if(param.getAccount_type()!=null&&!"".equals(param.getAccount_type())){
+			sql.append("AND A.account_type=? ");
+			params.add(param.getAccount_type());
+		}
+		// 排序
+		sql.append("ORDER BY DATE_FORMAT(A.OPEN_DATE,'"+MYSQL_DATE_FORMAT_YCDHMS+"') DESC ");
+		// 判断是否分页
+		if(pageNo!=null&&pageNo!=0&&pageSize!=null&&pageSize!=0){
+			sql.append("LIMIT ?,? ");
+			params.add((pageNo-1)*pageSize);
+			params.add(pageSize);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+params, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		List<ClientInOutMoneyDto> list = null;
+		list = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(ClientInOutMoneyDto.class),params.toArray());
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		return list;
+	}
+	
+	/**
+	 * 查询出金明细数量
+	 * @param param
+	 * @return
+	 */
+	public int queryDetailCount(InOutMoneyParamDto param){
+		String startTime = param.getStartTime();
+		String endTime = param.getEndTime();
+		List<Object> params = new ArrayList<Object>();
+		params.add(param.getAccount_id());
+		StringBuffer sql = new StringBuffer(
+				"SELECT count(*) FROM tb_client_in_out_money A "
+			   +"WHERE (A.ACCOUNT_TYPE=5 or A.ACCOUNT_TYPE=6) AND A.IN_OUT_TYPE='1' AND A.ACCOUNT_ID = ? ");
+		// 判断是否根据开始时间查询
+		if(startTime!=null&&!"".equals(startTime)){
+			sql.append("AND DATE_FORMAT(A.OPEN_DATE,'"+MYSQL_DATE_FORMAT_YMD+"')>=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+			params.add(startTime);
+		}
+		// 判断是否根据结束时间查询
+		if(endTime!=null&&!"".equals(endTime)){
+			sql.append("AND DATE_FORMAT(A.OPEN_DATE,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+			params.add(endTime);
+		}
+		//出金类型
+		if(param.getAccount_type()!=null&&!"".equals(param.getAccount_type())){
+			sql.append("AND A.account_type=? ");
+			params.add(param.getAccount_type());
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+params, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		int count = this.jdbcTemplate.queryForObject(sql.toString(), Integer.class,params.toArray());
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "count:"+count, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		return count;
+	}
+	
+	/**
+	 * 插入数据
+	 */
+	@SuppressWarnings("unchecked")
+	public void insert(Tb_client_in_out_money param){
+		Map<String,Object> map = this.packageInsertSQL(param);
+		String sql = map.get("sql").toString();
+		List<Object> params = (List<Object>)map.get("params");
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+params, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		jdbcTemplate.update(sql,params.toArray());
+	}
+	
+	/**
+	 * 修改数据
+	 * @param whereParam where条件的值
+	 * @param updateParam update的值
+	 */
+	@SuppressWarnings("unchecked")
+	public void updateData(ClientInOutMoneyDto whereParam,Tb_client_in_out_money updateParam){
+		Map<String,Object> updateMap = this.packageUpateSQL(updateParam,"A");
+		whereParam.setOrderWay(null);
+		Map<String,Object> whereMap = this.packageWhereSQL(whereParam,"A");
+		String sql = updateMap.get("sql").toString()+whereMap.get("sql").toString();
+		List<Object> params = new ArrayList<Object>();
+		params.addAll((List<Object>)updateMap.get("params"));
+		params.addAll((List<Object>)whereMap.get("params"));
+		System.out.println("sql:"+sql+";"+"params:"+params);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+params, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		jdbcTemplate.update(sql,params.toArray());
+	}
+	
+	public Tb_customer_comm_report queryInOutInfo(String accountId){
+		String sql="select * from tb_customer_comm_report where SETTLEMENT_DATE=date_format(now(),'%Y-%m-%d') and customer_id=? ";
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+accountId, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		List<Tb_customer_comm_report> list = new ArrayList<>();
+		list = this.jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(Tb_customer_comm_report.class),accountId);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		return list.size()>0?list.get(0):null;
+	}
+	
+	public Tb_advertiser_comm_report queryAdvertiserInOutInfo(String accountId){
+		String sql="select * from tb_advertiser_comm_report where SETTLEMENT_DATE=date_format(now(),'%Y-%m-%d') and advertiser_id=? ";
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+accountId, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		List<Tb_advertiser_comm_report> list = new ArrayList<>();
+		list = this.jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(Tb_advertiser_comm_report.class),accountId);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		return list.size()>0?list.get(0):null;
+	}
+	public Tb_client_in_out_money queryClientInOutInfo(String orderNo){
+		String sql="select * from Tb_client_in_out_money where serial_number=? ";
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+orderNo, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		List<Tb_client_in_out_money> list = new ArrayList<>();
+		list = this.jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(Tb_client_in_out_money.class),orderNo);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		return list.size()>0?list.get(0):null;
+	}
+	
+	public List<Tb_Order_Number> queryOrderReNumber(String orderNo){
+		String sql="select * from tb_order_number where DEPOSIT_NUMBER=? ";
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+orderNo, LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		List<Tb_Order_Number> list = new ArrayList<>();
+		list = this.jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(Tb_Order_Number.class),orderNo);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, ClientInOutMoneyDao.class);
+		return list;
+	}
+}

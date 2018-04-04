@@ -1,0 +1,95 @@
+var html="<script src=\"/js/globalVar.js\"></script>\n";// 全局变量
+ 	html+="<script src=\"/js/common.js\"></script>\n";// 公共方法
+ 	html+="<div class=\"ding\"><div class=\"mar-auto\">\n";
+	html+="<div class=\"fl ding-l\">\n";
+	html+="<p class=\"dis-in\">亲，欢迎来翔云媒体网！</p>\n";
+	html+="<p class=\"dis-in pad-l10\" id=\"loginRegP\" style=\"display:none\"><a href=\"/chinese/forward/login.do\" class=\"red\" >请登录</a><a href=\"/chinese/user/reg.do\" class=\"pad-l8\">免费注册</a></p>\n";
+	html+="<p class=\"dis-in pad-l10\" style=\"display:none\">欢迎你，<a class=\"red\" id=\"userName\"></a> | <a href=\"/chinese/user/exit.do\" id=\"exit\">退出</a></p>\n";
+	html+="</div>\n";
+	html+="<div class=\"fr ding-r\">\n";
+	html+="<a href=\"tfgg.html\"><i class=\"fa fa-ship\" aria-hidden=\"true\"></i> <span>我要买</span></a>\n";
+	html+="<a id=\"changeShopkeeper\" href=\"cwdz.html\" style=\"display:none\"><i class=\"fa fa-hand-o-up\" aria-hidden=\"true\"></i> <span>成为店主</span></a>\n";
+	html+="<div class=\"glzx pos-r\">\n";
+	html+="<i class=\"fa fa-tachometer\" aria-hidden=\"true\"></i> <span>管理中心</span>\n";
+	html+="<div class=\"glzx-menu pos-a\">\n";
+	html+="<a href=\"tjhy.html\"><i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i> <span>推荐好友</span></a>\n";
+	html+="<a href=\"wdzl.html\"><i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i> <span>我的资料</span></a>\n";
+	html+="<a href=\"xgmm.html\"><i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i> <span>修改密码</span></a>\n";
+	html+="</div>\n";
+	html+="</div>\n";
+	html+="<a href=\"gwc.html\"><i class=\"fa fa-shopping-cart\" aria-hidden=\"true\"></i> <span>购物车</span> <b class=\"red\" id=\"buyCarCount\">2</b>\n";
+	html+="<a href=\"qianbao.html\"><i class=\"fa fa-gg-circle\" aria-hidden=\"true\"></i> <span>翔云宝</span></a>\n";
+	html+="<a href=\"khzx.html\"><i class=\"fa fa-user-circle\" aria-hidden=\"true\"></i> <span>客服中心</span></a>\n";
+	html+="</div>\n";
+	html+="</div></div>\n";
+    html+="<div class=\"clear width heade\"><div class=\"mar-auto pos-r\">\n";
+	html+="<div class=\"fl logo\"><a href=\"/chinese/forward/home.do\"><img src=\"/chinese/images/logo.png\" alt=\"翔云媒体\" /></a></div>\n";
+	html+="<div class=\"fr home-search\">\n";
+	html+="<input id=\"titleKeyword\" type=\"text\" class=\"fl wenb06\" placeholder=\"请输入关键词\" />\n";
+	html+="<button id=\"titleSearch\" type=\"button\" class=\"fl btn btn07 bg-red font14\"><i class=\"fa fa-2x fa-search\" aria-hidden=\"true\"></i></button>\n";
+	html+="</div>\n";
+	html+="<div class=\"pos-a hear-r font14\"><a href=\"/chinese/forward/askToBuy.do\"><img src=\"/chinese/images/fbqg.gif\" alt=\"发布求购信息\" /></a></div>\n";
+	html+="</div></div>\n";
+	html+="<menu><ul>\n";
+	html+="<li class=\"home\"><a href=\"/chinese/forward/home.do\">首页</a></li>\n";
+	html+="<li class=\"adStore\"><a href=\"/chinese/forward/adStore.do\">广告店铺</a></li>\n";
+	html+="<li class=\"tfgg\"><a href=\"tfgg.html\">投放广告</a></li>\n";
+	html+="<li class=\"askToBuy\"><a href=\"/chinese/forward/askToBuy.do\">求购信息</a></li>\n";
+	html+="<li class=\"qydt\"><a href=\"/chinese/html/qydt.html\">企业动态</a></li>\n";
+	html+="<li class=\"gywm lxwm fwtk cjwt\"><a href=\"/chinese/html/gywm.html\">关于我们</a></li>\n";
+	html+="</ul></menu>\n";
+document.writeln(html);
+$(function(){
+	//根据页面url修改选中状态
+	var urlStr = window.location.href.split("/");
+	var suffixName = urlStr[urlStr.length-1].split(".")[0];
+	if(suffixName!='login'){
+		$('.'+suffixName).attr('class','active');
+	}
+	// 加载用户信息
+	jsonAjax('/'+language+'/user/loadUser.do',{},
+	function(res){
+		var data = res.data;
+		if(data){// 已经登录
+			// 记录登录账号
+			var accountId = data.account_id;
+			setLocalStorage('accountId',accountId);
+			// 记录用户ID
+			var userId = data.id;
+			setLocalStorage('userId',userId);
+			// 记录用户类型
+			var userType = res.msg;
+			setLocalStorage('userType',userType);
+			// 显示用户名
+			$('#userName').text(accountId);
+			$('#userName').parent().show();
+			$('#userName').attr('href','/'+language+'/forward/customerAdvertise.do');
+			// 显示登录注册按钮
+			$('#loginRegP').hide();
+			if(Number(userType)){// 普通用户
+				// 显示“成为店主”按钮
+				$('#changeShopkeeper').show();
+			}else{// 成为店主
+				// 隐藏“成为店主”按钮
+				$('#changeShopkeeper').hide();
+			}
+			// 加载购物车数量 TODO
+		}else{// 未登录
+			// 隐藏退出按钮
+			$('#exit').hide();
+			// 显示登录注册按钮
+			$('#loginRegP').show();
+			// 显示“成为店主”按钮
+			$('#changeShopkeeper').show();
+			// 购物车数量清空
+			$('#buyCarCount').text('');
+		}
+	},function(){}
+	);
+	// 绑定搜索按钮
+	$('#titleSearch').bind('click',function(){
+		// 关键字
+		var keyword = $('#titleKeyword').val().trim();
+		window.location.href = '/'+language+'/forward/adStore.do?keyword='+encodeURIComponent(keyword);
+	});
+})

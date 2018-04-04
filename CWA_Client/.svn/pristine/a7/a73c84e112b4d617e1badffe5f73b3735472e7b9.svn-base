@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<link rel="stylesheet" href="/chinese/mobile/css/mescroll.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="bg-eee">
+
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="header-nav font12" id="addressMenu">
+  <ul>
+    <li id="" class="active" value="" onclick="changeStatus('',this)">全部</li>
+    <li id="withoutPayment" value="1" onclick="changeStatus('withoutPayment',this)">待付款</li>
+    <li id="application" value="2-3" onclick="changeStatus('application',this)">处理中</li>
+    <li id="watingPlay" value="4-1" onclick="changeStatus('watingPlay',this)">待发布</li>
+    <li id="playing" value="4-2" onclick="changeStatus('playing',this)">播放中</li>
+    <li id="canceled" value="6" onclick="changeStatus('canceled',this)">已取消</li>
+    <li id="canceled" value="9" onclick="changeStatus('complete',this)">已完成</li>
+    <!-- <li id="auditNotPass" onclick="changeStatus('auditNotPass',this)">审核不通过</li>
+    <li id="closed" onclick="changeStatus('closed',this)">已关闭</li>
+    <li id="played" onclick="changeStatus('played',this)">已停播</li> -->
+  </ul>
+</div>
+
+<div id="wrapper" class="mescroll mescroll3">
+		<div id="scroller">
+  <ul id="dataList" class="ggdp-list1 ggdp-list4">
+  
+  </ul>
+<div id="pullUp" class="hide clear width">
+				<div class="pullUpIcon"></div> 
+				<div class="pullUpLabel"></div>
+			</div>
+		</div>
+	</div>
+
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_queryOrder.js"></script>
+<script type="text/javascript" src="/chinese/mobile/js/core/orderCommon.js"></script>
+<script src="/chinese/mobile/js/banner.js"></script><!--焦点图-->
+
+
+<!--弹出有效时段提示框-->
+<div class="shade" id="shiduandiv" style="display: ;">
+  <div class="tanchu-xy">
+    <div class="tanchu-bt">有效时段<a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('shiduandiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu4-nr">
+       <p class="dis-b pad-q10 sousuo">
+              <input type="text" name="user_age" id="user_age1" readonly class="dis-in wenb05" placeholder="请输入开始日期">
+              <span class="dis-in">至</span>
+              <input type="text" name="user_age" id="user_age2" readonly class="dis-in wenb05" placeholder="请输入结束日期">
+              <button name="" onclick="seachEffectualTimeBtn()" type="button" class="dis-in btn btn03 bg-blue bor-rad mar-l5">搜索</button>
+              <button name="" onclick="clearDate()" type="button" class="dis-in btn btn03 bg-red bor-rad mar-l5">清空</button>
+       </p>
+       
+       <div class="rmgg-table rmgg-table2 tanchu4-list pos-a">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" id="timeTable">
+</table>
+       </div>
+    </div>
+  </div>
+</div>
+<!--付款弹出框-->
+<div class="shade" id="tishidiv" style="display:none;">
+  <div class="tanchu tanchu6" style="margin-top: -114px;">
+    <a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('tishidiv')"><i class="fa fa-close" aria-hidden="true"></i></a>
+    <div class="tanchu-bt font15">确认付款</div>
+    
+    <p class="col-999 text-c pad-t20 pad-b5 font14">
+      共 <span class="red buyCount">0</span> 个广告屏，合计 <span class="red font16 totalBal">0</span> 元。
+    </p>
+    
+    
+    <div id="payWay" class="mar-t10 bor-t2">
+    <h2 class="font13 text-c pad-t10">选择支付方式</h2>
+      
+    <ul class="zf-xz pad-q10">
+      <li data="0101" class="active wechatPay"><a href="#"><img src="/chinese/mobile/images/zf01.jpg" alt="微信" /></a></li>
+      <li data="0201" class="aliPay"><a href="#"><img src="/chinese/mobile/images/zf02.jpg" alt="支付宝" /></a></li>
+      <li data="0400" class="walletPay"><a href="#"><img src="/chinese/mobile/images/zf04.jpg" alt="翔云余额" /></a></li>
+    </ul>
+  </div>
+    
+    <div class="text-c pad-t5 pad-b15 pad-l15 pad-r15">
+      <input name="" id="payOrder" onclick="payOrder()" type="button" value="确定付款" class="btn btn02 bor-rad font13 bg-red width100 commit" />
+    </div>
+  </div>
+</div>
+</body>
+</html>

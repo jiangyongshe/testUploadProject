@@ -1,0 +1,76 @@
+package com.cwa.client.dao;
+
+import java.util.List;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+
+import com.cwa.client.dto.VideoDto;
+import com.cwa.client.model.Tb_Vedio_Audit;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.web.AdVideoController;
+
+/**
+ * 查询广告信息数据层
+ */
+public class AdvertiseVideoDao extends BaseDao<Tb_Vedio_Audit, VideoDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 批量生成订单
+	 * @param batchInsertOrder 生成订单数据
+	 * @return
+	 */
+	public int[] batchInsertOrder(List<Object[]> batchInsertOrder)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"INSERT INTO tb_order(SERIAL_NUMBER,DEVICE_ID,ORDER_STATUS,ACCOUNT_ID,ACCOUNT_IP,COMMIT_TIME,PAY_TYPE,PLAY_BEGIN_TIME,PLAY_END_TIME,SHOP_NAME,TOTAL_PRICE,PRICE,RESULT,AUDIT_ID,AUDIT_DATETIME,ADVERTISER_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	 				batchInsertOrder);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+
+	public VideoDto findByOrderNo(String orderNo) {
+		String sql="select * from Tb_Vedio_audit where serial_number=?";
+		RowMapper<VideoDto> rowmapper=BeanPropertyRowMapper.newInstance(VideoDto.class);
+		List<VideoDto> list = getJdbcTemplate().query(sql, rowmapper,orderNo);
+		logWriteUtil.writeLog("", "==== listSize:"+list.size(), LOGLEVEL_INFO, AdVideoController.class);
+		return list.size()>0?list.get(0):null;
+	}
+	
+	public VideoDto findVedioByOrderNo(String orderNo) {
+		String sql="select * from Tb_Vedio where serial_number=?";
+		RowMapper<VideoDto> rowmapper=BeanPropertyRowMapper.newInstance(VideoDto.class);
+		List<VideoDto> list = getJdbcTemplate().query(sql, rowmapper,orderNo);
+		logWriteUtil.writeLog("", "==== listSize:"+list.size(), LOGLEVEL_INFO, AdVideoController.class);
+		return list.size()>0?list.get(0):null;
+	}
+
+	public Tb_Vedio_Audit queryVedioByMd5FileName(String md5Str)throws Exception{
+		Tb_Vedio_Audit vedio=null;
+		try {
+			String sqlStr="select * from tb_vedio_audit  where substring_index(FILE_NAME ,'.', 1)=?";
+			RowMapper<Tb_Vedio_Audit> rowMapper = BeanPropertyRowMapper.newInstance(Tb_Vedio_Audit.class);
+			List<Tb_Vedio_Audit> dblist=getJdbcTemplate().query(sqlStr, rowMapper, md5Str);
+			if(dblist!=null&&dblist.size()>0){
+				vedio=dblist.get(dblist.size()-1);
+			}else{
+				vedio=null;
+			}
+		} catch (Exception e) {
+			throw e;
+		}
+		return vedio;
+	} 
+	
+	//支付批量修改订单状态
+	public void updateVideoType(String orderNo) {
+		String sql="update tb_vedio set order_type=3 where SERIAL_NUMBER=?";
+		this.jdbcTemplate.update(sql, orderNo);
+	}
+}

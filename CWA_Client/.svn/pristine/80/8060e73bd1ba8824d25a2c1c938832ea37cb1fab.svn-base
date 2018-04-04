@@ -1,0 +1,526 @@
+package com.cwa.client.dao;
+
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+
+
+public abstract  class BaseDao<T,Tp> implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/** 设置一些操作的常量 */  
+    public static final String SQL_INSERT = "insert";  
+    public static final String SQL_UPDATE = "update";  
+    public static final String SQL_DELETE = "delete";
+    
+    
+    protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    
+	protected JdbcTemplate jdbcTemplate;
+	protected String table_name;
+	private Class<T> entityClass;
+	
+	private Class<Tp> pClass;
+	
+	public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}
+	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+		this.jdbcTemplate = jdbcTemplate;
+	}
+	public String getTable_name() {
+		return table_name;
+	}
+	public void setTable_name(String table_name) {
+		this.table_name = table_name;
+	}
+	
+	@SuppressWarnings("unchecked")  
+    public BaseDao() {  
+        ParameterizedType type = (ParameterizedType) getClass().getGenericSuperclass();  
+        entityClass = (Class<T>) type.getActualTypeArguments()[0];  
+        
+        ParameterizedType typep = (ParameterizedType) getClass().getGenericSuperclass();  
+        pClass = (Class<Tp>) typep.getActualTypeArguments()[1];
+        
+        //System.out.println("Dao实现类是：" + entityClass.getName());  
+    }
+	
+	// 组装SQL  
+    private String makeSql(String sqlFlag) {  
+        StringBuffer sql = new StringBuffer();  
+        Field[] fields = entityClass.getDeclaredFields();  
+        if (sqlFlag.equals(SQL_INSERT)) {  
+            sql.append(" INSERT INTO " + entityClass.getSimpleName());  
+            sql.append("(");  
+            for (int i = 0; fields != null && i < fields.length; i++) {  
+                fields[i].setAccessible(true); // 暴力反射  
+                String column = fields[i].getName();  
+                sql.append(column).append(",");  
+            }  
+            sql = sql.deleteCharAt(sql.length() - 1);  
+            sql.append(") VALUES (");  
+            for (int i = 0; fields != null && i < fields.length; i++) {  
+                sql.append("?,");  
+            }  
+            sql = sql.deleteCharAt(sql.length() - 1);  
+            sql.append(")");  
+        } else if (sqlFlag.equals(SQL_UPDATE)) {  
+            sql.append(" UPDATE " + entityClass.getSimpleName() + " SET ");  
+            for (int i = 0; fields != null && i < fields.length; i++) {  
+                fields[i].setAccessible(true); // 暴力反射  
+                String column = fields[i].getName();  
+                
+                //System.out.println("column=" + column);  
+                
+                if (column.equals("id")) { // id 代表主键  
+                    continue;  
+                }  
+                sql.append(column).append("=").append("?,");  
+            }  
+            sql = sql.deleteCharAt(sql.length() - 1);  
+            sql.append(" WHERE id=?");  
+        } else if (sqlFlag.equals(SQL_DELETE)) {  
+            sql.append(" DELETE FROM " + entityClass.getSimpleName() + " WHERE id=?");  
+        }  
+        //System.out.println("SQL=" + sql);  
+        return sql.toString();  
+  
+    }
+    
+    // 设置参数  
+    private Object[] setArgs(T entity, String sqlFlag) {  
+        Field[] fields = entityClass.getDeclaredFields();  
+        if (sqlFlag.equals(SQL_INSERT)) {  
+            Object[] args = new Object[fields.length];  
+            for (int i = 0; args != null && i < args.length; i++) {  
+                try {  
+                    fields[i].setAccessible(true); // 暴力反射  
+                    args[i] = fields[i].get(entity);  
+                    
+                    System.out.println("args[i]:"+args[i]);
+                    
+                } catch (Exception e) {  
+                    e.printStackTrace();  
+                }  
+            }  
+            return args;  
+        } else if (sqlFlag.equals(SQL_UPDATE)) {  
+            Object[] tempArr = new Object[fields.length];  
+            for (int i = 0; tempArr != null && i < tempArr.length; i++) {  
+                try {  
+                    fields[i].setAccessible(true); // 暴力反射  
+                    tempArr[i] = fields[i].get(entity);  
+                    
+                    //System.out.println("tempArr[i]:"+tempArr[i]);
+                    
+                } catch (Exception e) {  
+                    e.printStackTrace();  
+                }  
+            }  
+            Object[] args = new Object[fields.length];  
+            System.arraycopy(tempArr, 1, args, 0, tempArr.length - 1); // 数组拷贝  
+            args[args.length - 1] = tempArr[0];  
+            return args;  
+        } else if (sqlFlag.equals(SQL_DELETE)) {  
+            Object[] args = new Object[1]; // 长度是1  
+            fields[0].setAccessible(true); // 暴力反射  
+            try {  
+                args[0] = fields[0].get(entity);  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
+            return args;  
+        }  
+        return null;  
+  
+    }  
+  
+    // 设置参数类型（写的不全，只是一些常用的）  
+    private int[] setArgTypes(T entity, String sqlFlag) {  
+        Field[] fields = entityClass.getDeclaredFields();  
+        if (sqlFlag.equals(SQL_INSERT)) {  
+            int[] argTypes = new int[fields.length];  
+            try {  
+                for (int i = 0; argTypes != null && i < argTypes.length; i++) {  
+                    fields[i].setAccessible(true); // 暴力反射  
+                   if(fields[i].get(entity)==null){
+                	   argTypes[i] =Types.NULL;
+                	   continue;
+                   }
+                	   
+                   System.out.println("getName:"+fields[i].get(entity).getClass().getName());
+                    
+                    if (fields[i].get(entity).getClass().getName().equals("java.lang.String")) {  
+                        argTypes[i] = Types.VARCHAR;  
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.lang.Double")) {  
+                        argTypes[i] = Types.DECIMAL;  
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.lang.Integer")) {  
+                        argTypes[i] = Types.INTEGER;  
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.util.Date")) {  
+                        argTypes[i] = Types.DATE;  
+                    }  else if (fields[i].get(entity).getClass().getName().equals("java.sql.Timestamp")) {  
+                        argTypes[i] = Types.TIMESTAMP;
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.math.BigDecimal")) {  
+                        argTypes[i] = Types.DECIMAL;
+                    }
+                }  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
+            return argTypes;  
+        } else if (sqlFlag.equals(SQL_UPDATE)) {  
+            int[] tempArgTypes = new int[fields.length];  
+            int[] argTypes = new int[fields.length];  
+            try {  
+                for (int i = 0; tempArgTypes != null && i < tempArgTypes.length; i++) {  
+                    fields[i].setAccessible(true); // 暴力反射  
+                    if(fields[i].get(entity)==null){
+                 	   argTypes[i] =Types.NULL;
+                 	   continue;
+                    }
+                    //System.out.println("getName:"+fields[i].get(entity).getClass().getName());
+                    
+                    if (fields[i].get(entity).getClass().getName().equals("java.lang.String")) {  
+                        tempArgTypes[i] = Types.VARCHAR;  
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.lang.Double")) {  
+                        tempArgTypes[i] = Types.DECIMAL;  
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.lang.Integer")) {  
+                        tempArgTypes[i] = Types.INTEGER;  
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.util.Date")) {  
+                        tempArgTypes[i] = Types.DATE;  
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.sql.Timestamp")) {  
+                    	tempArgTypes[i] = Types.TIMESTAMP;
+                    } else if (fields[i].get(entity).getClass().getName().equals("java.math.BigDecimal")) {  
+                    	tempArgTypes[i] = Types.DECIMAL;
+                    }
+                    
+                    //System.out.println("tempArgTypes[i]:"+tempArgTypes[i]);
+                }  
+                System.arraycopy(tempArgTypes, 1, argTypes, 0, tempArgTypes.length - 1); // 数组拷贝  
+                argTypes[argTypes.length - 1] = tempArgTypes[0];  
+  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
+            return argTypes;  
+  
+        } else if (sqlFlag.equals(SQL_DELETE)) {  
+            int[] argTypes = new int[1]; // 长度是1  
+            try {  
+                fields[0].setAccessible(true); // 暴力反射  
+                if (fields[0].get(entity).getClass().getName().equals("java.lang.String")) {  
+                    argTypes[0] = Types.VARCHAR;  
+                } else if (fields[0].get(entity).getClass().getName().equals("java.lang.Integer")) {  
+                    argTypes[0] = Types.INTEGER;  
+                }  
+  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
+            return argTypes;  
+        }  
+        return null;  
+    }  
+    
+    
+    public int save(T entity) throws Exception {  
+        int flag=0;
+          try {
+     	   String sql = this.makeSql(SQL_INSERT);  
+            Object[] args = this.setArgs(entity, SQL_INSERT);  
+            int[] argTypes = this.setArgTypes(entity, SQL_INSERT); 
+            flag=jdbcTemplate.update(sql.toString(), args, argTypes);  
+ 	    } catch (Exception e) {
+ 	    	flag=-1;
+ 		   throw e;
+ 	  }
+          return flag;
+     }  
+  
+  
+    public int update(T entity)throws Exception  {  
+    	 int flag=0;
+         try {
+	    	String sql = this.makeSql(SQL_UPDATE);  
+	        Object[] args = this.setArgs(entity, SQL_UPDATE);  
+	        int[] argTypes = this.setArgTypes(entity, SQL_UPDATE);  
+	        flag=jdbcTemplate.update(sql, args, argTypes); 
+         } catch (Exception e) {
+  	    	flag=-1;
+  		   throw e;
+  	  }
+         return flag;
+    }  
+  
+   
+    public int delete(T entity)throws Exception {  
+    	 int flag=0;
+    	try {
+    		String sql = this.makeSql(SQL_DELETE);  
+            Object[] args = this.setArgs(entity, SQL_DELETE);  
+            int[] argTypes = this.setArgTypes(entity, SQL_DELETE);  
+            flag=jdbcTemplate.update(sql, args, argTypes);
+		} catch (Exception e) {
+			flag=-1;
+			throw e;
+		}
+    	 return flag;
+         
+    }  
+    
+    public T findById(Serializable id) {  
+        String sql = "SELECT * FROM " + entityClass.getSimpleName() + " WHERE id=?";  
+        RowMapper<T> rowMapper = BeanPropertyRowMapper.newInstance(entityClass);  
+        List list=jdbcTemplate.query(sql, rowMapper, id);
+        if(null!=list && list.size()>0){
+        	return (T)list.get(0); 
+        }else{
+        	return null;
+        }
+    }  
+  
+    public List<T> findAll() {  
+        String sql = "SELECT * FROM " + entityClass.getSimpleName();  
+        RowMapper<T> rowMapper = BeanPropertyRowMapper.newInstance(entityClass);  
+        return jdbcTemplate.query(sql, rowMapper);  
+    }  
+    
+	public PageModel getPageModel(String sql,String sqlNum,HashMap params,int pageNo,int pageSize){
+		PageModel pm=new PageModel();
+	    pm.setTotalRecords(getTotalNum(sqlNum,params));
+	    pm.setPageNo(pageNo);
+		pm.setPageSize(pageSize);
+		namedParameterJdbcTemplate=new NamedParameterJdbcTemplate(getJdbcTemplate());
+		List list = namedParameterJdbcTemplate.query(sql, params,new BeanPropertyRowMapper(pClass));
+		pm.setList(list);
+		return pm;
+	}
+	
+	private int getTotalNum(String sql,HashMap params)  {  
+		 int count = 0;
+	     namedParameterJdbcTemplate=new NamedParameterJdbcTemplate(getJdbcTemplate());
+	     
+	     count=namedParameterJdbcTemplate.queryForObject(sql, params, Integer.class);
+	     return count; 
+	    } 
+	
+	/**
+	 * 封装where语句
+	 * @param tp 已经初始化参数的dto
+	 * @param tableAlias 表的别名
+	 * @return
+	 */
+	protected Map<String,Object> packageWhereSQL(Tp tp,String tableAlias){
+		// 拼装的sql
+		StringBuffer whereSQL = new StringBuffer("");
+		// 拼装的参数
+		List<Object> params = new ArrayList<Object>();
+		Field[] fields = tp.getClass().getDeclaredFields();
+		try {
+			for(Field field : fields){
+				// 获取数值类型
+				String type = field.getType().getName();
+				// 忽略布尔值
+				if(type.equals("boolean")||type.equals("java.lang.Boolean")){
+					continue;
+				}
+				// 允许访问值
+				field.setAccessible(true);
+				Object value = field.get(tp);
+				// 空字符忽略
+				if(type.equals("char")&&(char)value=='\0'){
+					continue;
+				}
+				// 基本类型为0忽略
+				if(type.equals("short")||type.equals("double")
+						||
+				   type.equals("float")||type.equals("long")
+						||
+				   type.equals("byte")||type.equals("int")){
+					
+					if(Double.parseDouble(value.toString())==0){
+						continue;
+					}
+				}
+				// 如果为null或者空字符串忽略
+				if(value==null || value.toString().trim().equals("")){
+					continue;
+				}
+				// 字段名
+				String fieldName = field.getName();
+				// 拼接SQL
+				if(whereSQL.toString().toLowerCase().contains("where")){
+					whereSQL.append("AND "+tableAlias+"."+fieldName+"=? ");
+				}else{
+					whereSQL.append("WHERE "+tableAlias+"."+fieldName+"=? ");
+				}
+				params.add(value);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			whereSQL.delete(0,whereSQL.length());
+			logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"package 'where sql' exception " + e.getMessage(), LOGLEVEL_ERROR, BaseDao.class);
+		}
+		// 封装返回
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("sql", whereSQL.toString());
+		map.put("params", params);
+		return map;
+	}
+
+	/**
+	 * 封装update语句
+	 * @param t 已经初始化参数的dto
+	 * @param tableAlias 表的别名
+	 * @return
+	 */
+	protected Map<String,Object> packageUpateSQL(T t,String tableAlias){
+		// 拼装的sql
+		StringBuffer updateSQL = new StringBuffer("");
+		// 拼装的参数
+		List<Object> params = new ArrayList<Object>();
+		Field[] fields = t.getClass().getDeclaredFields();
+		try {
+			for(Field field : fields){
+				// 获取数值类型
+				String type = field.getType().getName();
+				// 忽略布尔值
+				if(type.equals("boolean")||type.equals("java.lang.Boolean")){
+					continue;
+				}
+				// 允许访问值
+				field.setAccessible(true);
+				Object value = field.get(t);
+				// 空字符忽略
+				if(type.equals("char")&&(char)value=='\0'){
+					continue;
+				}
+				// 基本类型为0忽略
+				if(type.equals("short")||type.equals("double")
+						||
+				   type.equals("float")||type.equals("long")
+						||
+				   type.equals("byte")||type.equals("int")){
+					
+					if(Double.parseDouble(value.toString())==0){
+						continue;
+					}
+				}
+				// 如果为null或者空字符串忽略
+				if(value==null || value.toString().trim().equals("")){
+					continue;
+				}
+				// 字段名
+				String fieldName = field.getName();
+				// 忽略ID
+				if(fieldName.equalsIgnoreCase("id")){
+					continue;
+				}
+				// 拼接SQL
+				if(updateSQL.toString().toLowerCase().contains("update")){
+					updateSQL.append(", "+tableAlias+"."+fieldName+"=? ");
+				}else{
+					updateSQL.append("UPDATE "+t.getClass().getSimpleName()+" "+tableAlias+" "+" SET "+tableAlias+"."+fieldName+"=? ");
+				}
+				params.add(value);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			updateSQL.delete(0,updateSQL.length());
+			logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"package 'update sql' exception " + e.getMessage(), LOGLEVEL_ERROR, BaseDao.class);
+		}
+		// 封装返回
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("sql", updateSQL.toString());
+		map.put("params", params);
+		return map;
+	}
+	
+	/**
+	 * 封装insert语句
+	 * @param t 已经初始化参数的dto
+	 * @return
+	 */
+	protected Map<String,Object> packageInsertSQL(T t){
+		// 拼装的sql
+		StringBuffer insertInto = new StringBuffer("INSERT INTO "+t.getClass().getSimpleName()+" (");
+		StringBuffer values = new StringBuffer("VALUES(");
+		// 拼装的参数
+		List<Object> params = new ArrayList<Object>();
+		Field[] fields = t.getClass().getDeclaredFields();
+		try {
+			for(Field field : fields){
+				// 获取数值类型
+				String type = field.getType().getName();
+				// 忽略布尔值
+				if(type.equals("boolean")||type.equals("java.lang.Boolean")){
+					continue;
+				}
+				// 允许访问值
+				field.setAccessible(true);
+				Object value = field.get(t);
+				// 空字符忽略
+				if(type.equals("char")&&(char)value=='\0'){
+					continue;
+				}
+				// 基本类型为0忽略
+				if(type.equals("short")||type.equals("double")
+						||
+				   type.equals("float")||type.equals("long")
+						||
+				   type.equals("byte")||type.equals("int")){
+					
+					if(Double.parseDouble(value.toString())==0){
+						continue;
+					}
+				}
+				// 如果为null或者空字符串忽略
+				if(value==null || value.toString().trim().equals("")){
+					continue;
+				}
+				// 字段名
+				String fieldName = field.getName();
+				// 忽略ID
+				if(fieldName.equalsIgnoreCase("id")){
+					continue;
+				}
+				// 拼接SQL
+				insertInto.append(fieldName+",");
+				values.append("?,");
+				params.add(value);
+			}
+			insertInto.replace(insertInto.length()-1, insertInto.length(), ") ");
+			values.replace(values.length()-1, values.length(), ")");
+		} catch (Exception e) {
+			e.printStackTrace();
+			insertInto.delete(0,insertInto.length());
+			values.delete(0,values.length());
+			logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"package 'insert sql' exception " + e.getMessage(), LOGLEVEL_ERROR, BaseDao.class);
+		}
+		// 封装返回
+		Map<String,Object> map = new HashMap<String,Object>();
+		if(params.size()>0){
+			map.put("sql", insertInto.append(values));
+		}else{
+			map.put("sql", "");
+		}
+		map.put("params", params);
+		return map;
+	}
+}

@@ -1,0 +1,533 @@
+package com.cwa.client.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+
+import com.cwa.client.dto.AdDto;
+import com.cwa.client.dto.AdvertiserDto;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+import net.sf.json.JSONArray;
+
+/**
+ * 广告用户数据层
+ */
+public class AdvertiserDao extends BaseDao<Tb_Advertiser, AdvertiserDto> implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 查询广告用户
+	 * @param advertiserDto 查询条件
+	 * @return
+	 */
+	public List<AdvertiserDto> queryAdvertiser(AdvertiserDto advertiserDto){
+		// 返回结果
+		List<AdvertiserDto> tbAdvertiserList = null;
+		StringBuffer sql = new StringBuffer(
+				"SELECT A.ID,A.SHOP_NAME,A.MOBILE,A.SCOPE,A.PASSWORD,A.MAILING_ADDRESS,"+
+				"A.USER_STATUS,A.OPEN_DATE,A.EMAIL,A.REAL_NAME,A.ACCOUNT_ID,A.AUDIT_DATETIME,"+
+				"A.AUDIT_STATUS,A.REMARK,A.REFERRALS_TYPE,A.DEVICE_USE_TYPE,A.AGENT_ID,A.AUDIT_ID,A.COMPANY_ID, "+
+				"A.REFERRALS_ID,A.superior,A.notice_id,A.reg_status "+
+				"FROM tb_advertiser A ");
+		// 拼接where查询条件
+		Map<String,Object> map = packageWhereSQL(advertiserDto, "A");
+		String joinWhereSQL = map.get("sql").toString();
+		@SuppressWarnings("unchecked")
+		List<Object> params = (List<Object>) map.get("params");
+		sql.append(joinWhereSQL);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryAdvertiser sql:"+sql+";params:"+JSONArray.fromObject(params),LOGLEVEL_INFO,AdvertiserDao.class);
+		try {
+			if(params.size()!=0){
+				tbAdvertiserList = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(AdvertiserDto.class),params.toArray());
+			}else{
+				tbAdvertiserList = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(AdvertiserDto.class));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryAdvertiser exception '"+e.getMessage()+"'",LOGLEVEL_ERROR, AdvertiserDao.class);
+			tbAdvertiserList = new ArrayList<AdvertiserDto>();
+			throw e;
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryAdvertiser query size "+tbAdvertiserList.size()+", result " + JSONArray.fromObject(tbAdvertiserList),LOGLEVEL_INFO,AdvertiserDao.class);
+		return tbAdvertiserList;
+	}
+	
+	public Integer insertBackId(final Tb_Advertiser entity){
+		final String sql="INSERT INTO tb_advertiser "+
+							"(SHOP_NAME,"+
+							"MOBILE,"+
+							"SCOPE,"+
+							"MAILING_ADDRESS,"+
+							"USER_STATUS,"+
+							"OPEN_DATE,"+
+							"EMAIL,"+
+							"REAL_NAME,"+
+							"ACCOUNT_ID,"+
+							"AGENT_ID,"+
+							"AUDIT_ID,"+
+							"AUDIT_DATETIME,"+
+							"AUDIT_STATUS,"+
+							"REMARK,"+
+							"COMPANY_ID,"+
+							"PASSWORD,"+
+							"REFERRALS_TYPE,referrals_id)"+
+							"VALUES "+
+							"(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		KeyHolder keyHolder = new GeneratedKeyHolder();  
+		int autoIncId = 0;  
+		jdbcTemplate.update(new PreparedStatementCreator() {
+			public PreparedStatement createPreparedStatement(Connection con)  
+					throws SQLException {  
+				PreparedStatement ps = con.prepareStatement(sql,PreparedStatement.RETURN_GENERATED_KEYS);
+				ps.setString(1,entity.getShop_name());
+				ps.setString(2,entity.getMobile());
+				ps.setString(3,entity.getScope());
+				ps.setString(4,entity.getMailing_address());
+				ps.setInt(5,entity.getUser_status());
+				ps.setTimestamp(6,entity.getOpen_date());
+				ps.setString(7,entity.getEmail());
+				ps.setString(8,entity.getReal_name());
+				ps.setString(9,entity.getAccount_id());
+				ps.setString(10,entity.getAgent_id());
+				ps.setString(11,entity.getAudit_id());
+				ps.setTimestamp(12,entity.getAudit_datetime());
+				ps.setInt(13,entity.getAudit_status());
+				ps.setString(14,entity.getRemark());
+				ps.setString(15,entity.getCompany_id());
+				ps.setString(16,entity.getPassword());
+				ps.setInt(17,entity.getReferrals_type());
+				ps.setString(18,entity.getReferrals_id());
+				return ps;  
+			}   
+	    }, keyHolder);  
+	  
+	      autoIncId = keyHolder.getKey().intValue();  
+	      
+	      return autoIncId;  
+	}
+	
+	/**
+	 * 根据登录号修改密码
+	 * @param tbAdvertiser
+	 * @return
+	 */
+	public boolean updateAdvertiserPwdByAccountId(Tb_Advertiser tbAdvertiser){
+		boolean updateState = false;
+		String accountId = tbAdvertiser.getAccount_id();
+		// 创建update语句
+		tbAdvertiser.setAccount_id(null);
+		Map<String,Object> mapForUpdate  = packageUpateSQL(tbAdvertiser,"A");
+		@SuppressWarnings("unchecked")
+		List<Object> paramsForUpdate = (List<Object>) mapForUpdate.get("params");
+		if(paramsForUpdate.size()==0){
+			logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"updateAdvertiserPwdByMobile package sql fail." ,LOGLEVEL_INFO,AdvertiserDao.class);
+			return updateState;
+		}
+		// 创建where语句
+		AdvertiserDto advertiserDto = new AdvertiserDto();
+		advertiserDto.setAccount_id(accountId);
+		Map<String,Object> mapForWhere  = packageWhereSQL(advertiserDto,"A");
+		@SuppressWarnings("unchecked")
+		List<Object> paramsForWhere = (List<Object>) mapForWhere.get("params");
+		if(paramsForWhere.size()==0){
+			logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"updateAdvertiserPwdByMobile package sql fail." ,LOGLEVEL_INFO,AdvertiserDao.class);
+			return updateState;
+		}
+		StringBuffer packageUpdateSQL = new StringBuffer(mapForUpdate.get("sql").toString());
+		StringBuffer packageWhereSQL = new StringBuffer(mapForWhere.get("sql").toString());
+		String sql = packageUpdateSQL.append(packageWhereSQL.toString()).toString();
+		logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"updateAdvertiserPwdByMobile sql is '"+sql+"'." ,LOGLEVEL_INFO,AdvertiserDao.class);
+		List<Object> params = new ArrayList<Object>();
+		params.addAll(paramsForUpdate);
+		params.addAll(paramsForWhere);
+		try {
+			this.jdbcTemplate.update(sql, params.toArray());
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY,"updateAdvertiserPwdByMobile update password success." ,LOGLEVEL_INFO,AdvertiserDao.class);
+			updateState = true;
+		} catch (Exception e) {
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY,"updateAdvertiserPwdByMobile update password error,Exception:"+e.getMessage()+"." ,LOGLEVEL_ERROR,AdvertiserDao.class);
+			e.printStackTrace();
+			updateState = false;
+			throw e;
+		}
+		return updateState;
+	}
+	
+	/**
+	 * 广告查询
+	 * @param param
+	 * @return
+	 */
+	public List<AdDto> queryAD(AdDto param){
+		String serial_number = param.getSerial_number();//  广告编号
+		String begin_time = param.getBegin_time();// 播放开始时间
+		String end_time= param.getEnd_time();// 播放结束时间
+		String order_stutas = param.getOrder_status();// 广告状态
+		Integer pageNo = param.getPageNo();// 显示的页码
+		Integer pageSize = param.getPageSize();// 每页显示的数量
+		// 参数设置
+		List<Object> params = new ArrayList<Object>();
+		StringBuffer sql = new StringBuffer(
+				"SELECT A.ADVERTISER_ID,A.DEVICE_ID,A.SERIAL_NUMBER,"
+			  + "C.NAME passVideoName,"
+			  + "D.NAME notPassVideoName,"
+			  + "C.FILE_PATH passVideoPath,"
+			  + "D.FILE_PATH notPassVideoPath,"
+			  + "B.BEGIN_TIME,B.END_TIME,A.PRICE,A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,"
+			  + "CASE WHEN A.ORDER_STATUS='1' THEN '申请中' "
+			  + "	  WHEN A.ORDER_STATUS='2' THEN '申请中' "
+			  + "     WHEN A.ORDER_STATUS='3' THEN '申请中' "
+			  + "     WHEN A.ORDER_STATUS='5' THEN '审核不通过' "
+			  + "     WHEN A.ORDER_STATUS='6' THEN '已取消' "
+			  + "     WHEN A.ORDER_STATUS='7' THEN '已关闭' "
+			  + "     WHEN A.ORDER_STATUS='4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='2' THEN '播放中' "
+			  + "     WHEN A.ORDER_STATUS='4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='1' THEN '等待播放' "
+			  + "     WHEN A.ORDER_STATUS='4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='3' THEN '已停播' END ORDER_STATUS "
+			  + "FROM (SELECT * FROM tb_order WHERE ADVERTISER_ID="+param.getAdvertiser_id()+") A "
+			  + "LEFT JOIN (SELECT A.SERIAL_NUMBER,A.BEGIN_TIME,A.END_TIME FROM cwa.tb_order_detail A GROUP BY A.SERIAL_NUMBER,A.BEGIN_TIME,A.END_TIME) B "
+			  + "ON A.SERIAL_NUMBER=B.SERIAL_NUMBER "
+			  + "LEFT JOIN tb_vedio C ON C.SERIAL_NUMBER = A.SERIAL_NUMBER "
+			  + "LEFT JOIN tb_vedio_audit D ON D.SERIAL_NUMBER = A.SERIAL_NUMBER ");
+		boolean existWhere = false;
+		// 判断是否根据广告编号查询
+		if(serial_number!=null&&!"".equals(serial_number)){
+			sql.append("WHERE A.SERIAL_NUMBER=? ");
+			params.add(serial_number);
+			existWhere = true;
+		}
+		// 判断是否根据开始时间查询
+		if(begin_time!=null&&!"".equals(begin_time)){
+			if(existWhere){
+				sql.append("AND TIME_TO_SEC(?)>=TIME_TO_SEC(B.BEGIN_TIME) ");
+			}else{
+				sql.append("WHERE TIME_TO_SEC(?)>=TIME_TO_SEC(B.BEGIN_TIME) ");
+				existWhere = true;
+			}
+			params.add(begin_time);
+		}
+		// 判断是否根据结束时间查询
+		if(end_time!=null&&!"".equals(end_time)){
+			if(existWhere){
+				sql.append("AND TIME_TO_SEC(?)<=TIME_TO_SEC(B.END_TIME) ");
+			}else{
+				sql.append("WHERE TIME_TO_SEC(?)<=TIME_TO_SEC(B.END_TIME) ");
+				existWhere = true;
+			}
+			params.add(end_time);
+		}
+		// 判断是否根据广告状态查询
+		if(order_stutas!=null&&!"".equals(order_stutas)){
+			if(existWhere){
+				sql.append("AND ");
+			}else{
+				sql.append("WHERE ");
+				existWhere = true;
+			}
+			switch(order_stutas){
+			// 申请中
+			case ORDER_STUTAS_APPLY:
+				sql.append("(A.ORDER_STATUS ='1' OR A.ORDER_STATUS ='2' OR A.ORDER_STATUS ='3') ");
+				break;
+			// 播放中
+			case ORDER_STUTAS_PLAYING:
+				sql.append("A.ORDER_STATUS = '4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='2' ");
+				break;
+			// 等待播放
+			case ORDER_STUTAS_WAITPLAY:
+				sql.append("A.ORDER_STATUS = '4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='1' ");
+				break;
+			// 已停播
+			case ORDER_STUTAS_STOPPLAY:
+				sql.append("A.ORDER_STATUS = '4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='3' ");
+				break;
+			// 其它状态
+			default:
+				sql.append("A.ORDER_STATUS=? ");
+				params.add(order_stutas);
+			}
+		}
+		// 排序
+		sql.append("ORDER BY A.SERIAL_NUMBER DESC ");
+		// 判断是否分页
+		if(pageNo!=null&&pageNo!=0&&pageSize!=null&&pageSize!=0){
+			sql.append("LIMIT ?,? ");
+			params.add((pageNo-1)*pageSize);
+			params.add(pageSize);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";params:"+params, LOGLEVEL_INFO, AdvertiserDao.class);
+		List<AdDto> list = null;
+		try {
+			if(params.size()>0){
+				list = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(AdDto.class),params.toArray());
+			}else{
+				list = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(AdDto.class));
+			}
+		} catch (Exception e) {
+			list = new ArrayList<AdDto>();
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY, "exception:"+e.getMessage(), LOGLEVEL_ERROR, AdvertiserDao.class);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, AdvertiserDao.class);
+		return list;
+	}
+	
+	/**
+	 * 查询广告数据总量
+	 * @param param
+	 * @return
+	 */
+	public int queryADCount(AdDto param){
+		String serial_number = param.getSerial_number();//  广告编号
+		String begin_time = param.getBegin_time();// 播放开始时间
+		String end_time= param.getEnd_time();// 播放结束时间
+		String order_stutas = param.getOrder_status();// 广告状态
+		// 参数设置
+		List<Object> params = new ArrayList<Object>();
+		StringBuffer sql = new StringBuffer(
+				"SELECT COUNT(1) FROM (SELECT * FROM tb_order WHERE ADVERTISER_ID="+param.getAdvertiser_id()+") A "
+			  + "LEFT JOIN (SELECT A.SERIAL_NUMBER,A.BEGIN_TIME,A.END_TIME FROM cwa.tb_order_detail A GROUP BY A.SERIAL_NUMBER,A.BEGIN_TIME,A.END_TIME) B "
+			  + "ON A.SERIAL_NUMBER=B.SERIAL_NUMBER "
+			  + "LEFT JOIN tb_vedio C ON C.SERIAL_NUMBER = A.SERIAL_NUMBER "
+			  + "LEFT JOIN tb_vedio_audit D ON D.SERIAL_NUMBER = A.SERIAL_NUMBER ");
+		boolean existWhere = false;
+		// 判断是否根据广告编号查询
+		if(serial_number!=null&&!"".equals(serial_number)){
+			sql.append("WHERE A.SERIAL_NUMBER=? ");
+			params.add(serial_number);
+			existWhere = true;
+		}
+		// 判断是否根据开始时间查询
+		if(begin_time!=null&&!"".equals(begin_time)){
+			if(existWhere){
+				sql.append("AND TIME_TO_SEC(?)>=TIME_TO_SEC(B.BEGIN_TIME) ");
+			}else{
+				sql.append("WHERE TIME_TO_SEC(?)>=TIME_TO_SEC(B.BEGIN_TIME) ");
+				existWhere = true;
+			}
+			params.add(begin_time);
+		}
+		// 判断是否根据结束时间查询
+		if(end_time!=null&&!"".equals(end_time)){
+			if(existWhere){
+				sql.append("AND TIME_TO_SEC(?)<=TIME_TO_SEC(B.END_TIME) ");
+			}else{
+				sql.append("WHERE TIME_TO_SEC(?)<=TIME_TO_SEC(B.END_TIME) ");
+				existWhere = true;
+			}
+			params.add(end_time);
+		}
+		// 判断是否根据广告状态查询
+		if(order_stutas!=null&&!"".equals(order_stutas)){
+			if(existWhere){
+				sql.append("AND ");
+			}else{
+				sql.append("WHERE ");
+				existWhere = true;
+			}
+			switch(order_stutas){
+			// 申请中
+			case ORDER_STUTAS_APPLY:
+				sql.append("(A.ORDER_STATUS ='1' OR A.ORDER_STATUS ='2' OR A.ORDER_STATUS ='3') ");
+				break;
+			// 播放中
+			case ORDER_STUTAS_PLAYING:
+				sql.append("A.ORDER_STATUS = '4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='2' ");
+				break;
+			// 等待播放
+			case ORDER_STUTAS_WAITPLAY:
+				sql.append("A.ORDER_STATUS = '4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='1' ");
+				break;
+			// 已停播
+			case ORDER_STUTAS_STOPPLAY:
+				sql.append("A.ORDER_STATUS = '4' AND judegNowInTargetSection(A.PLAY_BEGIN_TIME,A.PLAY_END_TIME,B.BEGIN_TIME,B.END_TIME)='3' ");
+				break;
+			// 其它状态
+			default:
+				sql.append("A.ORDER_STATUS=? ");
+				params.add(order_stutas);
+			}
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";params:"+params, LOGLEVEL_INFO, AdvertiserDao.class);
+		int count = 0;
+		if(params.size()>0){
+			count = this.jdbcTemplate.queryForObject(sql.toString(), Integer.class,params.toArray());
+		}else{
+			count = this.jdbcTemplate.queryForObject(sql.toString(),Integer.class);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "count:"+count, LOGLEVEL_INFO, AdvertiserDao.class);
+		return count;
+	}
+
+	/**
+	 * 根据登录账号修改数据
+	 * @param tbAdvertiser
+	 */
+	@SuppressWarnings("unchecked")
+	public void updateAdvertiserInfoForApply(Tb_Advertiser tb_Advertiser){
+		AdvertiserDto whereParam = new AdvertiserDto();
+		whereParam.setAccount_id(tb_Advertiser.getAccount_id());
+		Map<String,Object> whereMap = packageWhereSQL(whereParam,"A");
+		tb_Advertiser.setAccount_id(null);
+		Map<String,Object> updateMap = packageUpateSQL(tb_Advertiser,"A");
+		String sql = updateMap.get("sql")+whereMap.get("sql").toString();
+		List<Object> params = new ArrayList<Object>();
+		params.addAll((List<Object>)updateMap.get("params"));
+		params.addAll((List<Object>)whereMap.get("params"));
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"updateAdvertiserInfoForApply sql is "+sql+",params is "+params+"." ,LOGLEVEL_INFO,AdvertiserDao.class);
+		this.jdbcTemplate.update(sql,params.toArray());
+	}
+	
+	/**
+	 * 更新用户信息
+	 * @param whereParam where条件
+	 * @param updateAdvertiser update数据
+	 */
+	@SuppressWarnings("unchecked")
+	public void updateUserInfo(AdvertiserDto whereParam,Tb_Advertiser updateParam){
+		Map<String,Object> whereMap = packageWhereSQL(whereParam,"A");
+		Map<String,Object> updateMap = packageUpateSQL(updateParam,"A");
+		String sql = updateMap.get("sql")+whereMap.get("sql").toString();
+		List<Object> params = new ArrayList<Object>();
+		params.addAll((List<Object>)updateMap.get("params"));
+		params.addAll((List<Object>)whereMap.get("params"));
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"updateUserInfo sql is "+sql+",params is "+params+"." ,LOGLEVEL_INFO,AdvertiserDao.class);
+		this.jdbcTemplate.update(sql,params.toArray());
+	}
+
+	/**
+	 * 查询广告，用于购买
+	 * @param adDto 查询参数
+	 * @return
+	 */
+	public List<AdDto> queryADForBuy(AdDto adDto){
+		List<Object> params = new ArrayList<Object>();
+		StringBuffer sql = new StringBuffer(
+					 "SELECT A.ID ADVERTISER_ID,A.SHOP_NAME name,A.MAILING_ADDRESS addr,B.DEVICE_ID,C.AD_LENGTH,C.PLAY_NUMBER allPlayNumber,C.AD_PRICE price,C.BEGIN_TIME play_begin_time,C.END_TIME play_end_time, "
+					+"(SELECT Group_concat(PIC) FROM tb_advertiser_pic WHERE ADVERTISER_ID=A.ACCOUNT_ID) PICS "
+					+"FROM tb_advertiser A JOIN tb_advertiser_device B ON A.ID = B.ADVERTISER_ID "
+					+"JOIN tb_device_vedio_plan C ON B.DEVICE_ID = C.DEVICE_ID "
+					+"WHERE A.AUDIT_STATUS = '2' AND C.AD_SELL_STATUS=1 ");
+		// 判断是否查询热门推荐
+		Integer recommed = adDto.getRecommed();
+		if(recommed!=null){
+			sql.append("AND C.RECOMMEND = ? ");
+			params.add(recommed);
+		}
+		// 判断是否根据地区模糊查询
+		String addr = adDto.getAddr();
+		if(addr!=null && !addr.trim().equals("")){
+			sql.append("AND A.MAILING_ADDRESS LIKE ? ");
+			params.add(addr);
+		}
+		// 判断是否根据价格查询
+		String lessPrice = adDto.getLessPrice();
+		if(lessPrice!=null && !lessPrice.trim().equals("")){
+			sql.append("AND C.AD_PRICE >= ? ");
+			params.add(lessPrice);
+		}
+		String greaterPrice = adDto.getGreaterPrice();
+		if(greaterPrice!=null && !greaterPrice.trim().equals("")){
+			sql.append("AND C.AD_PRICE <= ? ");
+			params.add(greaterPrice);
+		}
+		// 判断是否根据店铺名称模糊查询
+		String shopName = adDto.getName();
+		if(shopName!=null && !shopName.trim().equals("")){
+			sql.append("AND A.SHOP_NAME LIKE ? ");
+			params.add(shopName);
+		}
+		// 排序
+		sql.append("ORDER BY A.AUDIT_DATETIME DESC ");
+		// 判断是否分页
+		Integer pageNo = adDto.getPageNo();
+		Integer pageSize = adDto.getPageSize();
+		if(pageNo!=null&&pageNo!=0&&pageSize!=null&&pageSize!=0){
+			sql.append("LIMIT ?,? ");
+			params.add((pageNo-1)*pageSize);
+			params.add(pageSize);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";params:"+params, LOGLEVEL_INFO, AdvertiserDao.class);
+		List<AdDto> list = null;
+		if(params.size()>0){
+			list = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(AdDto.class),params.toArray());
+		}else{
+			list = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(AdDto.class));
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, AdvertiserDao.class);
+		return list;
+	}
+	
+	/**
+	 * 查询广告数量，用于购买
+	 * @param adDto 查询参数
+	 * @return
+	 */
+	public int queryADForBuyCount(AdDto adDto){
+		List<Object> params = new ArrayList<Object>();
+		StringBuffer sql = new StringBuffer(
+					 "SELECT COUNT(1) "
+					+"FROM tb_advertiser A JOIN tb_advertiser_device B ON A.ID = B.ADVERTISER_ID "
+					+"JOIN tb_device_vedio_plan C ON B.DEVICE_ID = C.DEVICE_ID "
+					+"WHERE A.AUDIT_STATUS = '2' AND C.AD_SELL_STATUS=1 ");
+		// 判断是否查询热门推荐
+		Integer recommed = adDto.getRecommed();
+		if(recommed!=null){
+			sql.append("AND C.RECOMMEND = ? ");
+			params.add(recommed);
+		}
+		// 判断是否根据地区模糊查询
+		String addr = adDto.getAddr();
+		if(addr!=null && !addr.trim().equals("")){
+			sql.append("AND A.MAILING_ADDRESS LIKE ? ");
+			params.add(addr);
+		}
+		// 判断是否根据价格查询
+		String lessPrice = adDto.getLessPrice();
+		if(lessPrice!=null && !lessPrice.trim().equals("")){
+			sql.append("AND C.AD_PRICE >= ? ");
+			params.add(lessPrice);
+		}
+		String greaterPrice = adDto.getGreaterPrice();
+		if(greaterPrice!=null && !greaterPrice.trim().equals("")){
+			sql.append("AND C.AD_PRICE <= ? ");
+			params.add(greaterPrice);
+		}
+		// 判断是否根据店铺名称模糊查询
+		String shopName = adDto.getName();
+		if(shopName!=null && !shopName.trim().equals("")){
+			sql.append("AND A.SHOP_NAME LIKE ? ");
+			params.add(shopName);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";params:"+params, LOGLEVEL_INFO, AdvertiserDao.class);
+		int count = 0;
+		if(params.size()>0){
+			count = this.jdbcTemplate.queryForObject(sql.toString(), Integer.class,params.toArray());
+		}else{
+			count = this.jdbcTemplate.queryForObject(sql.toString(), Integer.class);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "count:"+count, LOGLEVEL_INFO, AdvertiserDao.class);
+		return count;
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	public void insert(Tb_Advertiser param){
+		Map<String,Object> map = this.packageInsertSQL(param);
+		String sql = map.get("sql").toString();
+		List<Object> params = (List<Object>)map.get("params");
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"param:"+params, LOGLEVEL_INFO, AdvertiserDao.class);
+		this.jdbcTemplate.update(sql,params.toArray());
+	}
+}

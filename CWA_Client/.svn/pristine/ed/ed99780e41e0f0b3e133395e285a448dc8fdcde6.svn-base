@@ -1,0 +1,10 @@
+#加载图片的地址
+#LIVE环境地址：http://182.16.67.109:18001/images/
+#DEMO环境地址：http://10.0.0.137:8000/images/
+#本地环境：http://localhost:8080/chinese/common/loadIMG.do?filePath=
+imagePath=http://10.0.0.137:8000/images/
+#加载视频的地址
+#LIVE环境地址：http://182.16.67.109:18002/videos/
+#DEMO环境地址：http://10.0.0.137/videos/
+#本地环境：http://localhost:8080/chinese/common/loadFile.do?filePath=
+videoUrl=http://10.0.0.137/videos/

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body>
+<div id="mescroll" class="mescroll">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+
+  <ul id="dataList" class="ggdp-list1 ggdp-list3">
+  
+  </ul>
+  
+  <div id="payWay" class="hide">
+    <h2 class="font13 pad-q10 bor-b">选择支付方式</h2>
+      
+    <ul class="zf-xz pad-q10">
+      <li class="active" data="0400"><a href="#"><i class="fa fa-gg-circle blue" aria-hidden="true"></i> 翔云余额: <span class="amount">0</span> 元</a></li>
+      <li data="0101"><a href="#"><img src="/chinese/mobile/images/zf01.jpg" alt="微信" /></a></li>
+      <li data="0201"><a href="#"><img src="/chinese/mobile/images/zf02.jpg" alt="支付宝" /></a></li>
+    </ul>
+  </div>
+
+  <div class="ggdp-gm bor-t">
+    <!--<span class="dis-in pad-l5 pad-r8 pad-t5 text-c width15 col-999">
+        <label class="checkbox"><input type="checkbox" name="checkbox" id=""><i>✓</i> 全选</label> <a href="#" class=""><i class="fa fa-trash-o" aria-hidden="true"></i> 删除</a>
+    </span> -->
+    
+    <span class="dis-in pad-l5 pad-r8 pad-t5 text-c col-999">共<em class="payCount">0</em>件，总计<br /><span class="red font13 totalBal">0元</span></span>
+    
+    <p class="fr">
+    <input name="" id="payOrder" onclick="payOrder()" type="button" value="确定支付" class="btn btn07 bg-red font13 hide" />
+      <button name="" id="commit1" onclick="commit(this)" type="button" class="btn btn07 bg-red font13 commit">结算下单</button>
+    </p>
+  </div>
+</div>
+
+<div class="hei44"></div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+</div>
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_shoppCart.js"></script>
+<script type="text/javascript" src="/chinese/mobile/js/core/orderCommon.js"></script>
+
+<!--弹出筛选-->
+<div class="shade" id="tc-eject" style="display: ;">
+  <span class="cd-close2 text-c pad-l5" onclick="javascript:turnoff('tc-eject')" title="关闭"></span>
+  
+  <ul class="screen-list">
+	    <li>
+          <span class="pos-a screen-list-bt">广告编号</span>
+          <input type="text" class="wenb03 width100" placeholder="请输入广告编号" />
+        </li>
+        
+        <li>
+          <span class="pos-a screen-list-bt">播放时段</span>
+          <select name="" class="xlb01 width100">
+            <option>全部</option>
+            <option>19:00:00-20:00:00</option>
+          </select>
+        </li>
+        
+        <li>
+          <button name="" type="button" class="btn btn07 bg-blue bor-rad font13 width100 mar-t10">搜索</button>
+        </li>
+  </ul>
+</div>
+</body>
+</html>

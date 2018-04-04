@@ -1,0 +1,140 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var currPage=1,totolPage=1,pageSize=9,type="";
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	loadUserWalletInfo();//钱包数据初始化
+	loadUserWalletFlowInfo();//钱包流水数据初始化
+	$(document).on("click",".index",function(){//首页
+		if(currPage==1){
+			return;
+		}
+		loadUserWalletFlowInfo();
+	})
+	$(document).on("click",".prev",function(){//上一页
+		if(currPage-1<1){
+			return;
+		}
+		loadUserWalletFlowInfo(currPage-1);
+	})
+	$(document).on("click",".next",function(){//下一页
+		if(currPage+1>totolPage){
+			return;
+		}
+		loadUserWalletFlowInfo(currPage+1);
+	})
+	$(document).on("click",".last",function(){//末页
+		if(currPage==totolPage){
+			return;
+		}
+		loadUserWalletFlowInfo(totolPage);
+	})
+	
+	$(".query").bind("change",function(){
+		type=$(this).find("option:selected").val();
+		loadUserWalletFlowInfo();
+	})
+	
+	$(document).on("blur","#pageNo",function(){//页数跳转
+		var pageNo=$(this).val();
+		if(pageNo>totolPage){//大于最大页则跳到末页
+			pageNo=totolPage;
+			$(this).val(pageNo);
+		}else if(pageNo<1){//小于首页则跳到首页
+			pageNo=1;
+			$(this).val(1);
+		}else if(pageNo==currPage){
+			return;
+		}
+		loadUserWalletFlowInfo(pageNo);
+	})
+	
+	/*$(document).on("click","#ckAll",function(){
+		$("table tr").find("input[name='checkbox']").prop("checked",this.checked);
+	})
+	
+	$(document).on("click",".check",function(){
+		if(!$(this).find("input")[0].checked){
+			$("#ckAll").prop("checked",false);
+		}else{
+			if($(".check").find("input[type='checkbox']:checked").length==$(".check").length){
+				$("#ckAll").prop("checked",true);
+			}
+		}
+	})*/
+})
+
+function loadUserWalletInfo(){//加载用户信息
+	jsonAjax("/"+language+"/customerWallet/findWallet.do",{},function(res){
+		if(res.success&&res.data!=null&&res.data!=[]){
+			var dto=res.data;
+			$(".amount").text(dto.amount);
+		}
+	},function(){},"get");
+}
+
+function loadUserWalletFlowInfo(pageNo){//加载用户信息
+	jsonAjax("/"+language+"/customerWallet/queryWalletFlow.do",{pageNo:pageNo,pageSize:pageSize,type:type},function(res){
+		if(res.data!=null&&res.data!=[]){
+			var pageMenu="",data=res.data,html="";
+			for (var i = 0; i < data.list.length; i++) {
+				var entity=data.list[i],stateText="";
+				entity.flow_TYPE==1?stateText='充值':stateText='提现';
+				if(i==0){//分页菜单
+					currPage=data.pageNo;
+					totolPage=Math.ceil(data.totalRecords/data.pageSize);
+					pageMenu+='<a href="#" class="btn-fy index">首页</a>';
+					pageMenu+='<a href="#" class="btn-fy prev"><i class="fa fa-chevron-left"></i></a>';
+					pageMenu+='<input type="number" id="pageNo" value="'+currPage+'" style="width:60px;font-size:14px;line-height:20px;text-align:center"> '+currPage+'/'+totolPage;
+					pageMenu+=' <a href="#" class="btn-fy next"><i class="fa fa-chevron-right"></i></a>';
+					pageMenu+='<a href="#" class="btn-fy last">末页</a>';
+				}
+				html+='<tr>';
+				//html+='    <td><label class="checkbox check"><input type="checkbox" data-id='+entity.id+' class="" name="checkbox" id=""><i>✓</i></label></td>';
+				html+='    <td>'+(i+1)+'</td>';
+				html+='    <td>'+entity.open_DATE+'</td>';
+				html+='    <td>'+stateText+'</td>';
+				html+='    <td>'+entity.amount+'元</td>';
+				//html+='    <td>审核中</td>';
+				//html+='    <td><a href="#" onclick="deleteFlow('+entity.id+',this)"><i class="fa fa-trash-o" aria-hidden="true"></i> 删除</a></td>';
+				html+=' </tr>';
+			}
+			$("table tr").not("#tableHeader").remove();
+			$("#tableHeader").after(html);//展示列表数据
+			$(".pageMenu").html(pageMenu);//展示分页菜单
+		}
+	},function(){},"get");
+}
+
+function deleteFlow(id,obj){
+	var checks=$(".check").find("input[type='checkbox']:checked");
+	var ids="";
+	if(id==undefined||id==null||id==""){
+		for (var i = 0; i < checks.length; i++) {
+			if(i==0){
+				ids+=$(checks[i]).attr("data-id");
+			}else{
+				ids+=","+$(checks[i]).attr("data-id");
+			}
+		}
+		if(ids==""){
+			showJudegTip("normal","提示","请选择删除数据");
+			return ;
+		}
+	}else{
+		ids=id;
+	}
+	jsonAjax("/"+language+"/customerWallet/deleteWalletFlow.do",{ids:ids},function(res){
+		if(res.success){
+			showJudegTip("success","提示","删除成功");
+			if(id==undefined||id==null||id==""){
+				checks.parents("tr").remove();
+			}else{
+				$(obj).parents("tr").remove();
+			}
+		}
+	},function(){},"get");
+}
+

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<a href="ggyj-mx.html" class="font12 col-fff header-r2">明细</a>
+<div class="font12 bg-ff pad-q10 bor-b3">
+<div class="font14 blue">广告主收益</div>
+  
+  <div class="clear pad-t15 mar-t10 bor-t2">
+    <div class="dis-in">
+      <p class="">收益总额</p>
+      <p class="pad-t10"><em class="red font20" id="commissionTotal">0.00</em> 元</p>
+    </div>
+ 
+    <div class="fr">
+      <p class="">可出收益</p>
+      <p class="pad-t10"><em class="red font14" id="allowCommission">0.00</em> 元</p>
+    </div>
+  </div>
+</div>
+
+<div class="font12 mar-t10 bg-ff pad-q10 bor-t bor-b3 hide advertise">
+  <div class="font14 blue">店主收益</div>
+  
+  <div class="clear pad-t15 mar-t10 bor-t2">
+    <div class="dis-in">
+      <p class="">收益总额</p>
+      <p class="pad-t10"><em class="red font20" id="adCommissionTotal">0.00</em> 元</p>
+    </div>
+ 
+    <div class="fr">
+      <p class="">可出收益</p>
+      <p class="pad-t10"><em class="red font14" id="adAllowCommission">0.00</em> 元</p>
+    </div>
+  </div>
+</div>
+
+<div class="font12 mar-t10 col-fff pad-q10 bor-b4 bor-t4">
+  <span class="font13"><i class="fa fa-address-book-o" aria-hidden="true"></i> 收益账户</span>
+  <span class="fr" id="accountId"></span>
+</div>
+ 
+ 
+<input name="" onclick="widthOutHref()" type="button" value="提现" class="btn btn11 bg-blue width100 pad-q10 font13 mar-t20" />
+
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/commission.js"></script>
+</body>
+</html>

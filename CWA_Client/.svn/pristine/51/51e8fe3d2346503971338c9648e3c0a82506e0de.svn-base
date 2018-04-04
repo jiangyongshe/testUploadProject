@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script type="text/javascript">
+	document.write('<scr'+'ipt type="text/javascript" src="/chinese/mobile/js/commonRel.js"></sc'+'ript>');
+</script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+  <ul class="ggtf-sc ggtf-sc3 pad-q10 bor-b4">
+        <li>
+          <span class="pos-a ggtf-sc-bt">充值方式</span>
+          <p class="wenb03 dis-b payType">
+            <label class="radio"><input type="radio" value="0101" name="radio" id="" checked ><i>✓</i> 微信</label>
+            <label class="radio pad-l10"><input type="radio" value="0201" name="radio" id="" ><i>✓</i> 支付宝</label>
+          </p>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">充值金额</span>
+          <input type="text" class="wenb03 width100 amount" placeholder="请输入充值金额" />
+        </li>
+  </ul>
+  
+  <input name="" id="commit" type="button" value="提交" class="btn btn11 bg-blue width100 pad-q10 font13 mar-t20" />
+</div>
+
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_walletRecharge.js"></script>
+</body>
+</html>

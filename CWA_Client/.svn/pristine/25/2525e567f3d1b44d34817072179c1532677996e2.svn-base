@@ -1,0 +1,171 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords">
+<meta name="description"/>
+<title>翔云播</title>
+<link rel="shortcut icon" href="/<spring:message code="url.language"/>/images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/font-awesome.min.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/public.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/login.css">
+<style>
+.heade, menu {
+	display: none;
+}
+footer {
+	background-color: #eee;
+}
+footer a {
+	color: #333;
+}
+</style>
+<script type="text/javascript">
+//获取当前语言
+var language = location.href.substring(location.href.indexOf(location.host)).split('/')[1];
+</script>
+</head>
+<body>
+
+<div class="clear width">
+  <div class="mar-auto pos-r">
+	<div class="fl logo"><a href="/<spring:message code="url.language"/>/forward/index/cm.do"><img src="/<spring:message code="url.language"/>/images/logo.png" alt="翔云播" /></a></div>
+    
+    <div class="fr ding-r login-r font16 col-999">
+      翔云播共享广告，人人广告，人人分享！
+    </div>
+  </div>
+</div>
+  
+<div class="clear width regis01 bg-f9">
+  <div class="mar-auto">
+    <div class="regis02 bg-ff font14 pos-r">
+    <div class="pos-a regis02-tit">
+        <div class="dis-in font16"><spring:message code="register.text.newCustomerRegister" /></div>
+        <div class="fr font16"><spring:message code="register.text.haveAccount" />？  <a href="/<spring:message code="url.language"/>/exclude/forward/login.do" class="yellow"><spring:message code="register.text.logonImmediately" /></a></div>
+    </div>
+    
+    <div class="pos-r pad-t20">
+      <span class="pos-a regis02-mc"><spring:message code="register.form.mobile" /></span>
+      <input type="text" class="wenb02 bor mobile" placeholder="<spring:message code="register.form.mobileTitle" />" />
+    </div>
+    
+    <div class="pos-r pad-t20">
+      <span class="pos-a regis02-mc"><spring:message code="register.form.validCode" /></span>
+      <input type="text" class="wenb02 bor validCode" placeholder="<spring:message code="register.form.validCodeTitle" />" />
+      <input id="getValidCode" class="btn btn02 bg-orange regis02-yzm pos-a" type="button" value="<spring:message code="register.btn.getValidCode" />" />
+      <input id="getValidCode1" class="btn btn02 regis02-yzm pos-a" type="button" value="" />
+    </div>
+        
+    <div class="pos-r pad-t20">
+      <span class="pos-a regis02-mc"><spring:message code="register.form.setPassWord" /></span>
+      <input type="password" class="wenb02 bor passWord" placeholder="<spring:message code="register.form.setPassWordTitle" />" />
+    </div>
+    
+    <div class="pos-r pad-t20">
+      <span class="pos-a regis02-mc"><spring:message code="register.form.confirmPassWord" /></span>
+      <input type="password" class="wenb02 bor passWord1" placeholder="<spring:message code="register.form.confirmPassWordTitle" />" />
+    </div>
+    
+     <div class="pos-r pad-t20">
+      <span class="pos-a regis02-mc"><spring:message code="register.form.inviteCode" /></span>
+      <input type="text" class="wenb02 bor inviteCode" placeholder="<spring:message code="register.form.inviteCodeTitle" />" />
+   	 </div>
+     
+     <div class="pos-r pad-t20">
+        <label class="checkbox"><input type="checkbox" name="checkbox" id="" checked><i>✓</i> <spring:message code="register.text.readedAndAgree" /></label> <a href="#" onclick="elementDisplay('userRegisterProtocol')" class="red"><spring:message code="register.text.protocol" /></a>
+      </div>
+     
+    <div class="pad-t10 text-c red tishi01 error"></div>
+    
+    <div class="pad-t20">
+      <input name="" id="registerNow" type="button" value="<spring:message code="register.btn.registerNow" />" class="btn btn01 bg-orange font14 width" />
+    </div>
+    
+    <div class="pos-a regis03 font18 text-c">
+        <p><spring:message code="register.text.follow" /></p>
+        <p class="pad-t15"><spring:message code="register.text.getInfomation" /></p>
+        <p class="pad-t15"><img src="/<spring:message code="url.language"/>/images/ewm.jpg" /></p>
+     </div>
+  </div>
+ </div>
+</div>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/globalVar.js"></script>
+<script src="/js/common.js"></script>
+<script src="/<spring:message code="url.language"/>/js/footer.js"></script><!--公用底部JS-->
+<script src="/js/core/register.js"></script>
+<div class="shade" id="userRegisterProtocol" style="display: ;">
+  <div class="tanchu-xy">
+    <div class="tanchu-bt text-l">用户注册协议<a href="#0" class="tanchu-close text-c" onclick="turnoff('userRegisterProtocol')" title="关闭"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-xynr">
+欢迎您使用本平台服务！<br />
+您在登陆本平台之前，您须阅读并遵守《用户注册协议》（以下简称:本协议）请您务必审慎阅读、充分理解各条款内容，特别是限制或免除责任的条款，以及开通或使用某项服务的单独协议、规则。除非您已阅读并接受本协议的所有条款，否则,您无权使用本平台，您使用本平台的任何行为，即视为您已阅读并同意本协议的约束。您有违反本协议的任何行为时，本公司有权依照本协议随时单方限制、中止或终止向您提供服务等措施，并有权追究您相关责任。<br /><br />
+<b>一、定义</b><br />
+在本协议中所使用的下列词语，除非另有定义，应具有以下含义：<br />
+1. 本公司：指深圳市翔云媒体科技有限公司。<br />
+2. 本平台：是一个依托优质流量资源，可为用户提供多种广告投放形式，并利用专业数据处理算法实现成本可控、效益可观的效果广告投放系统。<br />
+3. 用户：指符合本协议所规定的条件，同意遵守本平台各种规则、条款（包括但不限于本协议），并使用本平台的自然人、法人或其它组织。<br />
+4. 本协议：指本公司与用户就本平台的注册、使用相关事宜签署的《用户注册协议》。<br /><br />
+<b>二、用户资格</b><br />
+1. 符合下列条件之一的自然人、法人或其它组织可以注册为本平台用户，使用本平台服务：<br />
+(1) 年满十八周岁，且具有完全民事权利能力和民事行为能力的自然人（未满十八周岁的自然人应经其监护人书面同意）；<br />
+(2) 根据中华人民共和国法律或其注册地法律、法规合法成立并有效存续的法人或其它组织；<br />
+(3) 无民事行为能力人、限制民事行为能力人以及无经营资格或无特定经营资格的法人或其它组织不应注册为本平台用户或超过其民事行为能力范围从事交易，若出现前述情形，且合同效力未得到有效补正，本协议自始无效；本公司及本平台一经发现，有权立即注销该用户，且有权要求其赔偿因此给本公司及本平台造成的一切损失。<br /><br />
+<b>三、用户权利和义务</b><br />
+1. 用户有权根据本协议及本平台相关规定，使用本平台提供的服务，包括但不限于利用本平台发布广告信息、与本平台进行合作运营、参与本平台的有关活动等；<br />
+2. 用户应保证所有注册信息是真实准确的，包括但不限于真实姓名、身份证号、联系电话、地址、邮政编码、电子邮件等，并保证本公司及本平台可通过上述联系方式及时与用户取得联系；若注册信息有变更，用户应及时更新；<br />
+3. 用户用于登录本平台的用户名、密码均由用户自行设置并保管。双方确认，用户在本平台操作的任何行为包括但不限于修改、重置用户信息、报价、收款账户、收款人信息等，均视为用户真实意思的表示。用户应妥善保管用户名和密码，因用户名、密码泄露而导致的损失，均由用户自行承担；用户不得擅自转让或授权他人使用其在本平台的用户名、密码，否则应自行承担由此引起的一切后果；<br />
+4. 用户应保证其身份及发布的推广内容符合《中国人民共和国广告法》等相关法律法规的规定，不得以虚假或引人误解的内容欺骗、误导消费者；<br />
+5. 用户不得在本平台传播任何假冒伪劣产品或服务信息，包括但不限于假冒或仿冒他人专利、认证、商标的产品、不符合国家标准或行业标准的产品、过期变质产品、虚假服务等；<br />
+6. 用户不得在本平台发布国家禁止发布、侵犯他人知识产权或其他合法权益的信息，也不得发布违背社会公共利益或公共道德的信息；<br />
+7. 用户承诺其在本平台实施的所有行为均符合国家法律、法规、社会公共利益、公共道德及本平台的相关规定；<br />
+8. 用户应自行承担因使用本平台所产生的相关税费，包括但不限于所得税、营业税、增值税、平台服务费等；<br /><br />
+<b>四、本公司、本平台权利义务</b><br />
+1. 本公司及本平台将在现有技术水平的基础上努力确保本平台正常运行，尽力避免服务中断或将中断时间限制在可行的最短时间内，尽最大努力保证用户在本网上的活动顺利进行；<br />
+2. 本平台将对用户使用本平台过程中所遇到的问题及时反馈；<br />
+3. 本公司及本平台有权对用户的注册信息进行查阅，若本公司及本平台对用户的注册信息有合理怀疑时，有权向用户发出询问函要求用户做出解释、改正；若情况严重，本公司及本平台可不经通知用户直接采取删除信息、注销账号等处理方式而无需承担任何责任；<br />
+4. 因本平台的特殊性，本公司及本平台不能对用户在本平台进行的所有行为进行审查。若本公司及本平台所掌握的情况认定用户在本平台的行为存在违法、违反本协议规定或其他不当行为的，本公司及本平台有权向用户核实有关情况，并根据具体情形采取向用户发出警告通知、删除用户相关信息、限制用户活动直至停止该用户提供服务等处理措施；<br /><br />
+<b>五、服务的中断和终止</b><br />
+1. 本平台在未向用户收取相关费用的情况下，可自行决定以包括但不限于本平台认为用户已违反本协议或用户超过180天内未登录本平台理由终止对用户的服务，并不再保存用户在本平台的全部资料而无需通知该用户（包括但不限于用户信息、交易信息等）。服务终止后，本平台没有义务为用户保留其资料或与之相关的任何信息，或转发任何未曾阅读或发送的信息给用户或第三方； <br />
+2. 用户向本平台提出注销用户身份的，本平台经审核同意后注销，本协议自注销之时起即终止，但本平台仍保留下列权利：<br />
+(1) 有权保留被注销用户的资料，包括但不限于用户注册信息、交易记录等；<br />
+(2) 如用户在注销前在本平台存在违法或违反本协议的行为，本平台仍可行使本协议所规定的权利。<br />
+3. 用户如存在下列情况，本平台可通过注销用户账户的方式终止服务：<br />
+(1) 本公司及本平台根据所掌握的情况，认定用户存在违法、违反本协议相关规定或其它不当行为的；<br />
+(2) 用户注册信息及提供的资料有虚假内容的；<br />
+(3) 本公司及本平台认为需终止服务的其它情况。<br /><br />
+<b>六、免责声明</b><br />
+当用户接受本协议时，用户应仔细阅读了解并同意以下条款∶<br />
+1. 用户使用本平台之风险由用户自行承担。本公司依据现有技术提供服务，尽管本公司将尽合理努力维护本平台的正常运行，但本公司无法随时预见到任何技术上的问题或其他困难，该等问题或困难可能导致用户的使用受到影响（包括但不限于交易延迟、交易失败等），请用户谨慎考虑使用本平台所提供服务可能带来的风险；<br />
+2. 鉴于互联网之特殊性质，本平台的免责事由亦包括但不限于下列任何影响正常运营之情形：<br />
+（1）黑客攻击、计算机病毒侵入或发作；<br />
+（2）基础运营商或主管部门技术调整导致之影响；<br />
+（3）由于用户的原因（包括但不限于操作失误、系统故障等）导致的；<br />
+（4）计算机系统遭到破坏、瘫痪或无法正常使用导致未能依约提供服务；<br />
+（5）因法律法规调整或政府管制、政府专项行动等而造成的暂时性关闭、服务调整等；<br />
+（6）其它非本平台过错造成的原因等。<br />
+3. 用户经由本平台取得的建议和资讯，无论其形式或表现，绝不构成本协议未明示规定的任何保证；<br />
+4. 对于用户所发布广告的合法性、真实性、品质以及用户履行交易的能力等，本平台不承担任何连带责任；若有任何第三方因用户发布的信息而向本公司及本平台主张权利，本公司及本平台将根据情况将用户信息告知第三方，由用户和第三方自行解决；若本公司及本平台因第三方主张权利而遭受任何损失，用户应负责赔偿；<br />
+5. 本平台仅为信息推广平台，用户因使用本平台与任何第三方产生的纠纷均与本公司及本平台无关，本公司及本平台不承担任何责任。<br /><br />
+<b>七、特别声明</b><br />
+1. 用户同意本公司及本平台可根据市场情况和广告费费率调整、自动更改相应的对外报价。如果需要，用户可以根据需求自行选择服务方式；<br />
+2. 本协议可由本平台随时更新，更新后的协议条款一旦公布即代替原来的协议条款，本平台不再另行通知，用户可在本平台自行查阅最新版协议条款。在本平台修改协议条款后，如果用户不接受修改后的条款，可立即停止使用本平台提供的服务，用户继续使用本平台提供的服务将被视为接受修改后的协议。<br />
+<b>八、法律适用与争议解决</b><br />
+1. 本协议之订立、生效、解释、履行、修订与争议解决均适用中华人民共和国法律；<br />
+2. 因本协议所生之相关争议，均应提交深圳市罗湖区人民法院诉讼解决。 
+    </div>
+    
+    <div class="tanchu-xyan text-c">
+       <input name="" type="button" onclick="javascript:turnoff('userRegisterProtocol');$('input[type=checkbox]')[0].checked=true;" value="同意并继续" class="btn btn02 bg-orange font14 width16" />
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+package com.cwa.client.dao;
+
+import java.util.List;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+
+import com.cwa.client.dto.CartDto;
+import com.cwa.client.model.Tb_Cart;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+/**
+ * 查询广告信息数据层
+ */
+public class ShoppCartDao extends BaseDao<Tb_Cart, CartDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	public CartDto findShoppCartByAccountId(String accountId,Integer adId,String deviceId) {
+		String sql="select * from Tb_Cart where account_id=? and advertiser_id=? and device_id=?";
+		RowMapper<CartDto> rowmapper=BeanPropertyRowMapper.newInstance(CartDto.class);
+		List<CartDto> list = getJdbcTemplate().query(sql, rowmapper,accountId,adId,deviceId);
+		logWriteUtil.writeLog("", "==== listSize:"+list.size(), LOGLEVEL_INFO, ShoppCartDao.class);
+		return list.size()>0?list.get(0):null;
+	}
+	
+	public void deleteByAccountId(String accountId,String ids) {
+		String sql="delete from Tb_Cart where account_id=? ";
+		String[] strArr = (accountId+","+ids).split(",");
+		for (int i = 1; i < strArr.length; i++) {
+			if(i==1){
+				sql+="and id in(?";
+			}else{
+				sql+=",?";
+			}
+			if(i==strArr.length-1){
+				sql+=")";
+			}
+		}
+		int length = this.jdbcTemplate.update(sql, strArr); 
+		logWriteUtil.writeLog("", "==== delete cart "+length+" ids:"+ids+"----accountId:"+accountId+"==sql:"+sql, LOGLEVEL_INFO, ShoppCartDao.class);
+	}
+	
+	/**
+	 * 批量加入购物车
+	 * @param batchInsertOrder 加入购物车数据
+	 * @return
+	 */
+	public int[] batchInsertCart(List<Object[]> batchInsertCart)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"INSERT INTO tb_cart(DEVICE_ID,ACCOUNT_ID,ACCOUNT_IP,COMMIT_TIME,PLAY_BEGIN_TIME,PLAY_END_TIME,SHOP_NAME,ADVERTISER_ID,TOTAL_PRICE,PRICE,BEGIN_TIME,END_TIME) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+	 				batchInsertCart);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	/**
+	 * 批量更新购物车
+	 * @param batchInsertOrder 更新购物车数据
+	 * @return
+	 */
+	public int[] batchUpdateCart(List<Object[]> batchUpdateCart)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"update tb_cart set PLAY_BEGIN_TIME=?,PLAY_END_TIME=? where id=?",
+	 				batchUpdateCart);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+}

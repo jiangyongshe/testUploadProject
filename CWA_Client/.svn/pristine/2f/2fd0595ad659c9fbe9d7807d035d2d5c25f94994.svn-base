@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+    <!--右侧内容-->
+    <div class="right bg-ff">
+      <h2 class="clear font18 pad-b10 bor-b">广告查询</h2>
+      
+      <div class="ggs-sea pad-t20">
+        <div class="pos-r font14 ggs-sea-list">
+          <span class="pos-a ggs-sea-bt">广告编号</span>
+          <input type="text" class="wenb04" placeholder="请输入广告编号" />
+        </div>
+        
+        <div class="pos-r font14 ggs-sea-list">
+          <span class="pos-a ggs-sea-bt">播放时段</span>
+          <select name="" class="font14 xlb05">
+            <option>全部</option>
+            <option>19:00:00-20:00:00</option>
+          </select>
+        </div>
+        
+        <div class="pos-r font14 ggs-sea-list">
+          <span class="pos-a ggs-sea-bt">广告状态</span>
+          <select name="" class="font14 xlb05">
+            <option>全部</option>
+          </select>
+        </div>
+        
+        <div class="pos-r font14 ggs-sea-list">
+          <input name="" type="button" value="搜索" class="btn btn06 bg-red font14" />
+        </div>
+      </div>
+      
+      <div class="rmgg-table rmgg-table2 clear font13">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th>序号</th>
+    <th>店铺编号</th>
+    <th>设备编号</th>
+    <th>广告编号</th>
+    <th>广告名称</th>
+    <th>播放时段</th>
+    <th>价格（元/天）</th>
+    <th>开始日期</th>
+    <th>结束日期</th>
+    <th>广告状态</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>200000001</td>
+    <td>GGKZQ0001</td>
+    <td>10000005</td>
+    <td>欧莱雅之夜</td>
+    <td>19:00:00-20:00:00</td>
+    <td>30</td>
+    <td>2017-08-20</td>
+    <td>2017-09-20</td>
+    <td><span class="red">申请中</span></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>200000002</td>
+    <td>GGKZQ0002</td>
+    <td>10000006</td>
+    <td>唐老鸭服装</td>
+    <td>19:00:00-20:00:00</td>
+    <td>30</td>
+    <td>2017-08-26</td>
+    <td>2017-09-26</td>
+    <td><span class="red">播放中</span></td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>200000003</td>
+    <td>GGKZQ0003</td>
+    <td>10000007</td>
+    <td>蒙牛牛奶</td>
+    <td>19:00:00-20:00:00</td>
+    <td>30</td>
+    <td>2017-09-15</td>
+    <td>2017-10-15</td>
+    <td><span class="red">等待播放</span></td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>200000004</td>
+    <td>GGKZQ0004</td>
+    <td>10000008</td>
+    <td>999感冒灵</td>
+    <td>19:00:00-20:00:00</td>
+    <td>30</td>
+    <td>2017-07-18</td>
+    <td>2017-08-18</td>
+    <td><span class="red">已停播</span></td>
+  </tr>
+</table>
+      </div>
+      
+      <div class="fenye font14 text-c">
+        <a href="#" class="btn-fy"><i class="fa fa-chevron-left"></i></a>
+        <a href="#" class="btn-fy active">1</a>
+        <a href="#" class="btn-fy">2</a>
+        <a href="#" class="btn-fy">3</a>
+        <a href="#" class="btn-fy">...</a>
+        <a href="#" class="btn-fy">9</a>
+        <a href="#" class="btn-fy">10</a>
+        <a href="#" class="btn-fy"><i class="fa fa-chevron-right"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

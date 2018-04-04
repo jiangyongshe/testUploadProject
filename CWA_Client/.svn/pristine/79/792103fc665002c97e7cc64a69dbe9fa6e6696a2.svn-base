@@ -1,0 +1,147 @@
+package com.cwa.client.web;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.dto.CartDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.model.Tb_Cart;
+import com.cwa.client.service.ShoppCartService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.GsonUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.RespCodeEnum;
+
+@Controller
+@RequestMapping("/*/shoppCart")
+public class ShoppCartController extends BaseController<GobalRespParameter> implements Constant{
+	
+	@Resource
+	private ShoppCartService shoppCartService;
+	
+	//查询购物车
+	@RequestMapping("/queryShoppCart.do")
+	public void queryShoppCart(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		//获取请求参数并判断是否为空getPageModel
+		String pageSize= getParameter(req, "pageSize");
+		String pageNo= getParameter(req, "pageNo");
+		try {
+			if(pageSize==null){//每页大写为空则默认5条
+				pageSize=NINE+"";
+			}
+			if(pageNo==null){//当前页为空则默认首页
+				pageNo=ONE+"";
+			}
+			if(util.isNumber(pageSize)&&util.isNumber(pageNo)){//判断参数是否正确
+				Double discount = queryUserDiscount(req, 0);
+				CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+				CartDto dto=new CartDto();
+				dto.setPageNo(Integer.parseInt(pageNo));
+				dto.setPageSize(Integer.parseInt(pageSize));
+				dto.setAccount_id(customerDto.getAccount_id());//查询用户
+				writeLog("", "==== accountId:"+customerDto.getAccount_id(), LOGLEVEL_INFO, ShoppCartController.class);
+				PageModel<CartDto> pageModel = shoppCartService.getPageModel(dto);
+				parameter.setData(pageModel);
+				parameter.setMsg(discount+"");
+				parameter.setSuccess(true);
+				writeLog("", "query shoppCart info success! data:"+GsonUtil.dtoToJson(pageModel), LOGLEVEL_INFO, ShoppCartController.class);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	//加入购物车
+	@RequestMapping("/joinShoppCart.do")
+	public void joinShoppCart(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		GobalRespParameter parameter=new GobalRespParameter();
+		//获取请求参数并判断是否为空getPageModel
+		Map<String,String[]> map = getAllParameter(req,"joinShoppCart.do","checkTimes","checkAdvertiseId","deviceId");
+		//RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				//获得广告信息
+				List<AdvertiseInfoDto> list = getOrderList(req,map);
+				List<Object []> objListInsert=new ArrayList<>();
+				List<Object []> objListUpdate=new ArrayList<>();
+				for (AdvertiseInfoDto dto : list) {
+					CartDto cartDto = shoppCartService.findCartExistsAdByAccountId(dto.getAccount_id(),dto.getId(),dto.getDevice_id());
+					if(cartDto==null){
+						Object [] objs={
+								dto.getDevice_id(),
+								dto.getAccount_id(),
+								dto.getAccount_IP(),
+								new Timestamp(System.currentTimeMillis()),
+								dto.getStartDate(),
+								dto.getEndDate(),
+								dto.getShop_name(),
+								dto.getId(),
+								new BigDecimal(dto.getSumPrice()),
+								dto.getAd_price(),
+								dto.getIdle_time().split("-")[0],
+								dto.getIdle_time().split("-")[1]
+						};
+						objListInsert.add(objs);
+					}else{
+						Object [] objs={
+								cartDto.getId(),
+								dto.getIdle_time().split("-")[0],
+								dto.getIdle_time().split("-")[1]
+						};
+						objListUpdate.add(objs);
+					}
+				}
+				writeLog("","batch join cart insertData:"+GsonUtil.dtoToJson(objListInsert)+"===updateData:"+GsonUtil.dtoToJson(objListUpdate), LOGLEVEL_INFO, AdQueryController.class);
+				shoppCartService.batchJoinCart(objListInsert,objListUpdate);
+				parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+			}else{//请求参数无效
+			}
+		} catch (Exception e) {
+			parameter.setRespCode(RespCodeEnum.global_unknow_expiration.getCode());
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	//剔除购物车
+	@RequestMapping("/reJectShoppCart.do")
+	public void reJectShoppCart(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		GobalRespParameter parameter=new GobalRespParameter();
+		//获取请求参数并判断是否为空getPageModel
+		Map<String,String[]> map = getAllParameter(req,"reJectShoppCart.do","cartId");
+		//RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+				Tb_Cart entity=new Tb_Cart();
+				entity.setId(Integer.parseInt(map.get("cartId")[0]));
+				shoppCartService.deleteByAccountId(customerDto.getAccount_id(), map.get("cartId")[0]);
+				parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+				writeLog("","reJect cart success!", LOGLEVEL_INFO, AdQueryController.class);
+			}else{//请求参数无效
+				parameter.setRespCode(RespCodeEnum.global_parameter_isnull.getCode());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+}

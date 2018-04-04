@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:redis="http://www.springframework.org/schema/redis"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       classpath:spring-beans-4.3.xsd
+       http://www.springframework.org/schema/context 
+       classpath:spring-context-4.3.xsd
+       http://www.springframework.org/schema/tx 
+       classpath:spring-tx-4.3.xsd
+       http://www.springframework.org/schema/aop
+       classpath:spring-aop-4.3.xsd
+       http://www.springframework.org/schema/redis
+       classpath:spring-redis-1.0.xsd
+        ">
+
+
+	<!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->
+	<context:annotation-config />
+	<context:component-scan base-package="com.cwa.client.dao" />
+	<context:component-scan base-package="com.cwa.client.service" />
+	<context:component-scan base-package="com.cwa.client.web" />
+	<context:component-scan base-package="com.cwa.client.web.quartzJob" />
+	<!-- 定时任务配置文件  -->
+	<import resource="classpath:springQuartz*.xml" />
+
+
+
+	<!-- <context:property-placeholder location="classpath:jdbc.properties"/> 
+		<bean id="propertyPlaceholderConfigurer" class="org.jasypt.spring.properties.EncryptablePropertyPlaceholderConfigurer"> 
+		<constructor-arg ref="configurationEncryptor" /> <property name="location" 
+		value="classpath:jdbc.properties" /> </bean> <bean id="configurationEncryptor" 
+		class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor"> <property name="config" 
+		ref="environmentVariablesConfiguration" /> </bean> <bean id="environmentVariablesConfiguration" 
+		class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig"> <property 
+		name="algorithm" value="PBEWithMD5AndDES" /> <property name="password" value="secret" 
+		/> </bean> -->
+
+
+	<!-- 数据源配置, 使用DBCP数据库连接池 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
+		destroy-method="close">
+		<!-- Connection Info -->
+
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url"
+			value="jdbc:mysql://10.0.0.222:3306/cwa?characterEncoding=utf-8&amp;useSSL=false&amp;rewriteBatchedStatements=true" />
+		<property name="username" value="dev" />
+		<property name="password" value="GoldWin1!" />
+
+
+		<!-- Connection Pooling Info -->
+		<!-- <property name="maxActive" value="${dbcp.maxActive}" /> -->
+		<property name="maxIdle" value="20" />
+		<property name="defaultAutoCommit" value="true" />
+		<!-- 连接Idle一个小时后超时 -->
+		<property name="timeBetweenEvictionRunsMillis" value="3600000" />
+		<property name="minEvictableIdleTimeMillis" value="3600000" />
+		<property name="maxWaitMillis" value="120000" />
+		<property name="defaultQueryTimeout" value="120000" />
+	</bean>
+
+	<!-- 配置Jdbc模板 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"
+		p:dataSource-ref="dataSource" />
+	<bean id="baseDao" class="com.cwa.client.dao.BaseDao" abstract="true">
+		<property name="jdbcTemplate" ref="jdbcTemplate" />
+	</bean>
+	<bean id="customerDao" class="com.cwa.client.dao.CustomerDao" parent="baseDao" /><!-- 用户数据 -->
+	<bean id="advertiserDao" class="com.cwa.client.dao.AdvertiserDao" parent="baseDao" /><!-- 商户数据 -->
+	<bean id="adCommissionDao" class="com.cwa.client.dao.ADCommissionDao" parent="baseDao" /><!-- 广告商佣金 -->
+	<bean id="commissionDetailDao" class="com.cwa.client.dao.CommissionDetailDao" parent="baseDao" /><!-- 佣金明细 -->
+	<bean id="agentDao" class="com.cwa.client.dao.AgentDao" parent="baseDao" /><!-- 代理数据 -->
+	<bean id="salesmanDao" class="com.cwa.client.dao.SalesmanDao" parent="baseDao" /><!-- 业务员数据 -->
+	<bean id="deviceVedioPlanDao" class="com.cwa.client.dao.DeviceVedioPlanDao" parent="baseDao" /><!-- 设备视频播放计划数据 -->
+	<bean id="advertiseInfoDao" class="com.cwa.client.dao.AdvertiseInfoDao" parent="baseDao" /><!-- 广告信息数据 -->
+	<bean id="advertiseVideoDao" class="com.cwa.client.dao.AdvertiseVideoDao" parent="baseDao" /><!-- 广告视频数据 -->
+	<bean id="advertiseOrderDao" class="com.cwa.client.dao.AdvertiseOrderDao" parent="baseDao" /><!-- 订单数据 -->
+	<bean id="advertiseOrderDetailDao" class="com.cwa.client.dao.AdvertiseOrderDetailDao" parent="baseDao" /><!-- 订单详情数据 -->
+	<bean id="vedioPlayHistoryDao" class="com.cwa.client.dao.VedioPlayHistoryDao" parent="baseDao" /><!-- 广告视频播放历史数据 -->
+	<bean id="advertiserDeviceDao" class="com.cwa.client.dao.AdvertiserDeviceDao" parent="baseDao" /><!-- 广告设备详情数据 -->
+	<bean id="advertiserCommReportDao" class="com.cwa.client.dao.AdvertiserCommReportDao" parent="baseDao" /><!-- 广告佣金报表 -->
+	<bean id="advertiserPicDao" class="com.cwa.client.dao.AdvertiserPicDao" parent="baseDao" /><!-- 广告商图片 -->
+	<bean id="deviceVedioCountDao" class="com.cwa.client.dao.DeviceVedioCountDao" parent="baseDao" /><!-- 广告视频播放统计数据-->
+	<bean id="shoppCartDao" class="com.cwa.client.dao.ShoppCartDao" parent="baseDao" /><!-- 购物车数据-->
+	<bean id="clientInOutMoneyDao" class="com.cwa.client.dao.ClientInOutMoneyDao" parent="baseDao" /><!-- 出金-->
+	<bean id="customerCommissionDao" class="com.cwa.client.dao.CustomerCommissionDao" parent="baseDao" /><!-- 客户佣金-->
+	<bean id="customerCommReportDao" class="com.cwa.client.dao.CustomerCommReportDao" parent="baseDao" /><!-- 客户佣金报表-->
+	<bean id="fileManagerDao" class="com.cwa.client.dao.FileManagerDao" parent="baseDao" /><!-- 文件管理-->
+	<bean id="systemSetDao" class="com.cwa.client.dao.SystemSetDao" parent="baseDao" /><!-- 全局变量-->
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+		p:dataSource-ref="dataSource" />
+
+	<!-- 通过AOP配置提供事务增强，让service包下所有Bean的所有方法拥有事务 -->
+	<aop:config proxy-target-class="true">
+		<aop:pointcut id="serviceMethod"
+			expression=" execution(* com.cwa.client.service..*(..))" />
+		<aop:advisor pointcut-ref="serviceMethod" advice-ref="txAdvice" />
+	</aop:config>
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+
+
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="minIdle" value="10" />
+		<property name="maxIdle" value="50" />
+		<property name="maxTotal" value="500" />
+		<property name="maxWaitMillis" value="1000" />
+		<property name="testOnBorrow" value="true" />
+	</bean>
+
+	<bean id="redisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="10.0.0.148" />
+		<property name="port" value="6379" />
+		<property name="password" value="goldwin" />
+		<property name="usePool" value="true" />
+		<property name="poolConfig" ref="poolConfig" />
+	</bean>
+
+
+
+	<!-- redis template definition -->
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="redisConnectionFactory" />
+	</bean>
+
+	<bean id="userRedis" class="com.cwa.client.redis.UserRedisImpl" />
+
+	<bean id="jdkSerializer"
+		class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+
+	<!-- 将session放入redis -->
+	<bean id="redisHttpSessionConfiguration"
+		class="org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration">
+		<property name="maxInactiveIntervalInSeconds" value="1800" /><!-- 
+			s -->
+	</bean>
+
+
+
+</beans>

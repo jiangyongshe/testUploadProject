@@ -1,0 +1,129 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+	<%@taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta
+	content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no"
+	name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script src="/js/commonRel.js"></script>
+<link rel="stylesheet"
+	href="/<spring:message code="url.language"/>/css/mobiscroll-date.css" />
+</head>
+
+<body>
+	<!-- 公用头部JS-->
+	<script src="/<spring:message code="url.language"/>/js/header.js"></script>
+
+	<div class="width clear font14">
+  		<div class="mar-auto pos-r">
+			<!-- 左侧菜单-->
+			<script src="/<spring:message code="url.language"/>/js/left.js"></script>
+
+			<!-- 右侧内容 -->
+			<div class="right bg-ff">
+		      <div class="clear width bg-f3 wddd">
+		        <h2 class="fl font16 pad-t7 pad-b5">广告收益</h2>
+		      </div>
+		      
+		      <div class="ggyj clear pad-t20 pad-b20 pad-l20 pad-r20">
+		        <div class="dis-in width24">
+		          <p>收益总额</p>
+		          <p class="pad-t10"><span class="red font28 pad-r10" id="commissionTotal">0</span>元</p>
+		        </div>
+		        
+		        <div class="dis-in width48 bor-r">
+		          <p>收益账户：<span class="col-999" id="accountId"></span></p>
+		          <p class="pad-t15">可出收益：<span class="col-999" id="allowCommission"></span>元</p>
+		        </div>
+		        
+		        <a href="/<spring:message code="url.language"/>/forward/user/withdraw.do" class="fr btn btn01 bg-red font15 mar-t15 text-c">提现</a>
+		      </div>
+		      
+			<div class="ggtf-city width bg-f9">
+		        <div class="pos-r font14 ggs-sea-list">
+		          <span class="pos-a ggs-sea-bt">开始日期</span>
+		          <input type="text" class="wenb07" name="user_age" id="commissionStartTime" readonly placeholder="请输入开始日期">
+		        </div>
+		        
+		        <div class="pos-r font14 ggs-sea-list">
+		          <span class="pos-a ggs-sea-bt">结束日期</span>
+		          <input type="text" class="wenb07" name="user_age" id="commissionEndTime" readonly placeholder="请输入结束日期">
+		        </div>
+		        
+		        <div class="fl width24 mar-l15">
+		          <input name="" type="button" id="commissionSearchBtn" value="搜索" class="btn btn06 bg-blue font14 width33">
+		          <input name="" type="button" value="清空" onclick="clearCommissionDate()" class="btn btn06 bg-999 font14 width33 mar-l5">
+		        </div>
+		      </div>
+		      
+		       <div class="rmgg-table font13">
+				<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<thead>
+				  <tr>
+				    <th>序号</th>
+				    <th>日期</th>
+				    <th>资金变动（元）</th>
+				    <th>类型</th>
+				  </tr>
+				  </thead>
+				  <tbody id="commissionDetailData">
+
+				  </tbody>
+				</table>
+          	   </div>
+			   <div class="fenye font14 text-c" id="commissionDetailPageTurn">
+			   </div>
+			</div>
+		</div>
+	</div>
+<!--日期选择-->
+<script src="/js/mobiscroll-date.js"></script>
+<!--日期选择-->
+<script src="/js/mobiscroll.js"></script>
+<!-- 佣金逻辑 -->
+<script src="/js/core/commission.js"></script>
+<!-- 公用底部JS-->
+<script type="text/javascript"
+	src="/<spring:message code="url.language"/>/js/footer.js"></script>
+<script type="text/javascript">
+	$(function() {
+		var currYear = (new Date()).getFullYear();
+		var opt = {};
+		opt.date = {
+			preset : 'date'
+		};
+		opt.datetime = {
+			preset : 'datetime'
+		};
+		opt.time = {
+			preset : 'time'
+		};
+		opt.def = {
+			theme : 'android-ics light', //皮肤样式
+			display : 'modal', //显示方式 
+			mode : 'scroller', //日期选择模式
+			dateFormat : 'yyyy-mm-dd',
+			lang : 'zh',
+			showNow : true,
+			nowText : "今天",
+			startYear : currYear - 50, //开始年份
+			endYear : currYear + 10
+		//结束年份
+		};
+
+		$("#commissionStartTime").mobiscroll(
+				$.extend(opt['date'], opt['def']));
+		$("#commissionEndTime").mobiscroll(
+				$.extend(opt['date'], opt['def']));
+	});
+</script>
+</body>
+</html>

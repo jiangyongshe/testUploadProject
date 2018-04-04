@@ -1,0 +1,278 @@
+package com.cwa.client.dto;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+public class CommissionDetailDto extends BaseDto{
+
+	private Integer id;
+	private Timestamp balance_datetime; // 结算时间
+	private String serial_numbernot; // 订单编号
+	private String customer_id;// 客户id
+	private String customer_name;// 客户姓名
+	private String advertiser_id;// 广告商id
+	private String advertiser_name;// 广告商名称
+	private BigDecimal commission;// 分佣金额
+	private BigDecimal total_comm;// 总公司佣金
+	private BigDecimal branch_comm;// 分公司佣金
+	private String branch_id;// 分公司账号
+	private String branch_name;// 分公司名称
+	private String salesman_name;// 业务员姓名
+	private String salesman_id;// 业务员账号
+	private BigDecimal salesman_comm;// 业务员佣金
+	private String client_name;// 直客姓名
+	private BigDecimal client_comm;// 直客佣金
+	private String referrals_name;// 推荐人姓名
+	private BigDecimal referrals_comm;// 推荐人佣金
+	private Integer commission_type;// 分佣类型 1=业务员分佣，2=直客分佣，3=推荐人分佣,4=代理分佣
+	private String device_id;// 设备id
+	private String client_id;// 直客id
+	private String referrals_id;// 推荐人id
+	private String agent_id;// 代理编号
+	private String agent_name;// 会员名称
+	private BigDecimal agent_comm;// 代理佣金
+	private Integer device_type;// 设备类型（1：设备直营，2：设备购买，3：设备租赁）
+	private String agent_bond_rate;// 代理保证金比率
+	private Integer referrals_type;// 推荐人类型（1：客户，2：广告商）
+	private BigDecimal advertiser_comm;// 广告商佣金
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Timestamp getBalance_datetime() {
+		return balance_datetime;
+	}
+
+	public void setBalance_datetime(Timestamp balance_datetime) {
+		this.balance_datetime = balance_datetime;
+	}
+
+	public String getSerial_numbernot() {
+		return serial_numbernot;
+	}
+
+	public void setSerial_numbernot(String serial_numbernot) {
+		this.serial_numbernot = serial_numbernot;
+	}
+
+	public String getCustomer_id() {
+		return customer_id;
+	}
+
+	public void setCustomer_id(String customer_id) {
+		this.customer_id = customer_id;
+	}
+
+	public String getCustomer_name() {
+		return customer_name;
+	}
+
+	public void setCustomer_name(String customer_name) {
+		this.customer_name = customer_name;
+	}
+
+	public String getAdvertiser_id() {
+		return advertiser_id;
+	}
+
+	public void setAdvertiser_id(String advertiser_id) {
+		this.advertiser_id = advertiser_id;
+	}
+
+	public String getAdvertiser_name() {
+		return advertiser_name;
+	}
+
+	public void setAdvertiser_name(String advertiser_name) {
+		this.advertiser_name = advertiser_name;
+	}
+
+	public BigDecimal getCommission() {
+		return commission;
+	}
+
+	public void setCommission(BigDecimal commission) {
+		this.commission = commission;
+	}
+
+	public BigDecimal getTotal_comm() {
+		return total_comm;
+	}
+
+	public void setTotal_comm(BigDecimal total_comm) {
+		this.total_comm = total_comm;
+	}
+
+	public BigDecimal getBranch_comm() {
+		return branch_comm;
+	}
+
+	public void setBranch_comm(BigDecimal branch_comm) {
+		this.branch_comm = branch_comm;
+	}
+
+	public String getBranch_id() {
+		return branch_id;
+	}
+
+	public void setBranch_id(String branch_id) {
+		this.branch_id = branch_id;
+	}
+
+	public String getBranch_name() {
+		return branch_name;
+	}
+
+	public void setBranch_name(String branch_name) {
+		this.branch_name = branch_name;
+	}
+
+	public String getSalesman_name() {
+		return salesman_name;
+	}
+
+	public void setSalesman_name(String salesman_name) {
+		this.salesman_name = salesman_name;
+	}
+
+	public String getSalesman_id() {
+		return salesman_id;
+	}
+
+	public void setSalesman_id(String salesman_id) {
+		this.salesman_id = salesman_id;
+	}
+
+	public BigDecimal getSalesman_comm() {
+		return salesman_comm;
+	}
+
+	public void setSalesman_comm(BigDecimal salesman_comm) {
+		this.salesman_comm = salesman_comm;
+	}
+
+	public String getClient_name() {
+		return client_name;
+	}
+
+	public void setClient_name(String client_name) {
+		this.client_name = client_name;
+	}
+
+	public BigDecimal getClient_comm() {
+		return client_comm;
+	}
+
+	public void setClient_comm(BigDecimal client_comm) {
+		this.client_comm = client_comm;
+	}
+
+	public String getReferrals_name() {
+		return referrals_name;
+	}
+
+	public void setReferrals_name(String referrals_name) {
+		this.referrals_name = referrals_name;
+	}
+
+	public BigDecimal getReferrals_comm() {
+		return referrals_comm;
+	}
+
+	public void setReferrals_comm(BigDecimal referrals_comm) {
+		this.referrals_comm = referrals_comm;
+	}
+
+	public Integer getCommission_type() {
+		return commission_type;
+	}
+
+	public void setCommission_type(Integer commission_type) {
+		this.commission_type = commission_type;
+	}
+
+	public String getDevice_id() {
+		return device_id;
+	}
+
+	public void setDevice_id(String device_id) {
+		this.device_id = device_id;
+	}
+
+	public String getClient_id() {
+		return client_id;
+	}
+
+	public void setClient_id(String client_id) {
+		this.client_id = client_id;
+	}
+
+	public String getReferrals_id() {
+		return referrals_id;
+	}
+
+	public void setReferrals_id(String referrals_id) {
+		this.referrals_id = referrals_id;
+	}
+
+	public String getAgent_id() {
+		return agent_id;
+	}
+
+	public void setAgent_id(String agent_id) {
+		this.agent_id = agent_id;
+	}
+
+	public String getAgent_name() {
+		return agent_name;
+	}
+
+	public void setAgent_name(String agent_name) {
+		this.agent_name = agent_name;
+	}
+
+	public BigDecimal getAgent_comm() {
+		return agent_comm;
+	}
+
+	public void setAgent_comm(BigDecimal agent_comm) {
+		this.agent_comm = agent_comm;
+	}
+
+	public Integer getDevice_type() {
+		return device_type;
+	}
+
+	public void setDevice_type(Integer device_type) {
+		this.device_type = device_type;
+	}
+
+	public String getAgent_bond_rate() {
+		return agent_bond_rate;
+	}
+
+	public void setAgent_bond_rate(String agent_bond_rate) {
+		this.agent_bond_rate = agent_bond_rate;
+	}
+
+	public Integer getReferrals_type() {
+		return referrals_type;
+	}
+
+	public void setReferrals_type(Integer referrals_type) {
+		this.referrals_type = referrals_type;
+	}
+
+	public BigDecimal getAdvertiser_comm() {
+		return advertiser_comm;
+	}
+
+	public void setAdvertiser_comm(BigDecimal advertiser_comm) {
+		this.advertiser_comm = advertiser_comm;
+	}
+
+}

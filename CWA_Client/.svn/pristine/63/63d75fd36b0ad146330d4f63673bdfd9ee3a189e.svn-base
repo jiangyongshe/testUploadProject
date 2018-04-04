@@ -1,0 +1,281 @@
+package com.cwa.client.service;
+
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dao.AdvertiserDao;
+import com.cwa.client.dao.CustomerCommReportDao;
+import com.cwa.client.dao.CustomerDao;
+import com.cwa.client.dao.CustomerWalletDao;
+import com.cwa.client.dto.AdvertiserDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.model.Tb_Customer;
+import com.cwa.client.model.Tb_Customer_Wallet;
+import com.cwa.client.model.Tb_customer_comm_report;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.DateUtils;
+import com.cwa.client.utils.Encypter;
+import com.cwa.client.utils.RespCodeEnum;
+import com.cwa.client.web.BaseController;
+import com.cwa.client.web.CustomerController;
+import com.cwa.client.web.GobalRespParameter;
+
+@Service
+public class UserService extends BaseController<GobalRespParameter> implements Constant{
+
+	@Resource
+	private CustomerDao customerDao;
+	
+	@Resource
+	private AdvertiserDao advertiserDao;
+	
+	@Resource// 广告商service层
+	private AdvertiserService advertiserService;
+	
+	@Resource
+	private CustomerCommReportDao customerCommReportDao;
+	
+	@Resource
+	private CustomerWalletDao customerWalletDao;
+	
+	/**
+	 * 注册
+	 * @throws Exception
+	 */
+	public void register(Tb_Customer customer) throws Exception{
+		customerDao.save(customer);
+	}
+	
+	public Tb_Customer findById(String id){
+		return customerDao.findById(id);
+	}
+	
+	public CustomerDto findCustomerByMobile(String mobileNum){
+		return customerDao.findCustomerByMobile(mobileNum);
+	}
+	
+	public void update(Tb_Customer customer) throws Exception{
+		customerDao.update(customer);
+	}
+	
+	/**
+	 * 根据用户手机号和用户类型查询用户
+	 * @param mobile
+	 * @param userType
+	 * @return
+	 */
+	public Object getUser(String mobile,String userType) throws Exception{
+		// 根据用户手机号查询用户
+		if(userType.equals(USERTYPE_CUSTOMER)){
+			// 普通用户
+			CustomerDto queryParam = new CustomerDto();
+			queryParam.setMobile(mobile);
+			List<CustomerDto> list = customerDao.queryCustomer(queryParam);
+			if(list.size()!=0){
+				return list.get(0);
+			}
+		}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			// 广告商
+			AdvertiserDto queryParam = new AdvertiserDto();
+			queryParam.setMobile(mobile);
+			List<AdvertiserDto> list = advertiserDao.queryAdvertiser(queryParam);
+			if(list.size()!=0){
+				return list.get(0);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 根据登录账号和用户类型修改密码
+	 * @param accountId 登录账号
+	 * @param userType 用户类型
+	 * @param password 密码
+	 * @return
+	 */
+	public boolean updatePwdByAccountIdAndUserType(String accountId,String password,String userType) throws Exception{
+		boolean status = false;
+		if(accountId==null||"".equals(accountId.trim())
+					   ||
+		   password==null||"".equals(password.trim())
+		   			   ||
+   		   userType==null||"".equals(userType.trim())
+		){
+			return status;
+		}
+		if(USERTYPE_CUSTOMER.equals(userType)){// 普通用户
+			Tb_Customer tbCustomer = new Tb_Customer();
+			tbCustomer.setAccount_id(accountId);
+			tbCustomer.setPassword(Encypter.getEncryptValue(password));
+			status = customerDao.updateCustomerPwdByAccountId(tbCustomer);
+		}else if(USERTYPE_CUSTOMER_ADVERTISER.equals(userType)){// 广告商
+			Tb_Advertiser tbAdvertiser = new Tb_Advertiser();
+			tbAdvertiser.setAccount_id(accountId);
+			tbAdvertiser.setPassword(Encypter.getEncryptValue(password));
+			status = advertiserDao.updateAdvertiserPwdByAccountId(tbAdvertiser);
+		}
+		return status;
+	}
+	
+	public void updUserInfo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		GobalRespParameter parameter=new GobalRespParameter();
+		//获取请求参数并判断是否为空
+		Map<String,String[]> map = getAllParameter(req,"updUserInfo.do","accountId","userName","email");
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			Object userType = req.getSession().getAttribute(SESSION_USER_TYPE);
+			writeLog("", "update customer type is: "+userType.toString(), LOGLEVEL_INFO, CustomerController.class);
+			
+			
+			if(map!=null){
+				if(!util.isEmail(map.get("email")[0])){
+					parameter.setRespCode(RespCodeEnum.update_customerInfo_emailError.getCode());
+					parameter.setRespMessge(reqCt.getMessage("customerData_text_emailError"));
+					writeJSON(res, parameter);
+					parameter=null;
+				}
+				if(USERTYPE_CUSTOMER.equals(userType.toString())){
+					CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);
+					if(customerDto.getAccount_id().equals(map.get("accountId")[0])){
+						Tb_Customer entity = findById(customerDto.getId()+"");
+						entity.setUser_name(map.get("userName")[0]);
+						entity.setEmail(map.get("email")[0]);
+						update(entity);//更新数据库
+						writeLog("", "update customer info success", LOGLEVEL_INFO, CustomerController.class);
+						customerDto.setUser_name(map.get("userName")[0]);
+						customerDto.setEmail(map.get("email")[0]);
+						// 记录session
+						req.getSession().setAttribute(SESSION_USER, customerDto);//更新session
+						parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+						parameter.setRespMessge(reqCt.getMessage("customerData.update.success"));
+						writeLog("", "update customer info end", LOGLEVEL_INFO, CustomerController.class);
+					}else{
+						parameter.setRespCode(RespCodeEnum.global_parameter_isnull.getCode());
+						parameter.setRespMessge(reqCt.getMessage("common.exception.parameter"));
+					}
+				}else{//广告商资料修改
+					AdvertiserDto advertiserDto=(AdvertiserDto)req.getSession().getAttribute(SESSION_USER);
+					if(advertiserDto.getAccount_id().equals(map.get("accountId")[0])){
+						Tb_Advertiser entity = advertiserService.findById(advertiserDto.getId());
+						entity.setReal_name(map.get("userName")[0]);
+						entity.setEmail(map.get("email")[0]);
+						advertiserService.update(entity);//更新数据库
+						writeLog("", "update advertiser info success", LOGLEVEL_INFO, CustomerController.class);
+						advertiserDto.setReal_name(map.get("userName")[0]);
+						advertiserDto.setEmail(map.get("email")[0]);
+						// 记录session
+						req.getSession().setAttribute(SESSION_USER, advertiserDto);//更新session
+						parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+						parameter.setRespMessge(reqCt.getMessage("customerData.update.success"));
+						writeLog("", "update advertiser info end", LOGLEVEL_INFO, CustomerController.class);
+					}else{
+						parameter.setRespCode(RespCodeEnum.global_parameter_isnull.getCode());
+						parameter.setRespMessge(reqCt.getMessage("common.exception.parameter"));
+					}
+				}
+			}else{//请求参数无效
+				parameter.setRespCode(RespCodeEnum.global_parameter_isnull.getCode());
+				parameter.setRespMessge(reqCt.getMessage("common.exception.parameter"));
+			}
+		} catch (Exception e) {
+			parameter.setRespCode(RespCodeEnum.global_unknow_expiration.getCode());
+			parameter.setRespMessge(reqCt.getMessage("common.exception.unknow"));
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	public void registerAndInit(Tb_Customer customer) throws Exception{
+		Integer id = customerDao.insertBackId(customer);
+		Tb_customer_comm_report entity=new Tb_customer_comm_report();//初始化报表数据
+		entity.setCustomer_id(customer.getAccount_id());
+		entity.setCustomer_name(customer.getUser_name());
+		entity.setSettlement_date(DateUtils.getNowDay(DateUtils.DATE_FORMAT_YYYY_MM_dd));
+		customerCommReportDao.insert(entity);
+		Tb_Customer_Wallet wallet=new Tb_Customer_Wallet();//初始化钱包
+		wallet.setAMOUNT(new BigDecimal(0));
+		wallet.setCUSTOMER_ID(customer.getAccount_id());
+		wallet.setSTATE(1);
+		customerWalletDao.save(wallet);
+	}
+	
+	/**
+	 * 根据登录账号和用户类型查询用户
+	 * @param accountId
+	 * @param userType
+	 * @return
+	 */
+	public Object queryUserObjByAccountIdAndUserType(String accountId,String userType){
+		// 根据用户登录账号查询用户的登录密码
+		if(userType.equals(USERTYPE_CUSTOMER)){
+			// 普通用户
+			CustomerDto queryParam = new CustomerDto();
+			queryParam.setAccount_id(accountId);
+			List<CustomerDto> list = customerDao.queryCustomer(queryParam);
+			if(list.size()==0){
+				// 账号错误
+				return null;
+			}else{
+				return list.get(0);
+			}
+		}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			// 广告商
+			AdvertiserDto queryParam = new AdvertiserDto();
+			queryParam.setAccount_id(accountId);
+			List<AdvertiserDto> list = advertiserDao.queryAdvertiser(queryParam);
+			if(list.size()==0){
+				// 账号错误
+				return null;
+			}else{
+				return list.get(0);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 根据登录账号和手机号查询用户
+	 * @param accountId
+	 * @param userType
+	 * @return
+	 */
+	public Object queryUserObjByAccountIdAndMobile(String accountId){
+		// 普通用户
+		List<CustomerDto> list = customerDao.queryCustomer(accountId);
+		return list.size()>0?list.get(0):null;
+	}
+	
+	/**
+	 * 更新用户手机号
+	 * @param accountId
+	 * @param userType
+	 * @param mobile
+	 */
+	public void updateUserMobile(String accountId,String userType,String mobile){
+		if(USERTYPE_CUSTOMER.equals(userType)){// 普通用户
+			Tb_Customer updateParam = new Tb_Customer();
+			updateParam.setMobile(mobile);
+			CustomerDto whereParam = new CustomerDto();
+			whereParam.setAccount_id(accountId);
+			customerDao.updateUserInfo(whereParam, updateParam);
+		}else if(USERTYPE_CUSTOMER_ADVERTISER.equals(userType)){// 广告商
+			Tb_Advertiser updateParam = new Tb_Advertiser();
+			updateParam.setMobile(mobile);
+			AdvertiserDto whereParam = new AdvertiserDto();
+			whereParam.setAccount_id(accountId);
+			advertiserDao.updateUserInfo(whereParam, updateParam);
+		}
+	}
+}

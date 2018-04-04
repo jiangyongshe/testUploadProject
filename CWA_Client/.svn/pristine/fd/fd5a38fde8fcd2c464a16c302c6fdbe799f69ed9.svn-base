@@ -1,0 +1,170 @@
+package com.cwa.client.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.model.Tb_Customer;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import net.sf.json.JSONArray;
+
+/**
+ * 普通用户数据层
+ */
+public class CustomerDao extends BaseDao<Tb_Customer,CustomerDto> implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 查询普通用户
+	 * @param customerDto 查询条件
+	 * @return
+	 */
+	public List<CustomerDto> queryCustomer(CustomerDto customerDto){
+		// 返回结果
+		List<CustomerDto> customerList = null;
+		StringBuffer sql = new StringBuffer(
+				"SELECT A.ID,A.USER_NAME,A.MOBILE,A.USER_STATUS,"+
+				"A.OPEN_DATE,A.OPENID,A.EMAIL,A.REFERRALS_ID,A.COMPANY_ID,"+
+				"A.ACCOUNT_ID,A.CERTIFICATE_TYPE,A.ID_NUMBER,"+
+				"A.AGENT_ID,A.PASSWORD,A.REFERRALS_TYPE FROM Tb_Customer A ");
+		// 拼接where查询条件
+		Map<String,Object> map = packageWhereSQL(customerDto, "A");
+		String joinWhereSQL = map.get("sql").toString();
+		@SuppressWarnings("unchecked")
+		List<Object> params = (List<Object>) map.get("params");
+		sql.append(joinWhereSQL);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryCustomer sql:"+sql+";params:"+JSONArray.fromObject(params),LOGLEVEL_INFO,CustomerDao.class);
+		try {
+			if(params.size()!=0){
+				customerList = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(CustomerDto.class),params.toArray());
+			}else{
+				customerList = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(CustomerDto.class));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryCustomer exception '"+e.getMessage()+"'",LOGLEVEL_ERROR, CustomerDao.class);
+			customerList = new ArrayList<CustomerDto>();
+			throw e;
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryCustomer query size "+customerList.size()+", result " + JSONArray.fromObject(customerList),LOGLEVEL_INFO,CustomerDao.class);
+		return customerList;
+	}
+	
+	/**
+	 * 根据手机号修改密码
+	 * @param tbCustomer
+	 * @return
+	 */
+	public boolean updateCustomerPwdByAccountId(Tb_Customer tbCustomer){
+		boolean updateState = false;
+		String accountId = tbCustomer.getAccount_id();
+		// 创建update语句
+		tbCustomer.setAccount_id(null);
+		Map<String,Object> mapForUpdate  = packageUpateSQL(tbCustomer,"A");
+		@SuppressWarnings("unchecked")
+		List<Object> paramsForUpdate = (List<Object>) mapForUpdate.get("params");
+		if(paramsForUpdate.size()==0){
+			logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"updateCustomerPwdByMobile package sql fail." ,LOGLEVEL_INFO,CustomerDao.class);
+			return updateState;
+		}
+		// 创建where语句
+		CustomerDto customerDto = new CustomerDto();
+		customerDto.setAccount_id(accountId);
+		Map<String,Object> mapForWhere  = packageWhereSQL(customerDto,"A");
+		@SuppressWarnings("unchecked")
+		List<Object> paramsForWhere = (List<Object>) mapForWhere.get("params");
+		if(paramsForWhere.size()==0){
+			logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"updateCustomerPwdByMobile package sql fail." ,LOGLEVEL_INFO,CustomerDao.class);
+			return updateState;
+		}
+		StringBuffer packageUpdateSQL = new StringBuffer(mapForUpdate.get("sql").toString());
+		StringBuffer packageWhereSQL = new StringBuffer(mapForWhere.get("sql").toString());
+		String sql = packageUpdateSQL.append(packageWhereSQL.toString()).toString();
+		logWriteUtil.writeLog(LOGTYPE_PACKAGESQL,"updateCustomerPwdByMobile sql is '"+sql+"'." ,LOGLEVEL_INFO,CustomerDao.class);
+		List<Object> params = new ArrayList<Object>();
+		params.addAll(paramsForUpdate);
+		params.addAll(paramsForWhere);
+		try {
+			int i = this.jdbcTemplate.update(sql, params.toArray());
+			if(i==1){
+				logWriteUtil.writeLog(LOGTYPE_DBQUERY,"updateCustomerPwdByMobile update password success." ,LOGLEVEL_INFO,CustomerDao.class);
+				updateState = true;
+			}else{
+				logWriteUtil.writeLog(LOGTYPE_DBQUERY,"updateCustomerPwdByMobile update password fail." ,LOGLEVEL_INFO,CustomerDao.class);
+				updateState = false;
+			}
+		} catch (Exception e) {
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY,"updateCustomerPwdByMobile update password error,Exception:"+e.getMessage()+"." ,LOGLEVEL_ERROR,CustomerDao.class);
+			e.printStackTrace();
+			updateState = false;
+			throw e;
+		}
+		return updateState;
+	}
+
+	public CustomerDto findCustomerByMobile(String mobileNum) {
+		String sql="select ID,USER_NAME,MOBILE,USER_STATUS,OPEN_DATE,OPENID,EMAIL,REFERRALS_ID,PASSWORD,ACCOUNT_ID,CERTIFICATE_TYPE,ID_NUMBER,AGENT_ID,COMPANY_ID from Tb_Customer where MOBILE=?";
+		RowMapper<CustomerDto> rowmapper=BeanPropertyRowMapper.newInstance(CustomerDto.class);
+		List<CustomerDto> list = getJdbcTemplate().query(sql, rowmapper,mobileNum);
+		return list.size()>0?list.get(0):null;
+	}
+	
+	public Integer insertBackId(final Tb_Customer entity){
+		final String sql="INSERT INTO tb_customer"+
+										"(USER_NAME,"+
+										"MOBILE,"+
+										"USER_STATUS,"+
+										"OPEN_DATE,"+
+										"OPENID,"+
+										"EMAIL,"+
+										"REFERRALS_ID,"+
+										"PASSWORD,"+
+										"ACCOUNT_ID,"+
+										"CERTIFICATE_TYPE,"+
+										"ID_NUMBER,"+
+										"AGENT_ID,"+
+										"COMPANY_ID,"+
+										"REFERRALS_TYPE)"+
+										"VALUES"+
+							"(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		KeyHolder keyHolder = new GeneratedKeyHolder();  
+		int autoIncId = 0;  
+		jdbcTemplate.update(new PreparedStatementCreator() {
+			public PreparedStatement createPreparedStatement(Connection con)  
+					throws SQLException {  
+				PreparedStatement ps = con.prepareStatement(sql,PreparedStatement.RETURN_GENERATED_KEYS);
+				ps.setString(1,entity.getUser_name());
+				ps.setString(2,entity.getMobile());
+				ps.setInt(3,entity.getUser_status());
+				ps.setTimestamp(4,entity.getOpen_date());
+				ps.setString(5,entity.getOpenid());
+				ps.setString(6,entity.getEmail());
+				ps.setString(7,entity.getReferrals_id());
+				ps.setString(8,entity.getPassword());
+				ps.setString(9,entity.getAccount_id());
+				ps.setInt(10,entity.getCertificate_type());
+				ps.setString(11,entity.getId_number());
+				ps.setString(12,entity.getAgent_id());
+				ps.setString(13,entity.getCompany_id());
+				ps.setInt(14,entity.getReferrals_type());
+				
+				return ps;  
+			}   
+	    }, keyHolder);  
+	  
+	      autoIncId = keyHolder.getKey().intValue();  
+	      
+	      return autoIncId;  
+	}
+}

@@ -1,0 +1,72 @@
+var chineseError=["出金成功","请输入出金金额","金额格式错误","金额大于可出金额","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var page=1,pageSize=8,type="";
+$(function(){
+	$("#headerTitle").text("出金");
+	currError=currErrorArray(chineseError,englishError,twError);
+	queryAllowWithdrawMoney();//广告佣金查询
+	bindWithdrawBtn();// 绑定出金按钮
+})
+
+/**
+ * 查询可出金额
+ * @returns
+ */
+function queryAllowWithdrawMoney(){
+	var uri = '/AD/query/commission.do';
+	jsonAjax('/'+language+uri,{},
+	function(res){
+		var data = res.data;
+		if(data){
+			$('#allowWithdrawMoney').attr('placeholder',formatNumber(data.available_comm,2,1));
+		}else{
+			$('#allowWithdrawMoney').attr('placeholder',formatNumber(0,2,1));
+		}
+	},
+	function(){});
+}
+
+/**
+ * 绑定出金按钮
+ * @returns
+ */
+function bindWithdrawBtn(){
+	$('#submit').bind('click',function(){
+		disabledBtn("submit");
+		var uri = '/AD/withdraw.do';
+		var withdrawMoney=$('#withdrawMoney').val();
+		var canWithdrawMoney=$('#allowWithdrawMoney').attr('placeholder');
+		if(withdrawMoney==""){
+			showJudegTip('fail',currError[1]);
+			startBtn("submit");
+			return;
+		}
+		if(isNaN(withdrawMoney)){
+			showJudegTip('fail',currError[2]);
+			startBtn("submit");
+			return;
+		}
+		if(parseFloat(withdrawMoney)>parseFloat(canWithdrawMoney)){
+			showJudegTip('fail',currError[3]);
+			startBtn("submit");
+			return;
+		}
+		jsonAjax('/'+language+uri,{withdrawMoney:withdrawMoney},
+		function(res){
+			startBtn("submit");
+			var status = res.success;
+			var msg = res.msg;
+			if(status){
+				showJudegTip('success','',msg);
+				$('#withdrawMoney').val('');
+				// 重新查询可出佣金
+				queryAllowWithdrawMoney(userType);
+			}else{
+				showJudegTip('fail','',msg);
+			}
+		},
+		function(){startBtn("submit");});
+	});
+}

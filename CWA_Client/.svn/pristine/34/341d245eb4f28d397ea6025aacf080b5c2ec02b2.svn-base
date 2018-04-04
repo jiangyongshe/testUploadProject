@@ -1,0 +1,102 @@
+package com.cwa.client.interceptor;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.support.RequestContext;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.RespCodeEnum;
+import com.cwa.client.web.BaseController;
+import com.cwa.client.web.GobalRespParameter;
+
+public class GlobalInterceptor extends BaseController<GobalRespParameter> implements HandlerInterceptor, Constant {
+
+	@Override
+	public void afterCompletion(HttpServletRequest arg0, HttpServletResponse arg1, Object arg2, Exception arg3)
+			throws Exception {
+	}
+
+	@Override
+	public void postHandle(HttpServletRequest arg0, HttpServletResponse arg1, Object arg2, ModelAndView arg3)
+			throws Exception {
+	}
+
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object arg2) throws Exception {
+
+		// 获取URI路径
+		String uri = request.getRequestURI().toString();
+		// 根路径不拦截
+		if(uri.equals("/")){
+			return true;
+		}
+		// session user对象
+		Object sessionUserObj = request.getSession().getAttribute(SESSION_USER);
+		// 如果SESSION_USER为空就返回false 已拦截 跳转到登录页
+		if (sessionUserObj == null  || "".equals(sessionUserObj)) {
+			// 拦截后的处理
+			interceptDispose(request,response);
+			return false;
+		}
+		// 判断倒数第二级路径是否为AD,如果为AD,那么userType需为USERTYPE_CUSTOMER_ADVERTISER
+		if(uri.split("/")[uri.split("/").length-2].equals("AD")&& !request.getSession().getAttribute(SESSION_USER_TYPE).toString().equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			// 拦截后的处理
+			interceptDispose(request,response);
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * 拦截后的处理
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	public void interceptDispose(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		// 语言包
+		RequestContext reqCt= new RequestContext(request);
+		// 获取当前请求路径
+		String requsetUrl = request.getRequestURL().toString();
+		// 判断此请求是否是ajax
+		boolean isAjax = request.getHeader("X-Requested-With") != null && "XMLHttpRequest".equals(request.getHeader("X-Requested-With").toString());
+		writeLog(LOGTYPE_INTERCEPTOR, "requsetUrl \"" + requsetUrl + "\" was intercepted and redirect login page,is isAjax " + (isAjax), LOGLEVEL_INFO, GlobalInterceptor.class);
+		/*************************获取请求参数,用于购买 start*************************/
+		String checkAdvertiseId = ServletRequestUtils.getStringParameter(request,"checkAdvertiseId","");
+		String deviceId = ServletRequestUtils.getStringParameter(request,"deviceId","");
+		String timeInterval = ServletRequestUtils.getStringParameter(request,"timeInterval","");
+		StringBuffer param = new StringBuffer("");
+		if(checkAdvertiseId!=null&&!checkAdvertiseId.trim().equals("")
+								 &&
+		   deviceId!=null&&!deviceId.trim().equals("")
+		){
+			param.append("?checkAdvertiseId=");
+			param.append(checkAdvertiseId);
+			param.append("&");
+			param.append("deviceId=");
+			param.append(deviceId);
+			param.append("&");
+			param.append("timeInterval=");
+			param.append(timeInterval);
+		}
+		/*************************获取请求参数,用于购买 end*************************/
+		
+		if (!isAjax) {
+			// 如果是ajax请求响应头会有，x-requested-with；
+			String path = request.getServerName()+":"+request.getServerPort()+"/"+reqCt.getMessage("url.language")+"/forward/login.do";
+			if (requsetUrl.startsWith("https")) {
+				response.sendRedirect("https://" + path+param);
+			} else {
+				response.sendRedirect("http://" + path+param);
+			}
+		} else {
+			// 返回的消息对象
+			GobalRespParameter parameter = new GobalRespParameter();
+			parameter.setRespCode(RespCodeEnum.global_session_expiration.getCode());
+			parameter.setRespMessge(RespCodeEnum.global_session_expiration.getMessage());
+			writeJSON(response, parameter);
+		}
+	}
+}

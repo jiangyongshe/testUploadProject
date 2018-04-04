@@ -1,0 +1,224 @@
+// 初始化数据
+$.ajax({
+	url:'/'+language+'/user/loadUser.do',
+	type:'post',
+	data:{},
+	dataType:'json',
+	async:false,
+	timeout:10000,
+	success:function(res){
+		var code = res.msg,
+			data = res.data;
+		// 赋值全局变量
+		nowTime = data.nowTime;
+		imagePath = data.imagePath;
+		videoUrl = data.videoUrl;
+		switch(Number(code)){
+		case 0:// 已登录
+			var userData = data.userData;
+			// 赋值全局变量
+			userName = userData['user_name'];
+			email = userData['email'];
+			accountId = userData['account_id'];
+			// 显示用户名
+			$('#userName').text(accountId);
+			$('#userName').parent().show();
+			$('#userName').parent().parent().show();
+			$('#userName').attr('href','/'+language+'/forward/customerAdvertise.do');
+			// 加载购物车数量
+			var $buyCarCount = $("#buyCarCount");
+			if($buyCarCount.length>0){
+				$buyCarCount.text(userData.shoppCount);
+			}
+			break;
+		case 10001:// 未登录
+			$('#loginRegisterDIV').show();
+			break;
+		}
+	},
+	error:function(){
+		showJudegTip('fail','提示','未知异常');
+	}
+});
+
+/**
+ * 退出登录
+ */
+function exitLogin(){
+	jsonAjax('/'+language+'/user/exit.do',{},
+			function(res){
+		if(res.respCode=='10000'){
+			clearLocalStorage();
+			// 跳去注册页
+			location.href = '/'+language+'/forward/index/cm.do';
+			return;
+		}
+	},
+	function(){});
+}
+
+/**
+ * 搜索广告
+ */
+function searchAdvertise(){
+	var href=window.location.href;
+	if(href.indexOf("customerAdvertise.do")>0){
+		searchAdvertiseInCurrtPage();
+	}else{
+		var adName=$("#inputSearch").val();
+		window.location.href="/"+language+"/forward/customerAdvertise.do?adName="+encodeURI(adName);
+	}
+}
+
+/**
+ * 我的资料
+ */
+function myProfile(){
+	var $myProfile = $('#myProfile');
+	if($myProfile.length === 0){
+		$('body').append(
+			'<div class="shade" id="myProfile" style="display:none;">'
+		   +'	<div class="tanchu" style="margin-top: -160px;">'
+		   +'		<a style="cursor:pointer;" id="closeMyProfile" class="tanchu-close text-c" title="关闭"><i class="fa fa-close" aria-hidden="true"></i></a>'
+		   +'		<div class="tanchu-bt font15">我的资料</div>'
+		   +'		<ul class="ggtf-sc2 pad-t10 pad-b15 font14">'
+		   +'			<li>'
+		   +'				<span class="pos-a ggtf-sc-bt">用户名</span>'
+		   +'				<input type="text" class="wenb03 disabled" placeholder="'+accountId+'" />'
+		   +'			</li>'
+		   +'			<li>'
+		   +'				<span class="pos-a ggtf-sc-bt">真实姓名</span>'
+		   +'				<input id="myProfile_name" type="text" class="wenb03" placeholder="未输入真实姓名" />'
+		   +'			</li>'
+		   +'			<li>'
+		   +'				<span class="pos-a ggtf-sc-bt">邮箱</span>'
+		   +'				<input id="myProfile_email" type="text" class="wenb03" placeholder="未输入邮箱" />'
+		   +'			</li>'
+		   +'			<li>'
+		   +'				<input id="myProfile_submit" type="button" value="提 交" class="btn btn05 bg-red font16" />'
+		   +'			</li>'
+		   +'		</ul>'
+		   +'	</div>'
+		   +'</div>'
+		);
+		// 初始化值
+		$('#myProfile_name').val(userName);
+		$('#myProfile_email').val(email);
+		// 绑定关闭按钮
+		$('#closeMyProfile').on('click',function(){
+			$('#myProfile_name').val(userName);
+			$('#myProfile_email').val(email);
+			$('#myProfile').hide();
+		});
+		// 绑定提交按钮
+		$('#myProfile_submit').on('click',function(){
+			var name = $('#myProfile_name').val().trim();
+			if(name === ''){
+				showJudegTip('fail','提示','请输入真实姓名');
+				return;
+			}
+			if(name.length<2||name.length>20){
+				showJudegTip('fail','提示','真实姓名为2-20个字符');
+				return;
+			}
+			var email = $('#myProfile_email').val().trim();
+			if(email === ''){
+				showJudegTip('fail','提示','请输入邮箱');
+				return;
+			}
+			if(!REG_EMAIL.test(email)){
+				showJudegTip('fail','提示','邮箱格式不正确');
+				return;
+			}
+			
+			
+		});
+	}
+	$('#myProfile').show();
+}
+
+/**
+ * 投放类型切换
+ * @param type
+ * @returns
+ */
+function putTypeChange(type){
+	switch(Number(type)){
+	case 1:
+		return '视频';
+	case 2:
+		return '图文模板';
+	case 3:
+		return '图片';
+	}
+}
+
+/**
+ * 订单类型切换
+ * @param status
+ * @returns
+ */
+function orderStatusChange(status){
+	switch(Number(status)){
+	case 1:
+		return '待付款';
+	case 2:
+	case 3:
+		return '处理中';
+		
+	}
+}
+
+/**
+ * 广告类型切换
+ * @param type
+ * @returns
+ */
+function adTypeChange(type){
+	switch(Number(type)){
+	case 1:
+		return '日用品广告';
+	case 2:
+		return '食品饮料广告';
+	case 3:
+		return '餐饮广告';
+	case 4:
+		return '电子家电广告';
+	case 5:
+		return '服装服饰广告';
+	case 6:
+		return '化妆品广告';
+	case 7:
+		return '钟表首饰广告';
+	case 8:
+		return '教育培训广告';
+	case 9:
+		return '文化广告';
+	case 10:
+		return '会展广告';
+	case 11:
+		return '商业商场广告';
+	case 12:
+		return '娱乐广告';
+	case 13:
+		return '社会服务广告';
+	case 14:
+		return '金融保险广告';
+	case 15:
+		return '汽车广告';
+	case 16:
+		return '房地产广告';
+	case 17:
+		return '邮电通讯快递物流广告';
+	case 18:
+		return '保健广告';
+	case 19:
+		return '旅游酒店广告';
+	case 20:
+		return '家装建材广告';
+	case 21:
+		return '交通运输广告';
+	case 22:
+		return '其他广告';
+	}
+}

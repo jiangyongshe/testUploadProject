@@ -1,0 +1,144 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var isDelete=false,pageNo=1,pageSize=9/*删除标识 如果true 则重新加载数据*/;
+
+
+$(function(){
+	loadShoppCartInfo({pageNo:pageNo,pageSize:pageSize});
+})
+
+//加载广告商品
+function loadShoppCartInfo(obj){
+	$('#shopCartPageTurn').empty();
+	$("#dataList").html("");
+	$(".totalBal").html("0元");
+	jsonAjax("/"+language+"/shoppCart/queryShoppCart.do",obj,function(res){
+		if(res.data!=null&&res.data!=[]&&res.data.list.length>0){
+			var data=res.data,html="";
+			disCount=res.msg;
+			var listDom=$("#dataList")[0];
+			
+			html+='<li class="wddd-list-bt">';
+			html+='    <div class="wddd-list-a pos-r">';
+			html+='     <label class="checkbox pos-a ddrq"><input type="checkbox" id="ckAll" name="checkbox" class="checkAll"><i>✓</i> 全选</label>';
+			html+='       订单详情';
+			html+='    </div>';
+			html+='    <div class="wddd-list-b">价格（元/天）</div>';
+			html+='    <div class="wddd-list-c">支付费用</div>';
+			html+='    <div class="wddd-list-d">操作</div>';
+			html+='</li>';
+			listDom.innerHTML=html;//加在列表的后面,上拉加载
+			for (var i = 0; i < data.list.length; i++) {
+				var dto=data.list[i],imgs="",addr=dto.mailing_address,price=dto.price,length=dto.ad_length;
+				html="";
+				//价格
+				if(dto.file_type=="2"){
+					price=dto.html_price;
+					length=dto.html_length;
+				}else if(dto.file_type=="3"){
+					price=dto.pic_price;
+					length=dto.pic_length;
+				}
+				if(dto.pics!=null&&dto.pics!=""){
+					imgs=dto.pics.split(",");
+				}
+				
+				
+				html+='<div class="wddd-list-e bg-f9 clear">';
+				html+='   <label class="checkbox dis-in pad-r10"><input type="checkbox" data-id="'+dto.advertiser_id+'" data-shoppId="'+dto.id+'" name="checkbox" class="checkAd" ><i>✓</i></label>';
+				html+='   <span class="dis-in">'+dto.shop_name+'</span>';
+				html+='   <span class="dis-in pad-l20"><em class="col-999">设备编号：</em><span class="deviceId hide">'+dto.device_id+'</span><span class="">'+dto.device_code+'</span></span>';
+				html+='</div>';
+				html+=' <div class="wddd-list-a">';
+				html+='  <a href="javascript:void(0)" onclick="showShopDetail(\''+dto.shop_name+'\',\''+dto.mailing_address+'\',\''+dto.pics+'\')" class="wddd-list-tp">';
+				html+='	<img src="'+imagePath+imgs[0]+'" /></a>';
+				html+='  <div class="wddd-list-nr">';
+				html+='    <p>';
+				html+='      <span class="dis-in width49">';
+				html+='        <em class="dis-in col-999">播放类型：</em>';
+				html+='        <select name="" class="dis-in xlb02 fileType" data-htmlPrice="'+dto.html_price+'" data-htmlLength="'+dto.html_length+'" data-picPrice="'+dto.pic_price+'" data-picLength="'+dto.pic_length+'" data-videoPrice="'+dto.price+'" data-videoLength="'+dto.ad_length+'">';
+				html+='			<option value="1" '+(dto.file_type=="1"?'selected = "selected"':'')+'>视频</option>';
+				html+='			<option value="3" '+(dto.file_type=="3"?'selected = "selected"':'')+'>图片</option>';
+				html+='			<option value="2" '+(dto.file_type=="2"?'selected = "selected"':'')+'>图文模板</option>';
+				html+='        </select>';
+				html+='     </span>';
+                html+='     <span class="dis-in width49"><em class="col-999">设备播放时段：</em><span id="timeInterval">'+dto.begin_time+'-'+dto.end_time+'</span></span>';
+                html+='    </p>';
+                html+='     <p class="pad-t7">';
+                html+='      <span class="dis-in width49"><em class="col-999">最低循环播放次数：</em>60次</span>';
+                html+='       <span class="dis-in width49"><em class="col-999">广告时长：</em><span class="adLength">'+length+'</span>秒</span>';
+                html+='     </p>';
+                html+='    <p class="col-999 pad-t7">';
+                html+='       <span class="dis-in">播放周期：</span>';
+                html+='      <input type="text" data-playNumber='+dto.play_number+' readonly value="'+dto.play_begin_time+'" placeholder="请选择开始时间" class="dis-in wenb04 dt bgDate" />';
+                html+='      <span class="dis-in">-</span>';
+                html+='     <input type="text" value="'+dto.play_end_time+'" placeholder="请选择结束时间" readonly class="dis-in wenb04 dt edDate">';
+                html+='    </p>';
+                html+='   </div>';
+                html+='</div>';
+                html+=' <div class="wddd-list-b">';
+                html+=' 	  ￥<span class="adPrice">'+price+'</span>';
+                html+=' </div>';
+                html+=' <div class="wddd-list-c">';
+                html+=' 	 ￥<span class="sumPrice">'+dto.total_price+'</span>';
+              	html+=' </div>';
+              	html+='<div class="wddd-list-d">';
+              	html+='  <a href="#" onclick="reject('+dto.id+',this)"><i class="fa fa-trash-o font18" aria-hidden="true"></i></a>';
+              	html+='</div>';
+				
+				var liDom=document.createElement("li");
+				liDom.innerHTML=html;
+				listDom.appendChild(liDom);//加在列表的后面,上拉加载
+			}
+			pageNumber(data.totalRecords,obj,loadShoppCartInfo,pageSize,'shopCart');
+			createDateControl();//绑定时间控件
+		}else{
+			showEmplyDiv("抱歉，购物车为空","#dataList");
+		}
+		
+	},function(){
+		//联网失败的回调,隐藏上拉加载的状态
+		mescroll.endErr();
+		},"get");
+}
+
+//剔除购物车
+function reject(id,obj){
+	isDelete=true;
+	var objs=$("input[type='checkbox']:checked").not("#ckAll"),bl=false;//得到所有选中数据
+	if(id==undefined||id==null||id==""){
+		id="";
+		for (var i = 0; i < objs.length; i++) {
+			id+=$(objs[i]).attr("data-shoppId")+",";
+		}  
+		if(id==""){
+			showJudegTip("fail","提示","请选择要删除的广告！");
+			return;
+		}
+		bl=true;
+		id=id.substring(0,id.length-1);
+	}
+	jsonAjax("/"+language+"/shoppCart/reJectShoppCart.do",{cartId:id},function(res){
+		if(res.respCode=="10000"){
+			if(bl){
+				for (var i = 0; i < objs.length; i++) {
+					$(objs[i]).parents("li").remove();
+				}  
+				$("#buyCarCount").text(parseInt($("#buyCarCount").text())-objs.length);
+			}else{
+				$(obj).parents("li").remove();
+				$("#buyCarCount").text(parseInt($("#buyCarCount").text())-1);
+			}
+			if($("ul li").length==0){
+				showEmplyDiv("抱歉，购物车为空","#dataList ul");
+			}
+			showJudegTip("SUCCESS","提示","删除成功");
+			//startBtn("commitUpdate");
+		}else{
+			$(".error").html(res.respMessge);//注册回调显示
+			//startBtn("commitUpdate");
+		}
+	},function(){});
+}

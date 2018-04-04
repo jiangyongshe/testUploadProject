@@ -1,0 +1,83 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var pageSize=15,type="";
+$(function(){
+	$("#headerTitle").text("提现明细");
+	currError=currErrorArray(chineseError,englishError,twError);
+	if(Number(getLocalStorage('userType'))==2){
+		var str='  <span class="pos-a screen-list-bt">收益类型</span>';
+	    str+='  <select name="" class="xlb01 width100 type">';
+	    str+='    <option value="">全部</option>';
+	    str+='    <option value="5">店主</option>';
+	    str+='    <option value="6">广告主</option>';
+	    str+='  </select>';
+	    var liDom=document.createElement("li");
+		liDom.innerHTML=str;
+	    $("#user_age2").parent().after(liDom);
+	}
+	upCallback();
+})
+
+/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+function upCallback(page){
+	//联网加载数据
+	console.log("pageNo="+pageNo);
+	queryInOutMoneyDetail({pageNo:pageNo,pageSize:pageSize,startTime:bgDt,endTime:edDt,account_type:type});
+}
+
+/**
+ * 查询出金明细
+ * @param obj.pageNo 页码
+ * @param obj.startTime 播放开始时间，时:分:秒 hh:mm:ss
+ * @param obj.startTime 播放结束时间，时:分:秒 hh:mm:ss
+ * @param obj.userType
+ * @returns
+ */
+function queryInOutMoneyDetail(obj){
+	var url="";
+	if(Number(getLocalStorage('userType'))==2){
+		url="/"+language+"/AD/query/withdrawDetail.do";
+	}else{
+		url="/"+language+"/customer/query/withdrawDetail.do";
+	}
+	jsonAjax(url,obj,function(res){
+		//联网成功的回调,隐藏上拉加载的状态
+		if(res.data==null||res.data.length==0){
+			isData=false;
+			return;
+		}
+		isData=(pageNo==Math.ceil(res.data.totalRecords/parseFloat(pageSize))?false:true);//如果当前页是最后一页则不加载
+		
+		var data = res.data;
+		if(data&&data.length>0){
+			var listDom=document.getElementById("dataList");
+			for(var i=0;i<data.length;++i){
+				var str='<p class="yjmx-list01">'+((Number(obj.pageNo)-1)*Number(page)+i+1)+'</p>';
+				str+='<p class="yjmx-list02">'+new Date(Number(data[i].open_date)).format(DATE_FORMAT_YTDHMS)+'</p>';
+				str+='<p class="yjmx-list03">'+(data[i].account_type==1?'店主':'广告主')+'</p>';
+				str+='<p class="yjmx-list04">'+formatNumber(data[i].amount,2,1)+'</p>';
+				/*'+function(status){
+						switch(status){
+						case 1:
+							return '申请中';
+						case 2:
+							return '通过';
+						case 3:
+							return '驳回';
+						case 4:
+							return '需冲正';
+						case 5:
+							return '处理中';
+						case 6:
+							return '冲正成功';
+						}
+					}(data[i].status)+'*/
+				var liDom=document.createElement("li");
+				liDom.innerHTML=str;
+				listDom.appendChild(liDom);//加在列表的后面,上拉加载
+			}
+		}
+	},function(){});
+}

@@ -1,0 +1,214 @@
+/*鍚敤纭欢鍔犻��:鍔ㄧ敾娓叉煋娴佺晠,瑙ｅ喅IOS涓嬫媺鍒锋柊鍥犻殣钘忚繘搴︽潯鑷翠娇鐨勯棯灞忛棶棰�,鍦ㄤ笅鎷夊埛鏂板拰涓婃媺鍔犺浇瑙﹀彂鏃跺惎鐢�,缁撴潫鍚庣Щ闄�,閬垮厤婊ョ敤瀵艰嚧鍏朵粬鍏煎鎬ч棶棰�*/
+.mescroll-hardware{
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
+}
+
+/*涓嬫媺鍒锋柊鍖哄煙*/
+.mescroll-downwarp {
+	position: relative;
+	width: 100%;
+	height: 0;
+	overflow: hidden;
+	text-align: center;
+}
+/*涓嬫媺鍒锋柊--楂樺害閲嶇疆鐨勮繃娓″姩鐢�*/
+.mescroll-downwarp-reset{
+	-webkit-transition: height 300ms;
+	transition: height 300ms;
+}
+/*涓嬫媺鍒锋柊--鍐呭鍖�,瀹氫綅浜庡尯鍩熷簳閮�*/
+.mescroll-downwarp .downwarp-content{
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	min-height: 30px;
+	padding: 10px 0;
+}
+
+/*涓婃媺鍔犺浇鍖哄煙*/
+.mescroll-upwarp {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	z-index: 2;
+	width: 200px;
+	padding: 7px 0;
+	margin-left: -100px;
+	text-align: center;
+	color: #d9140f;
+	border-radius: 5px;
+	background-color: rgba(245,245,245,.8);
+	visibility: hidden;/*浠ｆ浛display: none,鍒楄〃蹇�熸粦鍔ㄥ埌搴曢儴鑳藉強鏃舵樉绀轰笂鎷夊姞杞界殑鍖哄煙*/
+}
+
+/*涓嬫媺鍒锋柊,涓婃媺鍔犺浇--鎻愮ず鏂囨湰*/
+.mescroll-downwarp .downwarp-tip,
+.mescroll-upwarp .upwarp-tip,
+.mescroll-upwarp .upwarp-nodata {
+	display: inline-block;
+	font-size: 14px;
+	color: #d9140f;
+	vertical-align: middle;
+}
+
+/*涓嬫媺鍒锋柊,涓婃媺鍔犺浇--鏃嬭浆杩涘害鏉�*/
+.mescroll-downwarp .downwarp-progress,
+.mescroll-upwarp .upwarp-progress {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+    border: 1px solid gray;
+    margin-right: 8px;
+    border-bottom-color: transparent;
+	vertical-align: middle;
+}
+
+/*鏃嬭浆鍔ㄧ敾*/
+.mescroll-rotate{
+	-webkit-animation: mescrollRotate 0.6s linear infinite;
+	animation: mescrollRotate 0.6s linear infinite;
+}
+@-webkit-keyframes mescrollRotate {
+	0% { -webkit-transform: rotate(0deg); }
+	100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes mescrollRotate {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+/*鏃犱换浣曟暟鎹殑绌哄竷灞�*/
+.mescroll-empty {
+	width: 100%;
+	padding-top: 20px;
+	text-align: center;
+}
+.mescroll-empty .empty-icon {
+	width: 45%;
+}
+.mescroll-empty .empty-tip {
+	margin-top: 6px;
+	font-size: 14px;
+	color: gray;
+}
+.mescroll-empty .empty-btn {
+	max-width: 50%;
+	margin: 20px auto;
+	padding: 10px;
+	border: 1px solid #65AADD;
+	border-radius: 6px;
+	background-color: white;
+	color: #65AADD;
+}
+.mescroll-empty .empty-btn:active {
+	opacity: .75;
+}
+
+.downwarp-slogan {
+	width: 1.2rem;
+	height: 1.2rem;
+	border-radius: 100%;
+}
+
+/*鍥炲埌椤堕儴鐨勬寜閽�*/
+.mescroll-totop {
+	z-index: 22;
+	position: fixed;
+	right: .1rem;
+	bottom: 2.5rem;
+	width: 1.2rem;
+	height: 1.2rem;
+	opacity: 0;
+	cursor: pointer;
+	border-radius: 100%;
+}
+
+/*鏄剧ず鍔ㄧ敾--娣″叆*/
+.mescroll-fade-in{
+	-webkit-animation: mescrollFadeIn .5s linear forwards;
+	animation: mescrollFadeIn .5s linear forwards;
+}
+@-webkit-keyframes mescrollFadeIn {
+	0% { opacity: 0; }
+	100% { opacity: .5; }
+}
+@keyframes mescrollFadeIn {
+	0% { opacity: 0; }
+	100% { opacity: .5; }
+}
+
+/*闅愯棌鍔ㄧ敾--娣″嚭*/
+.mescroll-fade-out{
+	pointer-events: none;
+	-webkit-animation: mescrollFadeOut .5s linear forwards;
+	animation: mescrollFadeOut .5s linear forwards;
+}
+@-webkit-keyframes mescrollFadeOut {
+	0% { opacity: 1; }
+	100% { opacity: 0; }
+}
+@keyframes mescrollFadeOut {
+	0% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
+/*婊氬姩鏉¤建閬撹儗鏅�(榛樿鍦≒C绔缃�)*/
+.mescroll-bar::-webkit-scrollbar-track{
+	background-color: transparent;
+}
+/*婊氬姩鏉¤建閬撳搴� (榛樿鍦≒C绔缃�)*/
+.mescroll-bar::-webkit-scrollbar{
+	width: 6px;
+}
+/*婊氬姩鏉℃父鏍� (榛樿鍦≒C绔缃�)*/
+.mescroll-bar::-webkit-scrollbar-thumb{
+	border-radius: 6px;
+	background-color: #ccc;
+}
+/*婊氬姩鏉℃父鏍囬紶鏍囩粡杩囩殑棰滆壊鍙樺寲 (榛樿鍦≒C绔缃�)*/
+.mescroll-bar::-webkit-scrollbar-thumb:hover{
+	background-color: #aaa;
+}
+	
+/*鍒楄〃*/
+.mescroll {
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 50px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+.mescroll2 {
+	top: 72px;
+	bottom: 90px;
+}
+.mescroll3 {
+	top: 76px;
+}
+.mescroll4 {
+	top: 36px;
+	bottom: 90px;
+}
+.mescroll5 {
+	top: 36px;
+}
+			
+/*灞曠ず涓婃媺鍔犺浇鐨勬暟鎹垪琛�*/
+
+.izl-rmenu {
+    bottom: 30px;
+}
+
+@media (min-width:640px) {
+  .mescroll {
+	width: 640px;
+	margin-left: auto;
+	margin-right: auto;
+  }
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播——共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12 pad-t10">
+      <div class="bg-ff pad-q10 tjhy-list">
+        方法一、选中并复制下列链接给您的好友:<br>
+        https://www.luckicloud.com/
+      </div>
+      
+      <div class="bg-ff pad-q10 tjhy-list mar-t10">
+        <span class="dis-b">方法二、将下列二维码转发给好友:</span>
+        <span class="dis-b text-c pad-t10"><img src="/chinese/mobile/images/ewm.jpg" /></span>
+      </div>
+      
+      <div class="bg-ff pad-q10 tjhy-list mar-t10">
+        <p class=""><i class="fa fa-share-alt" aria-hidden="true"></i> 分享到</p>
+      
+        <p class="pad-t10 share-icon">
+          <a href="#" id="sinaWeibo" class="dis-in"><i class="fa fa-weibo2" aria-hidden="true"></i><br><span class="">新浪微博</span></a>
+          <a href="#" id="wechat" class="dis-in"><i class="fa fa-weixin2" aria-hidden="true"></i><br><span class="">微信好友</span></a>
+          <a href="#" id="wechat" class="dis-in"><i class="fa fa-pengyouquan" aria-hidden="true"></i><br><span class="">朋友圈</span></a>
+          <a href="#" id="qqFriend" class="dis-in"><i class="fa fa-qq2" aria-hidden="true"></i><br><span class="">QQ好友</span></a>
+          <a href="#" id="qqZone" class="dis-in"><i class="fa fa-kongjian" aria-hidden="true"></i><br><span class="">QQ空间</span></a>
+        </p>
+      </div>
+</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/recommendFriend.js"></script>
+</body>
+</html>

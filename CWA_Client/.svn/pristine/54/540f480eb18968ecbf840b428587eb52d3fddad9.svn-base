@@ -1,0 +1,59 @@
+package com.cwa.client.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.dto.AdvertiserDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.DeviceVedioPlanDto;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.model.Tb_Customer;
+import com.cwa.client.model.Tb_Device_Vedio_Plan;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import net.sf.json.JSONArray;
+
+/**
+ * 查询广告信息数据层
+ */
+public class AdvertiseInfoDao extends BaseDao<AdvertiseInfoDto, AdvertiseInfoDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 查询广告用户
+	 * @param advertiserDto 查询条件
+	 * @return
+	 */
+	public List<AdvertiseInfoDto> queryAdvertiseInfo(String ids){
+		// 返回结果
+		List<AdvertiseInfoDto> tbAdvertiserList = null;
+		StringBuffer sql = new StringBuffer("select @rowno:=@rowno+1 as rowNo,A.id,A.SHOP_NAME,B.DEVICE_ID,C.AD_PRICE ,C.AD_LENGTH,C.PLAY_NUMBER,CONCAT(C.BEGIN_TIME,\"-\",C.END_TIME) as idle_time "
+				+"from tb_advertiser A,tb_advertiser_device B,tb_device_vedio_plan C ,(select @rowno:=0) t "
+				+"where A.AUDIT_STATUS=2 and A.id=B.ADVERTISER_ID and B.DEVICE_ID=C.DEVICE_ID ");
+		String[] sp = ids.split(",");
+		/*if(sp.length<2){
+			sql.append("and A.id =?");
+		}else{
+			
+		}*/
+		for (int i = 0; i < sp.length; i++) {
+			if(i==0){
+				sql.append("and A.id in(?");
+			}else{
+				sql.append(",?");
+			}
+			if(i==sp.length-1){
+				sql.append(")");
+			}
+		}
+		BeanPropertyRowMapper<AdvertiseInfoDto> rowmapper = BeanPropertyRowMapper.newInstance(AdvertiseInfoDto.class);
+		tbAdvertiserList = this.jdbcTemplate.query(sql.toString(), rowmapper,sp);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY,"queryAdvertiser query size "+tbAdvertiserList.size()+", result " + JSONArray.fromObject(tbAdvertiserList),LOGLEVEL_INFO,AdvertiseInfoDao.class);
+		return tbAdvertiserList;
+	}
+	
+}

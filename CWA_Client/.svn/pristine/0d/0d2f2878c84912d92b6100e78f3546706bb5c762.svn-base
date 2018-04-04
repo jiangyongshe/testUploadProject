@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+     <div class="right right1 bg-ff">
+       <h2 class="clear font18 pad-b10 bor-b3 yellow">求购信息</h2>
+       
+       <div class="qgxx-lc pad-b15 pad-t20 bor-b2">
+         <div class="qgxx-lc-a">
+           <p class="qgxx-lc-a1 text-c">撮合交易流程</p>
+           <p class="qgxx-lc-a2">广告投放一站式保姆服务</p>
+         </div>
+         
+         <div class="qgxx-lc-b">
+           <p class="qgxx-lc-b1 red">1</p>
+           <div class="qgxx-lc-b2">
+             <h4 class="font16">发布求购信息</h4>
+             <p class="col-999">通过网页、QQ、电话发布广告投放<br />资源需求</p>
+           </div>
+         </div>
+         
+         <div class="qgxx-lc-b">
+           <p class="qgxx-lc-b1 red">2</p>
+           <div class="qgxx-lc-b2">
+             <h4 class="font16">推荐广告资源</h4>
+             <p class="col-999">专业媒介团队寻找价优可靠资源策划<br />方案及服务商匹配</p>
+           </div>
+         </div>
+         
+         <div class="qgxx-lc-b">
+           <p class="qgxx-lc-b1 red">3</p>
+           <div class="qgxx-lc-b2">
+             <h4 class="font16">完成采购投放交易</h4>
+             <p class="col-999">敲定合作方，对交易进行担保，完成<br />广告投放和效果评估</p>
+           </div>
+         </div>
+       </div>
+       
+       <div class="qgxx-sx bor font14 pos-r mar-t20">
+         <p class="qgxx-sxtj">
+           <span class="dis-in">默认排序： </span>
+           <a href="#" class="dis-in active">发布时间 <i class="fa fa-caret-up" aria-hidden="true"></i></a>
+           <a href="#" class="dis-in">广告预算 <i class="fa fa-caret-down" aria-hidden="true"></i></a>
+           <span class="dis-in"><input name="" type="text" placeholder="￥" class="wenb08" /></span>
+           <span class="dis-in">-</span>
+           <span class="dis-in"><input name="" type="text" placeholder="￥" class="wenb08" /></span>
+           <span class="dis-in"><input name="" type="text" placeholder="关键词" class="wenb08 width110" /></span>
+           <span class="dis-in"><input name="" type="button" value="确定" class="btn btn08 bg-red font14" /></span>
+         </p>
+         
+         <a href="fbqgxx.html" class="btn btn08 bg-yellow font14 pos-a qgxx-fbqg">发布求购</a>
+       </div>
+       
+       <div class="rmgg-table font12 pad-t20">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th>客户行业</th>
+    <th>需求简述</th>
+    <th>广告预算</th>
+    <th>媒体</th>
+    <th>客户地区</th>
+    <th>联系方式</th>
+    <th>时间</th>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>机械</td>
+    <td>
+      <p class="qgxx-xxjs">寻找全国做cps报纸媒体，我们是做新科技产品的</p>
+    </td>
+    <td><span class="red">30万</span></td>
+    <td>电全国做cps报纸媒体</td>
+    <td>广东 深圳</td>
+    <td>1312***翁小姐）</td>
+    <td>1个月前</td>
+  </tr>
+  <tr>
+    <td>房地产</td>
+    <td>
+      <p class="qgxx-xxjs">寻找今日股市投放广告 我们是房地产商</p>
+    </td>
+    <td><span class="red">保密</span></td>
+    <td>今日股市</td>
+    <td>广东 深圳</td>
+    <td>1581*** 刘先生</td>
+    <td>1个月前</td>
+  </tr>
+</table>
+       </div>
+       
+       <div class="fenye font14 text-c">
+        <a href="#" class="btn-fy"><i class="fa fa-chevron-left"></i></a>
+        <a href="#" class="btn-fy active">1</a>
+        <a href="#" class="btn-fy">2</a>
+        <a href="#" class="btn-fy">3</a>
+        <a href="#" class="btn-fy">...</a>
+        <a href="#" class="btn-fy">9</a>
+        <a href="#" class="btn-fy">10</a>
+        <a href="#" class="btn-fy"><i class="fa fa-chevron-right"></i></a>
+      </div>
+     </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

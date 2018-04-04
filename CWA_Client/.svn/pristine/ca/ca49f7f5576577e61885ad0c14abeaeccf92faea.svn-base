@@ -1,0 +1,33 @@
+package com.cwa.client.dao;
+
+import java.util.List;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+
+import com.cwa.client.dto.BranchDto;
+import com.cwa.client.dto.SalesmanDto;
+import com.cwa.client.model.Tb_Salesman;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+public class SalesmanDao  extends BaseDao<Tb_Salesman, SalesmanDto> implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	public BranchDto findBranchByCmpId(String CmpId){
+		String sql="select ID,COMPANY_ID,COMPANY_NAME,COMPANY_FULL_NAME,CONTRACT_USER,CERTIFICATE_TYPE,ID_NUMBER,OPEN_DATE,REGISTER_FUND,OFFICE_ADDRESS,POSTAL_CODE,FAX,CONTACTS,TELEPHONE,E_MAIL,COMMIT_ID,COMMIT_TIME,COMPANY_STATUS,COMPANY_TYPE,SALESMAN_ID from tb_branch where COMPANY_ID=?";
+		RowMapper<BranchDto> rowmapper=BeanPropertyRowMapper.newInstance(BranchDto.class);
+		List<BranchDto> list = getJdbcTemplate().query(sql, rowmapper, CmpId);
+		logWriteUtil.writeLog("", "++++listSize:"+list.size(), LOGLEVEL_INFO, SalesmanDao.class);
+		return list.size()>0?list.get(0):null;
+	}
+
+	public SalesmanDto findBySalesmanid(String salesmanid) {
+		String sql="select * from Tb_Salesman where salesman_id=?";
+		RowMapper<SalesmanDto> rowmapper=BeanPropertyRowMapper.newInstance(SalesmanDto.class);
+		List<SalesmanDto> list = getJdbcTemplate().query(sql, rowmapper, salesmanid);
+		logWriteUtil.writeLog("", "++++listSize:"+list.size(), LOGLEVEL_INFO, SalesmanDao.class);
+		return list.size()>0?list.get(0):null;
+	}
+}

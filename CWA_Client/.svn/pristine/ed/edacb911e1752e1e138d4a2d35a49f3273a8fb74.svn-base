@@ -1,0 +1,184 @@
+package com.cwa.client.web.nettytcpsocket;
+
+import javax.annotation.Resource;
+
+import com.cwa.client.dto.BankServerTcpDto;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.GsonUtil;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.RegUtil;
+
+public class PayUtil {
+
+	 @Resource
+	 private BankServerTcpDto bankApiServer;
+	 
+	private static PayUtil payUtil;
+	
+	public static PayUtil getSignPayUtil(){
+		if(payUtil==null){
+			payUtil=new PayUtil();
+		}
+		return payUtil;
+	}
+	
+	/**
+	 * 每次需要调用此方法发送和接收数据
+	 * @param sendMsg
+	 * @return
+	 * @throws Exception
+	 */
+	public String sendToBankServer(String sendMsg)throws Exception{
+		String json=null;
+		try {
+			PayApiTcpClient payClient=new PayApiTcpClient(bankApiServer);
+			json=payClient.send(sendMsg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return json;
+	}
+	
+	/**
+	 * 支付宝直连支付
+	 * @param inoutMoneyDto,aliPayDto
+	 * @return respDto
+	 * @throws Exception
+	 */
+	public RespMsgDto aliPayDir(Tb_client_in_out_money tb_client_in_out_money,AliPayDirDto aliPayDto,String loginType)throws Exception{
+		RespMsgDto respDto=null;
+		LogWriteUtil.getSingleton().writeLog("", (tb_client_in_out_money==null?"unknow serial_number":tb_client_in_out_money.getSerial_number())+" aliPayDir post begin ", Constant.LOGLEVEL_INFO, PayUtil.class);
+		try {
+			RequestMsgDto request=getBaseRequest(tb_client_in_out_money);
+			 
+			request.setLoginType(loginType);
+			
+			
+			if(!aliPayDto.getNotify_url().startsWith("http")){
+				aliPayDto.setNotify_url(bankApiServer.getBaseUrl()+"/"+aliPayDto.getNotify_url());
+			}
+			
+			if(!aliPayDto.getReturn_url().startsWith("http")){
+				aliPayDto.setReturn_url(bankApiServer.getBaseUrl()+"/"+aliPayDto.getReturn_url());
+			}
+			
+			request.setContent(GsonUtil.dtoToJson(aliPayDto));
+			
+			
+			
+			String sendMsg=GsonUtil.dtoToJson(request);
+			
+			LogWriteUtil.getSingleton().writeLog("", (tb_client_in_out_money==null?"unknow serial_number":tb_client_in_out_money.getSerial_number())+" sendMsg"+sendMsg, Constant.LOGLEVEL_INFO, PayUtil.class);
+			
+			String respMsg=sendToBankServer(sendMsg);
+			
+			LogWriteUtil.getSingleton().writeLog("", (tb_client_in_out_money==null?"unknow serial_number":tb_client_in_out_money.getSerial_number())+" respMsg "+respMsg, Constant.LOGLEVEL_INFO, PayUtil.class);
+			
+			if(!RegUtil.getUtil().isNull(respMsg)){
+				respDto=(RespMsgDto)GsonUtil.jsonToDto(respMsg, RespMsgDto.class);
+			}
+			
+		} catch (Exception e) {
+			respDto=null;
+			e.printStackTrace();
+			throw e;
+		}
+		return respDto;
+	}
+	
+	/**
+	 * 微信直连支付
+	 * @param inoutMoneyDto,chatpayDto
+	 * @return respDto
+	 * @throws Exception
+	 */
+	public RespMsgDto chatpayDir(Tb_client_in_out_money tb_client_in_out_money,WebChatDirPayDto chatpayDto,String loginType)throws Exception{
+		RespMsgDto respDto=null;
+		LogWriteUtil.getSingleton().writeLog("", (tb_client_in_out_money==null?"unknow serial_number":tb_client_in_out_money.getSerial_number())+" chatpayDir post begin ", Constant.LOGLEVEL_INFO, PayUtil.class);
+		try {
+			RequestMsgDto request=getBaseRequest(tb_client_in_out_money);
+			 
+			request.setLoginType(loginType);
+			if(!chatpayDto.getNotify_url().startsWith("http")){
+				chatpayDto.setNotify_url(bankApiServer.getBaseUrl()+chatpayDto.getNotify_url());
+			}
+			
+			request.setContent(GsonUtil.dtoToJson(chatpayDto));
+			
+			String sendMsg=GsonUtil.dtoToJson(request);
+			
+			LogWriteUtil.getSingleton().writeLog("", (tb_client_in_out_money==null?"unknow serial_number":tb_client_in_out_money.getSerial_number())+" sendMsg"+sendMsg, Constant.LOGLEVEL_INFO, PayUtil.class);
+			
+			String respMsg=sendToBankServer(sendMsg);
+			
+			LogWriteUtil.getSingleton().writeLog("", (tb_client_in_out_money==null?"unknow serial_number":tb_client_in_out_money.getSerial_number())+" respMsg "+respMsg, Constant.LOGLEVEL_INFO, PayUtil.class);
+			
+			if(!RegUtil.getUtil().isNull(respMsg)){
+				respDto=(RespMsgDto)GsonUtil.jsonToDto(respMsg, RespMsgDto.class);
+			}
+			
+		} catch (Exception e) {
+			respDto=null;
+			e.printStackTrace();
+			throw e;
+		}
+		return respDto;
+	}
+	
+	/**
+	 * 异步通知的时候验证签名
+	 * @param requestDto
+	 * @return
+	 * @throws Exception
+	 */
+	public RespMsgDto checkSign(RequestMsgDto requestDto)throws Exception{
+		RespMsgDto respDto=null;
+		LogWriteUtil.getSingleton().writeLog("", (requestDto==null?"unknow serial_number":requestDto.getOrderNo())+" checkSign begin ", Constant.LOGLEVEL_INFO, PayUtil.class);
+		
+		try {
+			
+			String sendMsg=GsonUtil.dtoToJson(requestDto);
+			
+			LogWriteUtil.getSingleton().writeLog("", (requestDto==null?"unknow serial_number":requestDto.getOrderNo())+" sendMsg"+sendMsg, Constant.LOGLEVEL_INFO, PayUtil.class);
+			
+			String respMsg=sendToBankServer(sendMsg);
+			
+			LogWriteUtil.getSingleton().writeLog("", (requestDto==null?"unknow serial_number":requestDto.getOrderNo())+" respMsg "+respMsg, Constant.LOGLEVEL_INFO, PayUtil.class);
+			
+			if(!RegUtil.getUtil().isNull(respMsg)){
+				respDto=(RespMsgDto)GsonUtil.jsonToDto(respMsg, RespMsgDto.class);
+			}
+			
+		} catch (Exception e) {
+			respDto=null;
+			e.printStackTrace();
+			throw e;
+		}
+		return respDto;
+	}
+	
+	/**
+	 * 获取公共参数
+	 * @param tb_client_in_out_money
+	 * @return
+	 */
+	private RequestMsgDto getBaseRequest(Tb_client_in_out_money tb_client_in_out_money){
+		RequestMsgDto request=null;
+		try {
+			request=new RequestMsgDto();
+			request.setChartSet(bankApiServer.getCharSet());
+			request.setInOutType(tb_client_in_out_money.getIn_out_type());
+		//	request.setLoginType(tb_client_in_out_money.getLoginType());
+			request.setOrderAmount(tb_client_in_out_money.getAmount().toString());
+			request.setOrderNo(tb_client_in_out_money.getSerial_number());
+			request.setPayType(tb_client_in_out_money.getPay_type());
+			request.setUuid(tb_client_in_out_money.getSerial_number());
+			request.setWebType(bankApiServer.getWebType());
+		} catch (Exception e) {
+			request=null;
+			e.printStackTrace();
+		}
+		return request;
+	}
+}

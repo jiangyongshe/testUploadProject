@@ -1,0 +1,374 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","卡号格式有误","充值成功","充值失败，请联系客服","请输入金额","金额输入错误","验证码发送成功！","请输入验证码！","获取验证码时金额和充值时金额不一致!","银联充值金额不超过3000!","请先获取验证码！"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var tranNo="",amountGlaod="",time=120,isNeedValidCode=false;
+$(function(){
+	$("#headerTitle").text("翔云余额充值");
+	currError=currErrorArray(chineseError,englishError,twError);
+	$("#commit").bind("click",function(){
+		commit();
+	})
+	var loginType=getLocalStorage('loginType');
+	if(loginType=="6"){
+		if($("#payWay").length>0){
+			//$(".wechatPay").show();
+			/*$("#payWay li").removeClass("active");
+			$(".walletPay").addClass("active");*/
+		}
+	}else{
+		$(".wechatPay,.aliPay,.unionPay").show();
+	}
+	if(isWeiXin()){
+		$(".payType .aliPay").hide();
+	}
+	
+	$(document).on("click",".zf-xz li",function(){
+		$(".zf-xz li").removeClass("active");
+		$(this).addClass("active");//激活样式
+		var val=$(this).attr("data");
+		if(val=="0301"){
+			$(".cardCodeLi").show();
+			$(".phoneMobileLi").show();
+			if($("#danjia li").length>0){
+				$(".phoneValidCodeLi").show();
+			}
+		}else{
+			$(".cardCodeLi").hide();
+			$(".phoneMobileLi").hide();
+			$(".phoneValidCodeLi").hide();
+		}
+	})
+	
+	$("#cardCodeValue").bind("input propertychange",function(){
+		$(".phoneValidCodeLi").hide();
+		$(".phoneMobile").val("");
+		isNeedValidCode=false;
+	})
+	
+	/*$(".payType input[type='radio']").bind("change",function(){
+		var val=$(this).val();
+		if(val=="0301"){
+			$(".cardCodeLi").show();
+			$(".phoneMobileLi").show();
+			if($("#danjia li").length>0){
+				$(".phoneValidCodeLi").show();
+			}
+		}else{
+			$(".cardCodeLi").hide();
+			$(".phoneMobileLi").hide();
+			$(".phoneValidCodeLi").hide();
+		}
+	})*/
+	$(".cardCodeSe").bind("change",function(){
+		$(".phoneMobileDis").val($(this).find(":selected").attr("data-mobile"));
+		$(".phoneMobile").val("");
+	});
+	queryCardInfo();//查询卡信息
+})
+
+function queryCardInfo(){
+	jsonAjax("/"+language+"/customer/queryUserCardInfo.do",{},function(res){
+		if(res.success&&res.data!=null&&res.data.length>0){
+			var str='<div class="" id="danjia"><ul>';
+			for (var i = 0; i < res.data.length; i++) {
+				str+='<li onmousedown="getValue(\''+res.data[i].mobile+'\',\''+res.data[i].bank_card_code+'\');showAndHide(\'danjia\',\'hide\');"><i class="fa fa-caret-right pad-r5" aria-hidden="true"></i>'+res.data[i].bank_card_code+(res.data[i].open_account_bank_name==""?'':'（'+res.data[i].open_account_bank_name+'）')+'</li>';
+			}
+            str+='</ul></div>';
+            var div=document.createElement("div");
+            div.setAttribute("class","danjia pos-a");
+            div.setAttribute("id","danjia");
+            div.innerHTML=str;
+            $(".cardCode").after(div);
+			$(".cardCode").val(res.data[0].bank_card_code);
+			isNeedValidCode=true;
+			$(".phoneMobile").val(res.data[0].mobile);
+		}
+	},function(){},"get");
+}
+//请求卡所属地数据
+function ajaxQueryCardBl(){
+	$.ajax({
+		url:"/"+language+"/cardBelongAddr/cardBelongAddr.json",
+		dataType:'json',
+		async:false,
+		success:function(data){
+			return data;
+		},
+		error : function(res) {
+			return null;
+		}
+	})
+}
+//根据卡号查询归属地
+function _getBankInfoByCardNo(cardNo) {
+    for (var i = 0, len = bankcardList.length; i < len; i++) {
+      var bankcard = bankcardList[i];
+      var patterns = bankcard.patterns;
+      for (var j = 0, jLen = patterns.length; j < jLen; j++) {
+        var pattern = patterns[j];
+        if ((new RegExp(pattern.reg)).test(cardNo)) {
+          var info = extend(bankcard, pattern);
+          delete info.patterns;
+          delete info.reg;
+          info['cardTypeName'] = getCardTypeName(info['cardType']);
+          return info;
+        }
+      }
+    }
+    return 'error';
+  }
+
+function commit(){// 加载用户信息
+	var amount=$(".amount").val();
+	disabledBtn("commit");// 禁用提交按钮
+	var pay_type=$(".payType").find(".active").attr("data");
+	if(amount==""){
+		showJudegTip("fail",currError[7]);
+		startBtn("commit");
+		return;
+	}
+	if(isNaN(amount)){
+		showJudegTip("fail",currError[8]);
+		startBtn("commit");
+		return;
+	}
+	/*if(Number(amount)!=Number(amountGlaod)){
+		showJudegTip("fail","金额输入错误");
+		startBtn("commit");
+		return;
+	}*/
+	var obj={AMOUNT:amount,pay_type:pay_type,FLOW_TYPE:1};
+	var	phoneCode="";
+	if(pay_type=="0301"){
+		var	cardCode=$(".cardCode").val();
+		mobile=$(".phoneMobile").val();
+		
+		if(mobile==""||cardCode==""){
+			showJudegTip("fail",currError[1]);//手机号为空
+			startBtn("commit");
+			return;
+		}
+		if((mobile.indexOf("*")<0&&!REG_MOBILE.test(mobile))||($("#danjia li").length==0&&mobile.indexOf("*")>=0)){
+			showJudegTip("fail",currError[3]);//手机号格式错误
+			startBtn("commit");
+			return;
+		}
+		
+		if(Number(amount)>3000){
+			showJudegTip("fail",currError[12]);
+			startBtn("commit");
+			return;
+		}
+		
+		if((cardCode.indexOf("*")<0&&!checkCard(cardCode))||($("#danjia li").length==0&&cardCode.indexOf("*")>=0)){//银行卡号
+			showJudegTip('fail',currError[4]);
+			startBtn("commit");
+			return;
+		}
+		obj.mobile=mobile;
+		obj.cardCode=cardCode;
+		if(tranNo!=""){
+			phoneCode=$(".phoneValidCode").val();
+			if(phoneCode==""){
+				showJudegTip('fail',currError[10]);
+				startBtn("commit");
+				return;
+			}
+			if(Number(amount)!=Number(amountGlaod)){
+				showJudegTip("fail",currError[11]);
+				startBtn("commit");
+				return;
+			}
+			obj.tranNo=tranNo;
+			obj.smsCode=phoneCode;
+		}
+		if(isNeedValidCode&&tranNo==""){
+			showJudegTip('fail',currError[13]);
+			startBtn("commit");
+			return;
+		}
+	}
+	openWaitAnimation("正在充值,请稍后...");
+	$.ajax({
+		url : "/"+language+"/customerWallet/walletRecharge.do",
+		data : JSON.stringify(obj),
+		type : "POST",
+		cache:false,
+		timeout : 30000,
+		dataType : "json",
+		contentType:"application/json",
+		success : function(res) {
+			closeWaitAnimation();
+			isLogin(res,function(){
+				if(res.success){
+					if(pay_type=="0201"||pay_type=="0301"){
+						if(phoneCode!=""){
+							window.location.href="chongzhichenggong.html";
+							return;
+						}
+						$("body").html(res.data);
+					}else if(pay_type=="0101"){
+							if(isWeiXin()){
+								onBridgeReady(res.data);
+							}else{
+								if(res.data.indexOf('http')>-1){
+							        window.location.href=res.data;
+						        }else{
+							        orderNo=res.msg;
+									createQrcode("qrcodeId",res.data);
+									convertCanvasToImage("qrcodeId");
+									$("#ewmdiv").show();
+								}
+							}
+					}
+				}else{
+					showJudegTip("fail",res.data);
+				}
+				startBtn("commit");
+			});
+		},
+		error : function(res) {
+			startBtn("commit");
+		}
+	});
+	startBtn("commit");
+}
+
+function checkOrderStatus(){
+	openWaitAnimation("正在检验订单状态,请稍后...");
+	jsonAjax("/"+language+"/order/checkOrderStatus.do",{orderNo:orderNo},function(res){
+		closeWaitAnimation();
+		if(res.success){
+			window.location.href="chongzhichenggong.html";
+		}else{
+			showJudegTip("fail",res.data);// 注册回调显示
+		}
+	},function(){closeWaitAnimation();},null,null,false);
+}
+
+
+function onBridgeReady(str){
+   var jsonstr=$.parseJSON(str);
+   WeixinJSBridge.invoke(
+       'getBrandWCPayRequest',{
+           "appId" : jsonstr.appId,     // 公众号名称，由商户传入
+           "timeStamp": jsonstr.timeStamp,         // 时间戳，自1970年以来的秒数
+           "nonceStr" : jsonstr.nonceStr, // 随机串
+           "package" : jsonstr.package,     
+           "signType": jsonstr.signType,         // 微信签名方式：
+           "paySign" : jsonstr.paySign // 微信签名
+       },function(res){
+           if(res.err_msg == "get_brand_wcpay_request:ok") { // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回
+        	   window.location.href="chongzhichenggong.html";
+           }else{
+              if(res.err_msg == "get_brand_wcpay_request:fail"){
+            	  showJudegTip("fail",currError[6]);// 注册回调显示
+              } else if(res.err_msg == "get_brand_wcpay_request:cancel"){
+            	  
+              }  
+           }
+      });
+}
+
+//修改按钮
+function updateCardCode(){
+	if($(".cardCode").hasClass("hide")){
+		$(".cardCode,.phoneMobile").removeClass("hide");
+		$(".cardCodeSe,.phoneMobileDis").addClass("hide");
+	}else{
+		$(".cardCode,.phoneMobile").addClass("hide");
+		$(".cardCodeSe,.phoneMobileDis").removeClass("hide");
+	}
+}
+
+function getValidCode(){//银联获取验证码
+	disabledBtn("getValidCode");
+	var	cardCode=$(".cardCode").val();
+	var	mobile=$(".phoneMobile").val();
+	var amount=$(".amount").val();
+	var pay_type=$(".payType").find(".active").attr("data");
+	if(amount==""){
+		showJudegTip("fail",currError[7]);
+		startBtn("getValidCode");
+		return;
+	}
+	if(isNaN(amount)){
+		showJudegTip("fail",currError[8]);
+		startBtn("getValidCode");
+		return;
+	}
+	if(Number(amount)>3000){
+		showJudegTip("fail",currError[12]);
+		startBtn("getValidCode");
+		return;
+	}
+	
+	if(mobile==""||cardCode==""){
+		showJudegTip("fail",currError[1]);//手机号为空
+		startBtn("getValidCode");
+		return;
+	}
+	if((mobile.indexOf("*")<0&&!REG_MOBILE.test(mobile))||($("#danjia li").length==0&&mobile.indexOf("*")>=0)){
+		showJudegTip("fail",currError[3]);//手机号格式错误
+		startBtn("getValidCode");
+		return;
+	}
+	
+	if((cardCode.indexOf("*")<0&&!checkCard(cardCode))||($("#danjia li").length==0&&cardCode.indexOf("*")>=0)){//银行卡号
+		showJudegTip('fail',currError[4]);
+		startBtn("getValidCode");
+		return;
+	}
+	
+	var obj={
+		mobile:mobile,
+		cardCode:cardCode,
+		AMOUNT:amount,
+		pay_type:pay_type,
+		sendMsg:1
+	}
+	
+	$.ajax({
+		url : "/"+language+"/customerWallet/walletRecharge.do",
+		data : JSON.stringify(obj),
+		type : "POST",
+		cache:false,
+		timeout : 30000,
+		dataType : "json",
+		contentType:"application/json",
+		success : function(res) {
+			if(res.msg=="10000"){
+				$("#getValidCode").hide();
+				$("#getValidCode1").val(time+" s");
+				$("#getValidCode1").show();
+				showJudegTip('success',currError[9]);
+				$(".amount").addClass("disabled");
+				$(".cardCode").addClass("disabled");
+				amountGlaod=amount;
+				tranNo=res.data;
+				countdown();//短信2分钟倒计时
+			}else{
+				showJudegTip("fail",res.data);//验证码回调显示
+				startBtn("getValidCode");
+			}
+		},
+		error:function(){startBtn("getValidCode");}
+	});
+}
+function countdown(){
+	setTimeout(function(){
+		time--;
+		if(time>=0){
+			$("#getValidCode1").val(time+" s");
+			countdown();
+		}else{
+			time=120;
+			startBtn("getValidCode");
+			$(".amount").removeClass("disabled");
+			$(".cardCode").removeClass("disabled");
+			$("#getValidCode").show();
+			$("#getValidCode1").hide();
+		}
+	},1000);
+} //可获取短信验证码倒计时

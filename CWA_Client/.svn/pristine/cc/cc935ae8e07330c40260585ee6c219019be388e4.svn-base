@@ -1,0 +1,46 @@
+var html="<div class=\"hei60\"></div>\n";
+    html+="<div class=\"footer-nav font12\"><ul id=\"menuFooter\">\n";
+	html+="<li class=\"indexhtml\"><a href=\"index.html\"><i class=\"fa fa-home\" aria-hidden=\"true\"></i><br />首页</a></li>\n";
+	html+="<li class=\"ggddhtml\"><a href=\"ggdd.html\"><i class=\"fa fa-building-o\" aria-hidden=\"true\"></i><br />广告订单</a></li>\n";
+	html+="<li class=\"tfgghtml active\"><a href=\"tfgg.html\"><i class=\"fa fa-plus\"' aria-hidden=\"true\"></i><br />投放广告</p></a></li>\n";
+	html+="<li class=\"gwchtml\"><a href=\"gwc.html\"><i class=\"fa fa-shopping-cart\" aria-hidden=\"true\"></i><br />购物车<em id=\"buyCarCount\">99</em></a></li>\n";
+	html+="<li class=\"wodehtml\"><a href=\"wode.html\"><i class=\"fa fa-user-circle-o\" aria-hidden=\"true\"></i><br />我的翔云</a></li>\n";
+	html+="</ul></div>\n";
+	html+="<script src=\""+languageMobile+"/js/top.js\"></script>\n";
+	html+="<div id=\"top\"></div>\n";
+document.writeln(html);
+
+$(function(){
+	queryShoppCartCount();
+	activeMenu();
+})
+
+//查询购物车数量
+function queryShoppCartCount(){
+	jsonAjax('/'+language+'/user/loadUser.do',{},
+		function(res){
+			var data = res.data;
+			if(data){
+				// 加载购物车数量 TODO
+				var shoppCount=data.shoppCount;
+				$("#buyCarCount").text(shoppCount);
+			}
+			
+	},function(){});
+}
+//激活菜单样式
+function activeMenu(){
+	var str=window.location.href.substring(window.location.href.lastIndexOf("/")+1).replace(".","");
+	$("#menuFooter li").removeClass("active");
+	if(str.indexOf("wdzl")>=0||str.indexOf("qianbao")>=0||str.indexOf("xgmm")>=0||str.indexOf("ggyj")>=0||str.indexOf("chuj")>=0){
+		$(".wodehtml").addClass("active");
+		return;
+	}else if(str.indexOf("tfgg01")>=0){
+		$(".tfgghtml").addClass("active");
+		return;
+	}else if(str.indexOf("shangchuanshipin")>=0){
+		$(".ggddhtml").addClass("active");
+		return;
+	}
+	$("."+str).addClass("active");
+}

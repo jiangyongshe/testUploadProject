@@ -1,0 +1,113 @@
+.header {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	z-index: 10;
+	padding: 25px 0;
+}
+.index-logo {
+	padding-left: 20px;
+	width: 450px;
+}
+.index-logo img {
+	width: 100%;
+}
+.index-login {
+	padding-right: 20px;
+	color: #fff;
+}
+.index-login > a {
+	display: inline-block;
+	padding: 10px 25px;
+	font-size: 16px;
+}
+.index-login a {
+	color: #fff;
+}
+.index-login a:hover {
+	color: #ffd800;
+}
+
+/* 焦点图 */
+.banner {
+	height: 820px;
+	position: relative;
+	background: url(../images/index-01.jpg) center top no-repeat;
+}
+.banner-wz {
+	padding-top: 400px;
+	padding-bottom: 50px;
+	color: #fff;
+	font-size: 48px;
+	font-weight: 600;
+}
+
+.index-munu {
+	position: relative;
+	float: left;
+    width: 25%;
+    min-height: 260px;
+    border: 1px solid #fff;
+    border-top-width: 2px;
+    border-bottom: none;
+    background-position: center center;
+    background-size: cover;
+}
+.index-munu01 {
+	border-left: none;
+	background-image: url(../images/index-11.jpg);
+}
+.index-munu02 {
+	background-image: url(../images/index-12.jpg);
+}
+.index-munu03 {
+	background-image: url(../images/index-13.jpg);
+}
+.index-munu04 {
+	border-right: none;
+	background-image: url(../images/index-14.jpg);
+}
+.index-munu > h2 {
+	float: left;
+    width: 100%;
+	padding: 20px 20px;
+	text-align: right;
+	font-size: 24px;
+	color: #fff;
+	font-weight: normal;
+	background-color: rgba(0,0,0,.5);
+}
+.index-munu > p {
+	position: absolute;
+	left: 30px;
+	bottom: 25px;
+	font-size: 20px;
+	color: #fff;
+	line-height: 35px;
+}
+
+.footer {
+	padding: 30px 10px;
+}
+
+@media (min-width: 1025px) and (max-width:1200px) {
+    .slide-main, .width.clear, .banner {
+        width: 1200px;
+    }
+}
+
+@media (min-width: 320px) and (max-width:1024px) {
+	.slide-main, .width.clear, .banner {
+        width: 1024px;
+    }
+	.index-munu {
+		width: 50%;
+	}
+	.index-munu02 {
+	    border-right: none;
+    }
+    .index-munu03 {
+	    border-left: none;
+    }
+}

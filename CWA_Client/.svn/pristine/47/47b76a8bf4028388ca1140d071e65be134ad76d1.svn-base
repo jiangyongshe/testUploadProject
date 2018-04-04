@@ -1,0 +1,97 @@
+.h-login {
+	right: 0;
+	top: 110px;
+	bottom: 110px;
+	z-index: 220;
+	width: 300px;
+	height: 330px;
+	padding: 30px 25px 0;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	background-color: rgba(255,255,255,.8);
+}
+.h-login-bt {
+	width: 100%;
+}
+.h-login-tb {
+	left: 0;
+	top: 22px;
+	width: 40px;
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
+	color: #999;
+}
+.h-login .h-login-b a {
+	display: inline-block;
+	padding: 10px 8px;
+}
+
+/*登录注册*/
+.login {
+	height: 580px;
+	background: url(../images/login-bg.jpg) center top no-repeat;
+	position: relative;
+	background-size: cover;
+}
+.regis01 {
+	padding-top: 50px;
+	padding-bottom: 50px;
+}
+.regis02 {
+	float: left;
+	width: 1200px;
+	min-height: 500px;
+	padding: 75px 460px 50px 160px;
+	border: 1px solid #eee;
+	box-shadow: 0 0 8px #ddd;
+}
+.regis02-tit {
+	left: 0;
+	top: 0;
+	width: 100%;
+	padding: 12px 15px;
+	color: #2badd7;
+    background-color: #0c2e51;
+}
+.regis02-mc {
+	left: 10px;
+	top: 35px;
+	color: #333;
+}
+.regis02-yzm {
+	right: 3px;
+	top: 23px;
+}
+.regis02-bt {
+	padding-bottom: 18px;
+	border-bottom: 1px dashed #eee;
+}
+.regis03 {
+	right: 0;
+	top: 43px;
+	bottom: 0;
+	width: 300px;
+	padding-top: 100px;
+	background-color: #f3f3f3;
+}
+.tanchu-xynr {
+	line-height: 21px;
+}
+
+@media (min-width: 1025px) and (max-width:1200px) {
+    .clear.width, .regis01 {
+        width: 1200px;
+    }
+}
+
+@media (min-width: 320px) and (max-width:1024px) {
+    .clear.width, .regis01 {
+        width: 1024px;
+    }
+	.regis02 {
+	   width: 1024px;
+	   min-height: 500px;
+	   padding: 75px 400px 50px 100px;
+    }
+}

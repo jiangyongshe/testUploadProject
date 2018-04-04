@@ -1,0 +1,66 @@
+$(function(){
+	// 登录按钮
+	loginBtn();
+	// 判断是否购买过来的
+	judegIsBuy();
+	// 绑定回车按钮
+	$(document).keydown(function(event){ 
+		if(event.keyCode == 13){ // 绑定回车 
+			$('#loginBtn').click(); // 触发登录按钮 
+		} 
+	}); 
+})
+
+/**
+ * 登录页的提示
+ */
+function loginPageTip(str){
+	$('#loginTip').html(str).show();
+}
+
+/**
+ * 判断是否购买过来的
+ * @returns
+ */
+function judegIsBuy(){
+	checkAdvertiseId = getURLParam('checkAdvertiseId').trim();
+	deviceId = getURLParam('deviceId').trim();
+	timeInterval = getURLParam('timeInterval').trim();
+	if(checkAdvertiseId && deviceId){
+		$('[name="userType"]').parent().find('[value="1"]').attr('checked','true');
+	}
+}
+
+/**
+ * 登录逻辑
+ */
+function loginBtn(){
+	$('#loginBtn').on('click',function(){
+		// 获取手机号
+		var accountId = $('#accountId').val().trim();
+		// 获取密码
+		var pwd = $('#password').val().trim();
+		// 发送请求
+		jsonAjax('/'+language+'/user/login.do',
+				{accountId:accountId,pwd:pwd},
+				function(res) {
+					// 登录失败
+					if(!res.success){
+						loginPageTip(res.msg);
+						return;
+					}
+					// 清空提示
+					$('#loginTip').hide();
+					// 清空用户名密码
+					$('#accountId').val('');
+					$('#password').val('');
+					// 获取页面参数，判断是否购买
+					if(checkAdvertiseId && deviceId && timeInterval){
+						location.href = '/'+language+'/customer/queryConfimBuyAdvertiseInfo.do?checkAdvertiseId='+checkAdvertiseId+'&deviceId='+deviceId+'&timeInterval='+timeInterval;
+					}else{
+						// 普通登录
+						location.href = '/'+language+'/forward/customerAdvertise.do';
+					}
+				},function(){});
+	});
+}

@@ -1,0 +1,24 @@
+package com.cwa.client.web;
+
+public interface WeChatConstant {
+
+	/**
+	 * 获取openId的URL
+	 */
+	String URL1 = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";
+	
+	/**
+	 * 获取openId的回调
+	 */
+	String URL2 = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=AppId&secret=AppSecret&code=CODE&grant_type=authorization_code";
+	
+	/**
+	 * appId
+	 */
+	String APPID = "wx7c172fbf4170d69d";
+	
+	/**
+	 * 密钥
+	 */
+	String APPSECRET = "ed03284cb0626231fbb621585640f50b";
+}

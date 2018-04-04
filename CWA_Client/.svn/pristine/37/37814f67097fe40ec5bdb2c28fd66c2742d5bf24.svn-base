@@ -1,0 +1,188 @@
+package com.cwa.client.utils;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.imageio.ImageIO;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
+
+public class Tools implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+
+	private static Properties config = null;
+	
+	/**
+	 * 读取classPath下config.properties配置信息
+	 * @param key key值
+	 * @return value值
+	 */
+	public static String readConfig(String key) {
+		if (config == null) {
+			synchronized (Tools.class) {
+				if (null == config) {
+					try {
+						Resource resource = new ClassPathResource("config.properties");
+						config = PropertiesLoaderUtils.loadProperties(resource);
+					} catch (IOException e) {
+						logWriteUtil.writeLog(LOGTYPE_CONFIG, "Config read exception "+e.getMessage(), LOGLEVEL_ERROR, Tools.class);
+					}
+				}
+			}
+		}
+		return config.getProperty(key);
+	}
+	
+	/**
+	 * 生成订单号
+	 * @param fourEndMobile 登录账号后四位
+	 * @param userType 用户类型
+	 * @param payType 支付方式
+	 * @return
+	 */
+	public static synchronized String createSerialNumber(String fourEndMobile,String userType,String payType){
+		// 时间(14位)
+		StringBuffer sb = new StringBuffer(SERIAL_YMDHMS.format(new Date()));
+		// 支付方式(2位)
+		sb.append(payType);
+		// 手机号后四位(4位)
+		sb.append(fourEndMobile);
+		// 用户类型(1位)
+		sb.append(userType);
+		// 随机数(8位)
+		sb.append((int)(Math.random()*Math.pow(10, 8)));
+		return sb.toString();
+	}
+	
+	/**
+	 * 根据当前用户类型切换为订单状态的类型
+	 * @param userType
+	 * @return
+	 */
+	public static String changeUserType(String userType){
+		if(userType.equals(USERTYPE_CUSTOMER)){
+			userType = SERIAL_ACCOUNT_TYPE_CUSTOMER+"";
+		}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			userType = SERIAL_ACCOUNT_TYPE_ADVERTISER+"";
+		}
+		return userType;
+	}
+	
+	/**
+	 * 判断字节数组是否是图片
+	 * @param byte
+	 * @return
+	 */
+	public static Map<String,Object> judgeImage(byte[] bytes){
+		Map<String,Object> map = new HashMap<String,Object>();
+		boolean isImage = false;
+		String type = "";
+		if(bytes == null || bytes.length<=0){
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		
+		// 获取该文件的十六进制
+		for(int i=0;i<bytes.length;++i){
+			int v = bytes[i] & 0XFF;
+			String hv = Integer.toHexString(v);
+			if(hv.length()<2){
+				sb.append(0);
+			}
+			sb.append(hv);
+		}
+		
+		String fileHex = sb.toString();
+		
+		// JPG,JPEG,PNG,BMP,GIF的头部信息
+		String[] allImageSignature = new String[]{
+		    "FFD8FFE2",//JPEG
+		    "FFD8FFE3",//JPEG
+		    "FFD8FFE0",//JPEG,JPG
+		    "FFD8FFE1",//JPG
+		    "FFD8FFE8",//JPG
+		    "89504E47",//PNG
+		    "47494638",//GIF
+		    "424D"//BMP
+		};
+		
+		// 根据文件头判断是否是图片,如果判断不是图片则返回结果,如果是,则继续往下判断
+		boolean judgeImageBySignature = false;
+		for(int i=0;i<allImageSignature.length;++i){
+			if(fileHex.toUpperCase().startsWith(allImageSignature[i])){
+				judgeImageBySignature = true;
+				// 记录文件类型
+				switch(i){
+				case 0:
+				case 1:
+					type = "jpeg";
+					break;
+				case 2:
+				case 3:
+				case 4:
+					type = "jpg";
+					break;
+				case 5:
+					type = "png";
+					break;
+				case 6:
+					type = "gif";
+					break;
+				case 7:
+					type = "bmp";
+					break;
+				}
+				break;
+			}
+		}
+		
+		if(judgeImageBySignature==false){
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		
+		//通过缩放来判断，可以缩放的为图片，不可以的则不是
+		BufferedImage bi = null;
+		try {
+			bi = ImageIO.read(new ByteArrayInputStream(bytes));
+			if(bi == null){
+				isImage = false;
+				map.put("isImage",isImage);
+				map.put("type",type);
+				return map;
+			}
+			int width = bi.getWidth();  
+	        int height = bi.getHeight();  
+	        if(width==0 || height==0){  
+	        	isImage = false;  
+            }else {  
+            	isImage = true;  
+            }  
+		} catch (Exception e) {
+			e.printStackTrace();
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		map.put("isImage",isImage);
+		map.put("type",type);
+		return map;
+	}
+	
+}

@@ -1,0 +1,47 @@
+package com.cwa.client.service;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.AdvertiserCommReportDao;
+import com.cwa.client.dao.AdvertiserDao;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.model.Tb_advertiser_comm_report;
+
+@Service
+public class AdvertiserService {
+	
+	private static final Logger logger = LoggerFactory.getLogger(AdvertiserService.class);
+	@Resource
+	private AdvertiserDao advertiserDao;
+	@Resource
+	private AdvertiserCommReportDao advertiserCommReportDao;
+  
+	public Tb_Advertiser findById(Integer id){
+		return advertiserDao.findById(id);
+	}
+	
+	public void save(Tb_Advertiser entity) throws Exception{
+		advertiserDao.save(entity);
+	}
+	
+	
+	public void update(Tb_Advertiser entity) throws Exception {
+		advertiserDao.update(entity);
+	}
+	
+	public void saveUserAndInit(Tb_Advertiser entity) throws Exception{
+		Integer id = advertiserDao.insertBackId(entity);
+		Tb_advertiser_comm_report entity1=new Tb_advertiser_comm_report();
+		entity1.setAdvertiser_id(entity.getAccount_id());
+		entity1.setSettlement_date(new SimpleDateFormat("yyyy-mm-dd").format(new Date()));
+		entity1.setShop_name(entity.getShop_name());
+		advertiserCommReportDao.insert(entity1);
+	}
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<link rel="stylesheet" href="/chinese/mobile/css/mescroll.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body>
+
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+<div id="wrapper" class="mescroll mescroll4">
+		<div id="scroller">
+  <ul id="dataList" class="ggdp-list1 ggdp-list5">
+  
+  </ul>
+  
+<div id="pullUp" class="hide clear width">
+				<div class="pullUpIcon"></div> 
+				<div class="pullUpLabel"></div>
+			</div>
+		</div>
+	</div>
+<div class="ggdp-gm bor-t">
+    <span class="dis-in pad-l8 pad-r8 pad-t10 text-c col-999">
+        <label class="checkbox"><input type="checkbox" name="checkbox" onclick="checkAllClick(this)" id="ckAll"><i>✓</i> 全选</label> <!-- <a href="javascript:;" class=""><i class="fa fa-trash-o" aria-hidden="true"></i> 删除</a> -->
+    </span>
+    
+    <span class="dis-in pad-l5 pad-r8 pad-t8 text-c col-999">已选屏  <em class="red font14 payCount">0</em><!-- 个屏，共计<br/> <span class="red font13 totalBal">0.00</span>元 --></span>
+    
+    <p class="fr">
+    <button name="" id="clearGWC" onclick="reject()" type="button" class="btn btn07 bg-yellow font13 clearGWC">删除</button>
+      <!-- <input name="" id="payOrder" onclick="payOrder()" type="button" value="确定支付" class="btn btn07 bg-red font13 hide" /> -->
+      <button name="" id="commit" onclick="submit()" type="button" class="btn btn07 bg-red font13 commit">确认付款</button>
+    </p>
+  </div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_shoppCart.js"></script>
+<script type="text/javascript" src="/chinese/mobile/js/core/orderCommon.js"></script>
+<script src="/chinese/mobile/js/banner.js"></script><!--焦点图-->
+
+
+<!--批量投放弹出框-->
+<div class="shade" id="batchDiv" style="display: ;">
+  <div class="tanchu tanchu6">
+    <a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('batchDiv')"><i class="fa fa-close" aria-hidden="true"></i></a>
+    <div class="tanchu-bt font15">确认下单</div>
+    
+    <div class="touflx batchSelectDate">
+      
+    </div>
+    
+    <div class="touflx touflx2">
+      <div class="pos-r">
+        <span class="dis-in">投放类型：</span>
+        <span class="dis-in tfsl fileType"><em onclick="" class="active" value="3">图片</em><em onclick="" value="1">视频</em></span>
+        
+        <div class="col-999 zhehouj zhehouj-wu">
+          <p class="priceAndLength">单价：<em class="red">0元</em>/个</p>
+          <!-- <p class="hide disCountDiv">折后价：<em class="red"><span class="disPrice"></span>元</em>/个</p> -->
+        </div>
+        <!-- <span class="col-999 fr pad-t5 mar-r15 priceAndLength">单价：<em class="red font14">0元</em>/个</span> -->
+      </div>
+    </div>
+    
+    <div class="touflx touflx3">
+      <span class="dis-in">投放数量：</span>
+      <div class="pos-r dis-in cpxq-mk-zl fr mar-r15">
+        <a href="#" class="minus2 pos-a subtract"><i class="fa fa-minus" aria-hidden="true"></i></a>
+        <input name="" type="text" class="wenb02 text-c buyCount" value="1">
+        <a href="#" class="plus2 pos-a add"><i class="fa fa-plus" aria-hidden="true"></i></a>
+      </div>
+    </div>
+    
+    <div id="payWay" class="mar-t10 bor-t2">
+	    <h2 class="font13 text-c pad-t10">选择支付方式</h2>
+	      
+	    <ul class="zf-xz pad-q10">
+	      <!-- <li class="active" data="0400" class="walletPay"><a href="#"><i class="fa fa-gg-circle blue" aria-hidden="true"></i> 翔云余额: <span class="amount">0</span> 元</a></li> -->
+	      <li data="0101" class="active wechatPay"><a href="#"><img src="/chinese/mobile/images/zf01.jpg" alt="微信" /></a></li>
+	      <li data="0201" class="aliPay"><a href="#"><img src="/chinese/mobile/images/zf02.jpg" alt="支付宝" /></a></li>
+	      <li data="0400" class="walletPay"><a href="#"><img src="/chinese/mobile/images/zf04.jpg" alt="翔云余额" /></a></li>
+	      <li data="0301" class="unionPay"><a href="javascript:;"><img src="/chinese/mobile/images/zf03.jpg" alt="银联" /></a></li>
+	      <!-- <li><a href="#"><img src="/chinese/mobile/images/zf03.jpg" alt="银联" /></a></li> -->
+	    </ul>
+  	</div>
+    
+    
+    
+    <p class="col-999 text-c pad-t10 font14">
+      共 <span class="red payCount">0</span> 个广告屏，共计 <span class="red totalBal">0.00</span> 元<!-- <span class="hide disTotalBal">，折后共计 <span class="red">0.00</span> 元</span> -->。
+    </p>
+    
+    <div class="text-c pad-t5 pad-b15 pad-l15 pad-r15">
+      <input name="confirm" id="commit" onclick="gwcCommit(this)" type="button" value="确认付款" class="btn btn02 bor-rad font13 bg-red width100 commit">
+    </div>
+    
+    <!-- <div class="text-c pad-t20 pad-b15">
+      <input name="confirm" type="button" onclick="bacthSubmit()" value="确定" class="btn btn02 bor-rad font13 mar-l10 bg-red">
+      <input name="" type="button" onclick="javascript:turnoff('batchDiv')" value="取消" class="btn btn02 bor-rad font13 mar-l10 bg-999">
+    </div> -->
+  </div>
+</div>
+<!--弹出筛选-->
+<div class="shade" id="tc-eject" style="display: ;">
+  <span class="cd-close2 text-c pad-l5" onclick="javascript:turnoff('tc-eject')" title="关闭"></span>
+  
+  <ul class="screen-list">
+	    <li>
+          <span class="pos-a screen-list-bt">广告编号</span>
+          <input type="text" class="wenb03 width100" placeholder="请输入广告编号" />
+        </li>
+        
+        <li>
+          <span class="pos-a screen-list-bt">播放时段</span>
+          <select name="" class="xlb01 width100">
+            <option>全部</option>
+            <option>19:00:00-20:00:00</option>
+          </select>
+        </li>
+        
+        <li>
+          <button name="" type="button" class="btn btn07 bg-blue bor-rad font13 width100 mar-t10">搜索</button>
+        </li>
+  </ul>
+</div>
+</body>
+</html>

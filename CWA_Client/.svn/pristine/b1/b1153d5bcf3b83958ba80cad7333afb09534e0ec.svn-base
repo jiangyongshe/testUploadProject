@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script type="text/javascript">
+	document.write('<scr'+'ipt type="text/javascript" src="/chinese/mobile/js/commonRel.js"></sc'+'ript>');
+</script>
+</head>
+
+<body class="body1">
+<div id="mescroll" class="mescroll">
+
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12 col-fff">
+  <ul id="dataList" class="ggcx-list">
+  </ul>
+  
+  <div class="ggcx-db text-c col-fff pad-t10">
+    <span class="dis-in pad-l10">设备报修电话<span class="red font13 pad-l10">13928622678</span></span>
+  </div>
+</div>
+
+<div class="hei44"></div>
+
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+</div>
+<script src="/chinese/mobile/js/core/deviceMonitoring.js"></script><!--公用底部JS-->
+</body>
+</html>

@@ -1,0 +1,19 @@
+<#-- 热门广告 -->
+<#list data as product>
+	<#if product.pics??>
+		<#assign pics=product.pics?split(',')/>
+	<#else>
+		<#assign pics=''?split(',')/>
+	</#if>
+    <dd>
+      <p class="ggdp-bt">
+      	<script>
+	      	document.write(
+				<#-- 图片 -->
+				'<img onclick="javascript:window.location.href=\'detail.html?checkAdvertiseId=${product.advertiser_id?string?replace(",","")}&deviceId=${product.device_id}&timeInterval=${product.play_begin_time}-${product.play_end_time}&fileType=1\'" src="'+imagePath+'${pics[0]}"/>'
+			);
+		</script>
+      </p>
+      <p class="title">${product.name}</p>
+    </dd>
+</#list>

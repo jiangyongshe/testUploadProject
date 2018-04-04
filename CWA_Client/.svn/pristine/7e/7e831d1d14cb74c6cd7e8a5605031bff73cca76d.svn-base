@@ -1,0 +1,74 @@
+package com.cwa.client.web.quartzJob;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.ContextLoader;
+import org.springframework.web.context.support.WebApplicationObjectSupport;
+
+import com.cwa.client.dao.AdvertiserDao;
+import com.cwa.client.dto.AdDto;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+
+/**
+ * 定时刷新广告热门推荐内容
+ * @author HZK
+ */
+public class CreateADRecommend extends WebApplicationObjectSupport implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 模板名称
+	 */
+	private static final String FTL_NAME = "hotAD.ftl";
+	
+	/**
+	 * 输出文件名称
+	 */
+	private static final String HTML_NAME = File.separator+"chinese"+File.separator+"templeteHTML"+File.separator+"hotAD.html";
+	
+	public void execute(){
+		try {
+			logWriteUtil.writeLog(LOGTYPE_TIMER, "The timer home page advertiser refresh  is being.", LOGLEVEL_INFO, CreateADRecommend.class);
+			// 获取配置项
+			Configuration configuration = new Configuration(Configuration.VERSION_2_3_26);
+			// 设置模板目录
+			configuration.setDirectoryForTemplateLoading(new File(getWebApplicationContext().getServletContext().getRealPath("")+"WEB-INF"+File.separator+"ftl"));
+			// 设置编码
+			configuration.setDefaultEncoding("utf-8");
+			// 获取spring容器
+			ApplicationContext ac = getWebApplicationContext();
+			// 查询数据
+			AdvertiserDao advertiserDao = ac.getBean("advertiserDao",AdvertiserDao.class);
+			AdDto adDto = new AdDto();
+			adDto.setRecommed(ONE);
+			List<AdDto> list = advertiserDao.queryADForBuy(adDto);
+			// 获取模板
+			Template t = configuration.getTemplate(FTL_NAME);
+			// 输出流
+			Writer writer = new OutputStreamWriter(new FileOutputStream
+					(ContextLoader.getCurrentWebApplicationContext().getServletContext().getRealPath("")+HTML_NAME),"UTF-8");
+			// 封装参数
+			Map<String,Object> map = new HashMap<String,Object>();
+			map.put("data", list);
+			// 产出文件
+			t.process(map, writer);
+			logWriteUtil.writeLog(LOGTYPE_TIMER, "The timer home page advertiser refresh  success.", LOGLEVEL_INFO, CreateADRecommend.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_TIMER, "The timer home page advertiser refresh  exception,"+e.getMessage()+".", LOGLEVEL_INFO, CreateADRecommend.class);
+		}
+	}
+	
+}

@@ -1,0 +1,42 @@
+/*********全局变量**********/
+
+// 正整数
+var REG_POSITIVE_INTEGER = /^[1-9]\d*$/;
+
+//一周
+var oneWeek=7;
+
+//一月
+var oneMonth=30;
+
+//一年
+var oneYear=365;
+
+// 正实数（两位小数）
+var REG_POSITIVE_REALNUMBER = /^([1-9]([0-9]+)?(\.[0-9]{1,2})?)$|^(0\.0[1-9]{1})$|^(0\.[1-9]{1}[0-9]{0,1})$/;
+
+// 0到10
+var REG_POSITIVE_ZERO_TO_TEN = /^([1-9](\.[0-9]{1,2})?)$|^(10.00)$|^(10.0)$|^(10)$|^(0\.0[1-9]{1})$|^(0\.[1-9]{1}[0-9]{0,1})$/;
+
+// 手机号
+var REG_MOBILE = /^1[3|4|5|7|8][0-9]\d{4,8}$/;
+
+// 年月日日期格式化
+var DATE_FORMAT_YTD = 'yyyy-MM-dd';
+
+// 年月日时分秒日期格式化
+var DATE_FORMAT_YTDHMS = 'yyyy-MM-dd hh:mm:ss';
+
+//电子邮箱
+var REG_EMAIL = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+
+//获取当前语言
+var language = location.href.substring(location.href.indexOf(location.host)).split('/')[1];
+
+// 加载图片的地址
+//var imagePath = "/"+language+"/AD/loadADPic.do?filePath=";
+var imagePath = "http://10.0.0.137:8000/images/";
+//var imagePath = "http://182.16.67.109:18001/images/";
+//加载视频地址
+var videoUrl="http://10.0.0.137/videos/";
+//var videoUrl="http://182.16.67.109:18002/videos/";

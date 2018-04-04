@@ -1,0 +1,146 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%-- 引入spring标签  --%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta
+	content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no"
+	name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云媒体</title>
+<link rel="shortcut icon"
+	href="/<spring:message code="url.language"/>/images/logo.ico"
+	type="image/x-icon">
+<link rel="stylesheet"
+	href="/<spring:message code="url.language"/>/css/font-awesome.min.css">
+<link rel="stylesheet"
+	href="/<spring:message code="url.language"/>/css/public.css">
+<link rel="stylesheet"
+	href="/<spring:message code="url.language"/>/css/neiye.css">
+<link rel="stylesheet"
+	href="/<spring:message code="url.language"/>/css/index.css">
+<!--加载更多-->
+<link rel="stylesheet"
+	href="/<spring:message code="url.language"/>/css/mescroll.css">
+<script src="/js/commonRel.js"></script>
+<!-- 省市区街道 -->
+<script src="/js/jquery.citys.js"></script>
+<!--返回顶部-->
+<script src="/js/top.js"></script>
+<!--加载更多-->
+<script src="/js/mescroll.js"></script>
+<!--加载更多-->
+<script src="/js/mescroll-option.js"></script>
+<!--加载更多-->
+<script src="/js/pdlist1.js"></script>
+<!-- 逻辑处理 -->
+<script src="/js/core/adStore.js"></script>
+<!-- 其它逻辑 -->
+<script src="/js/core/index.js"></script>
+</head>
+
+<body>
+	<div id="mescroll" class="mescroll">
+		<!--公用头部JS-->
+		<script src="/<spring:message code="url.language"/>/js/header.js"></script>
+
+		<div class="neiye bor-t">
+			<div class="mar-auto pos-r">
+				<div class="ggdp-sea bor mar-t20 bg-f9 advArea">
+					<div class="pos-r font14 ggdp-sea-list">
+						<span class="pos-a ggs-sea-bt">省份</span> 
+						<select name="province" class="font14 xlb05"></select>
+					</div>
+
+					<div class="pos-r font14 ggdp-sea-list">
+						<span class="pos-a ggs-sea-bt">城市</span> 
+						<select name="city" class="font14 xlb05"></select>
+					</div>
+
+					<div class="pos-r font14 ggdp-sea-list">
+						<span class="pos-a ggs-sea-bt">地区</span>
+						<select name="area" class="font14 xlb05"></select>
+					</div>
+
+					<div class="pos-r font14 ggdp-sea-list ggdp-sea-list2">
+						<span class="pos-a ggs-sea-bt">价格</span> 
+							<input type="text" id="lessPrice" class="wenb09" placeholder="￥"> 
+							<span class="dis-in">-</span>
+							<input type="text" id="greaterPrice" class="wenb09" placeholder="￥">
+					</div>
+
+					<div class="pos-r font14 ggdp-sea-list ggdp-sea-list2">
+						<span class="pos-a ggs-sea-bt">关键字</span> <input type="text"
+							id="keyword" class="wenb04" placeholder="请输入关键字">
+					</div>
+
+					<div class="pos-r font14 ggdp-sea-list">
+						<input id="search" type="button" value="搜索"
+							class="btn btn06 bg-yellow font14">
+					</div>
+				</div>
+				
+				<ul class="rmgg pad-b20" id="storeData"></ul>
+
+				<div class="fenye font14 text-c" id="storePageTurn"></div>
+				
+			</div>
+		</div>
+
+		<!--公用底部JS-->
+		<script src="/<spring:message code="url.language"/>/js/footer.js"></script>
+	</div>
+
+	<script type="text/javascript">
+		function storeDetail(){
+			$('.rmgg li').mouseenter(function() {
+				$(this).find('.rmgg-xx').stop().animate({
+					bottom : '-66px'
+				});
+				$(this).find('.a2').css({
+					left : '0'
+				})
+				$(this).children('.a2').find('.p4').css({
+					left : '0'
+				})
+				$(this).children('.a2').find('.p5').css({
+					left : '0'
+				})
+				$(this).children('.a2').find('.p6').css({
+					transform : 'scale(1)'
+				})
+				$(this).children('.a2').find('.p7').css({
+					bottom : '0'
+				})
+			})
+			$('.rmgg li').mouseleave(function() {
+				$(this).find('.rmgg-xx').stop().animate({
+					bottom : '0px'
+				});
+				$(this).find('.a2').css({
+					left : -$(this).width()
+				})
+				$(this).children('.a2').find('.p4').css({
+					left : -$(this).width()
+				})
+				$(this).children('.a2').find('.p5').css({
+					left : -$(this).width()
+				})
+				$(this).children('.a2').find('.p6').css({
+					transform : 'scale(1.3)'
+				})
+				$(this).children('.a2').find('.p7').css({
+					bottom : '-74px'
+				})
+			})
+		}
+		storeDetail();
+	</script>
+</body>
+</html>

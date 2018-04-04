@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css?t=1.0">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css?t=1.0">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+<style>
+.mescroll-totop {
+    bottom: 5rem;
+}
+</style>
+</head>
+
+<body>
+<div id="mescroll" class="mescroll">
+
+<!-- <header>
+  <p class="logo pos-a"><a href="javascript:;" onclick="javascript:history.back(-1);" title="返回" class="pos-a dis-in fanhui col-fff pad-l5"><i class="fa fa-2x fa-angle-left" aria-hidden="true"></i></a></p>
+  <input name="" id="inputSearch" type="text" maxlength="20" placeholder="请输入广告屏编号或店铺名称" class="col-fff search">
+  <i class="fa fa-search pos-a col-fff font16" aria-hidden="true"></i>
+  <div class="header-r pos-a">
+    <a href="#" onclick="searchAdvertise()" class="dis-b col-fff">搜索</a>
+  </div>
+</header> -->
+
+<header class="header2">
+  <span class="logo2 pos-a"><i class="fa fa-map-marker pad-r5" aria-hidden="true"></i><span class="currCity"></span></span>
+  <input name="" id="inputSearch" type="text" maxlength="20" placeholder="广告屏编号/店铺名称" class="col-fff search">
+  <i class="fa fa-search pos-a col-fff font16" aria-hidden="true"></i>
+  <div class="header-r pos-a">
+    <a href="#" onclick="searchAdvertise()" class="dis-b col-fff">搜索</a>
+  </div>
+</header>
+<div class="hei36"></div>
+
+<!-- <div class="font12">
+  <div class="ggdp-sea bg-f9 bor-b3">
+    <ul class="ggdd-tab">
+      <li class="active">综合排名<i class="fa fa-sort-up pad-l5" aria-hidden="true"></i></li>
+      <li>销量优先<i class="fa fa-sort-down pad-l5" aria-hidden="true"></i></li>
+    </ul>
+    <div class="ggdd-tab"><label class="checkbox"><input type="checkbox" name="checkbox" id="moreOrder" ><i>✓</i> 多设备下单</label></div>
+    <a href="javascript:;" onclick="elementDisplay('tc-eject')" class="fr col-999">筛选 <i class="fa fa-filter" aria-hidden="true"></i></a>
+  </div>
+  
+  <div class="hei36"></div> -->
+
+
+<div class="font12">
+	<div class="ggdp-sea bg-f9 bor-b3">
+     <ul class="ggdp-sea-list searchEv">
+        <li>
+          <select name="province" class="xlb21 width100">
+          	<!-- <option value="">请选择</option>
+          	<option value="440000" data-code="440000">广东省</option> -->
+          </select>
+        </li>
+        
+        <li>
+          <select name="city" class="xlb21 width100">
+          </select>
+        </li>
+        
+        <li>
+          <select name="area" class="xlb21 width100">
+          </select>
+        </li>
+        
+        <li>
+          <select name="town" class="xlb21">
+          </select>
+        </li>
+        
+        <li>
+          <select name="" class="xlb21 width100 deviceIndustry">
+                <option value="">全部</option>
+			    <option value="1">超市便利店</option>
+			    <option value="2">餐饮</option>
+			    <option value="3">奶茶店</option>
+			    <option value="4">药店</option>
+			    <option value="5">娱乐休闲</option>
+			    <option value="6">美容院</option>
+			    <option value="7">地产中介</option>
+			    <option value="8">美容美发</option>
+			    <option value="9">婚纱摄影</option>
+			    <option value="10">面包店</option>
+			    <option value="11">培训机构</option>
+			    <option value="12">服饰</option>
+			    <option value="0">其它</option>
+            </select>
+        </li>
+     </ul>
+  </div>
+  <!-- <div class="ggdp-sea bg-f9 bor-b3">
+    <div class="ggdd-tab buyType">
+      <label class="radio"><input type="radio" name="radio" id="" value="1" checked ><i>✓</i> 普通投放</label>
+      <label class="radio pad-l10"><input type="radio" name="radio" id="" value="2"><i>✓</i> 批量投放</label>
+    </div>
+    <a href="javascript:;" onclick="elementDisplay('tc-eject')" class="fr col-999">筛选 <i class="fa fa-filter" aria-hidden="true"></i></a>
+  </div> -->
+  
+  <div class="hei36"></div>
+
+  <ul id="dataList" class="ggdp-list1 ggdp-list5 bg-ff">
+  </ul>
+  
+  
+  <div class="ggdp-gm bor-t">
+    <span class="dis-in pad-l8 pad-r8 pad-t10 text-c col-999">
+       <label class="checkbox"><input type="checkbox" name="checkbox" id="ckAll"><i>✓</i> 全选</label>
+    </span>
+    
+    <span class="dis-in pad-l10 pad-t10 text-c col-999">已选屏<b class="red font14 pad-l10 payCount">0</b></span>
+    
+    <p class="fr">
+      <input name="" type="button" onclick="submit()" value="立即购买" class="btn btn09 bg-red font13"  />
+    </p>
+  </div>
+  
+  <!-- <div class="ggdp-gm bor-t">
+    <span class="dis-in pad-l10 text-c col-999">已选广告屏<br /><span class="red font13 payCount">0</span></span>
+    
+    <span class="dis-in pad-l10 text-c col-999">费用总计<br /><span class="red font13 totalBal">0元</span></span>
+    
+    <p class="fr">
+      <input name="" type="button" value="加入购物车" class="btn btn09 bg-yellow font13 joinCart" />
+      <input name="" type="button" value="立即购买" class="btn btn09 bg-red font13" onclick="submit()" />
+    </p>
+  </div> -->
+</div>
+<div class="hei44"></div>
+
+
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js?t=1.0"></script>
+<script src="/chinese/mobile/js/commonScrollRel.js?t=1.0"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js?t=1.0"></script><!--通用日期引用-->
+<script src="https://int.dpool.sina.com.cn/iplookup/iplookup.php?format=js"></script>
+<script src="/chinese/mobile/js/jquery.citys.js"></script><!-- 省市区街道 -->
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script src="/chinese/mobile/js/banner.js"></script><!--焦点图-->
+</div>
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_queryAdvertiseInfo.js"></script>
+<script type="text/javascript" src="/chinese/mobile/js/core/orderCommon.js"></script>
+
+<!--批量投放弹出框-->
+<div class="shade" id="batchDiv" style="display: ;">
+  <div class="tanchu tanchu6">
+    <a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('batchDiv')"><i class="fa fa-close" aria-hidden="true"></i></a>
+    <div class="tanchu-bt font15">确认下单</div>
+    
+    <div class="touflx batchSelectDate">
+      
+    </div>
+    
+    <div class="touflx touflx2">
+      <p>
+        <span class="dis-in">投放类型：</span>
+        <span class="dis-in tfsl fileType"><em onclick="" class="active" value="3">图片</em><em onclick="" value="1">视频</em></span>
+        <span class="col-999 fr pad-t5 mar-r15 priceAndLength">单价：<em class="red font14">0元</em>/个</span>
+      </p>
+    </div>
+    
+    <div class="touflx touflx3">
+      <span class="dis-in">投放数量：</span>
+      <div class="pos-r dis-in cpxq-mk-zl fr mar-r15">
+        <a href="#" class="minus2 pos-a subtract"><i class="fa fa-minus" aria-hidden="true"></i></a>
+        <input name="" type="text" class="wenb02 text-c buyCount" value="1">
+        <a href="#" class="plus2 pos-a add"><i class="fa fa-plus" aria-hidden="true"></i></a>
+      </div>
+    </div>
+    
+    <div id="payWay" class="mar-t10 bor-t2">
+	    <h2 class="font13 text-c pad-t10">选择支付方式</h2>
+	      
+	    <ul class="zf-xz pad-q10">
+	      <!-- <li class="active" data="0400" class="walletPay"><a href="#"><i class="fa fa-gg-circle blue" aria-hidden="true"></i> 翔云余额: <span class="amount">0</span> 元</a></li> -->
+	      <li data="0101" class="active wechatPay"><a href="#"><img src="/chinese/mobile/images/zf01.jpg" alt="微信" /></a></li>
+	      <li data="0201" class="aliPay"><a href="#"><img src="/chinese/mobile/images/zf02.jpg" alt="支付宝" /></a></li>
+	      <li data="0400" class="walletPay"><a href="#"><img src="/chinese/mobile/images/zf04.jpg" alt="翔云余额" /></a></li>
+	      
+	      <!-- <li><a href="#"><img src="/chinese/mobile/images/zf03.jpg" alt="银联" /></a></li> -->
+	    </ul>
+  	</div>
+    
+    
+    
+    <p class="col-999 text-c pad-t10 font14">
+      共 <span class="red payCount">0</span> 个广告屏，合计 <span class="red totalBal">0.00</span> 元。
+    </p>
+    
+    <div class="text-c pad-t5 pad-b15 pad-l15 pad-r15">
+      <input name="confirm" id="confirm" onclick="bacthSubmit(this)" type="button" value="确认付款" class="btn btn02 bor-rad font13 bg-red width100">
+    </div>
+    
+    <!-- <div class="text-c pad-t20 pad-b15">
+      <input name="confirm" type="button" onclick="bacthSubmit()" value="确定" class="btn btn02 bor-rad font13 mar-l10 bg-red">
+      <input name="" type="button" onclick="javascript:turnoff('batchDiv')" value="取消" class="btn btn02 bor-rad font13 mar-l10 bg-999">
+    </div> -->
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,110 @@
+package com.cwa.client.dao;
+
+import java.util.List;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
+import com.cwa.client.dto.AdvertiserCommissionDto;
+import com.cwa.client.dto.BankCardInfoDto;
+import com.cwa.client.model.Tb_Bank_Card_Info;
+import com.cwa.client.model.Tb_advertiser_commission;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.RegUtil;
+
+import net.sf.json.JSONObject;
+
+public class ADCommissionDao extends BaseDao<Tb_advertiser_commission, AdvertiserCommissionDto> implements Constant {
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 根据用户登录账号查询广告佣金
+	 * @param accountId
+	 * @return
+	 */
+	public AdvertiserCommissionDto queryADCommission(String accountId){
+		String sql = "SELECT A.ID,A.ADVERTISER_ID,A.TOTAL_COMM,A.AVAILABLE_COMM,A.SETTLEMENT_DATE FROM tb_advertiser_commission A WHERE A.ADVERTISER_ID=? ";
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"param:"+accountId, LOGLEVEL_INFO, ADCommissionDao.class);
+		AdvertiserCommissionDto advertiserCommissionDto = null;
+		try {
+			advertiserCommissionDto = (AdvertiserCommissionDto)jdbcTemplate.queryForObject(sql, BeanPropertyRowMapper.newInstance(AdvertiserCommissionDto.class),accountId);
+		} catch (Exception e) {
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY, "query exception "+e.getMessage(), LOGLEVEL_ERROR, ADCommissionDao.class);
+			advertiserCommissionDto = null;
+		}
+		return advertiserCommissionDto;
+	}
+	
+	/**
+	 * 修改佣金
+	 * @param accountId
+	 * @param money
+	 */
+	public void updateADCommission(String accountId,Double money){
+		String sql = "UPDATE tb_advertiser_commission A INNER JOIN (SELECT ID,TOTAL_COMM+? TOTAL_COMM,AVAILABLE_COMM+? AVAILABLE_COMM FROM tb_advertiser_commission WHERE ADVERTISER_ID=?) B ON A.ID = B.ID SET A.TOTAL_COMM = B.TOTAL_COMM, A.AVAILABLE_COMM = B.AVAILABLE_COMM";
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"param:"+money+","+money+","+accountId, LOGLEVEL_INFO, ADCommissionDao.class);
+		jdbcTemplate.update(sql,money,money,accountId);
+	}
+	
+	/**
+	 * 查询用户绑卡信息
+	 * @param accountId
+	 * @param money
+	 */
+	public List<Tb_Bank_Card_Info> queryBankCardInfo(String accoutId,String cardNo,int cardType) throws Exception{
+		String sql = "SELECT * FROM Tb_Bank_Card_Info A WHERE A.card_type=? ";
+		Object [] obj=new Object[]{};
+		if(!RegUtil.getUtil().isNull(cardNo)){
+			sql=sql+"and A.bank_card_code=? ";
+			obj=new Object[]{
+				cardType,
+				cardNo
+			};
+		}
+		if(!RegUtil.getUtil().isNull(accoutId)){
+			sql=sql+"and A.account_id=? ";
+			if(!RegUtil.getUtil().isNull(cardNo)){
+				obj=new Object[]{
+					cardType,
+					cardNo,
+					accoutId
+				};
+			}else{
+				obj=new Object[]{
+					cardType,
+					accoutId
+				};
+			}
+		}
+		sql=sql+" order by id desc";
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"param accountId:"+accoutId+"===cardNo:"+cardNo, LOGLEVEL_INFO, ADCommissionDao.class);
+		List<Tb_Bank_Card_Info> query = jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(Tb_Bank_Card_Info.class),obj);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "query Tb_Bank_Card_Info success!!! listSize:"+query.size(), LOGLEVEL_INFO, ADCommissionDao.class);
+		return query;
+	}
+	
+	/**
+	 * 出金绑卡
+	 * @param accountId
+	 * @param money
+	 */
+	public void commissionBankCardInfo(Tb_Bank_Card_Info entity) throws Exception{
+		BaseDao<Tb_Bank_Card_Info, BankCardInfoDto> baseDao=new BaseDao<Tb_Bank_Card_Info, BankCardInfoDto>(){};
+		baseDao.jdbcTemplate=this.jdbcTemplate;
+		baseDao.save(entity);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "save Tb_Bank_Card_Info success!!! entity:"+JSONObject.fromObject(entity), LOGLEVEL_INFO, ADCommissionDao.class);
+	}
+	
+	/**
+	 * 出金绑卡
+	 * @param accountId
+	 * @param money
+	 */
+	public void commissionBankCardInfoUpdate(Tb_Bank_Card_Info entity) throws Exception{
+		BaseDao<Tb_Bank_Card_Info, BankCardInfoDto> baseDao=new BaseDao<Tb_Bank_Card_Info, BankCardInfoDto>(){};
+		baseDao.jdbcTemplate=this.jdbcTemplate;
+		baseDao.update(entity);
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "update Tb_Bank_Card_Info success!!! entity:"+JSONObject.fromObject(entity), LOGLEVEL_INFO, ADCommissionDao.class);
+	}
+}

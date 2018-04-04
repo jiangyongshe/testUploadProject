@@ -1,0 +1,260 @@
+package com.cwa.client.service;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.AdvertiseInfoDao;
+import com.cwa.client.dao.AdvertiseOrderDao;
+import com.cwa.client.dao.AdvertiseOrderDetailDao;
+import com.cwa.client.dao.DeviceVedioCountDao;
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.dto.DeviceVedioCountDto;
+import com.cwa.client.model.Tb_Order;
+import com.cwa.client.model.Tb_Order_Detail;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.DateUtils;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.PageVars;
+import com.cwa.client.utils.RegUtil;
+import com.cwa.client.utils.RespCodeEnum;
+
+@Service
+public class OrderService implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private AdvertiseOrderDao advertiseOrderDao;
+	
+	@Resource
+	private AdvertiseOrderDetailDao advertiseOrderDetailDao;
+	
+	@Resource
+	private DeviceVedioCountDao deviceVedioCountDao;
+	
+	@Resource
+	private AdvertiseInfoDao advertiseInfoDao;
+	@Resource
+	private ShoppCartService shoppCartService;
+  
+	public Tb_Order findById(Integer id){
+		return advertiseOrderDao.findById(id);
+	}
+	
+	public void save(Tb_Order entity) throws Exception{
+		advertiseOrderDao.save(entity);
+	}
+	
+	
+	public void update(Tb_Order entity) throws Exception {
+		advertiseOrderDao.update(entity);
+	}
+	
+	public PageModel<AdvertiseInfoDto> getPageModel(AdvertiseInfoDto dto){
+    	PageVars pvNm=this.getVars(dto,1);
+		PageVars pvlist=this.getVars(dto,0);
+		PageModel<AdvertiseInfoDto> pm=advertiseInfoDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    	
+    }
+    
+    
+    private PageVars getVars(AdvertiseInfoDto dto,int type){
+    	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+    	 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from (select distinct o.id,o.DEVICE_ID,o.SHOP_NAME,CONCAT(d.BEGIN_TIME,\"-\",d.END_TIME) idle_time,o.TOTAL_PRICE sumPrice,o.TOTAL_PRICE/o.price days,o.ORDER_STATUS,o.PLAY_BEGIN_TIME startDate,o.PLAY_END_TIME endDate "
+    		 		+ "from tb_order o,tb_order_detail d where o.SERIAL_NUMBER=d.SERIAL_NUMBER and o.ACCOUNT_ID=d.ACCOUNT_ID ");
+    	 } else {
+    		 sbStr.append("select distinct o.vedio_id,o.serial_number,o.id,o.DEVICE_ID,o.SHOP_NAME,CONCAT(d.BEGIN_TIME,\"-\",d.END_TIME) idle_time,o.TOTAL_PRICE sumPrice,o.TOTAL_PRICE/o.price days,o.ORDER_STATUS,o.PLAY_BEGIN_TIME startDate,o.PLAY_END_TIME endDate "
+    		 		+ "from tb_order o,tb_order_detail d where o.SERIAL_NUMBER=d.SERIAL_NUMBER and o.ACCOUNT_ID=d.ACCOUNT_ID ");
+    	 }
+    	 if(!RegUtil.getUtil().isNull(dto.getAccount_id())){
+    		 sbStr.append(" and o.ACCOUNT_ID=:ACCOUNT_ID");
+    		 params.put("ACCOUNT_ID", dto.getAccount_id());
+    	 }     
+    	 if(type==1){
+    		 sbStr.append(") a");
+    	 }
+    	   
+    	  if (type!=1) {
+				sbStr.append(" ORDER BY o.id desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+		  }
+    	  System.out.println("sql:"+sbStr.toString());
+    	  pv.setSbstr(sbStr);
+	      pv.setParams(params);
+		 
+		 return pv;
+    }	
+	//生成订单
+	public String createOrder(List<AdvertiseInfoDto> list,Map<String, String> map,String shoppIds,int disCount) throws Exception{
+		List<Tb_Order> orderList=new ArrayList<>();
+		List<Tb_Order_Detail> orderDetailList=new ArrayList<>();
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");//日期格式化
+		BigDecimal total=new BigDecimal(0);
+		for (AdvertiseInfoDto dto : list) {
+			List<Tb_Order_Detail> temOrderDetailList=new ArrayList<>();
+			String key=dto.getDevice_id()+"-"+dto.getIdle_time()+"-"+dto.getShop_name();//设备id+时段+店铺名
+			String str = map.get(key);
+			Tb_Order orderEntity =new Tb_Order();//生成订单
+			orderEntity.setAccount_id(dto.getAccount_id());
+			orderEntity.setAccount_ip(dto.getAccount_IP());
+			orderEntity.setAdvertiser_id(dto.getId());
+//			orderEntity.setAudit_datetime(DateUtils.string2Time(TIMEISNULL, DateUtils.DATE_FORMAT_DEFAULT));
+//			orderEntity.setAudit_id(ZERO);
+			orderEntity.setCommit_time(new Timestamp(System.currentTimeMillis()));
+			orderEntity.setDevice_id(dto.getDevice_id());
+			orderEntity.setOrder_status(ONE);
+			orderEntity.setPay_type(WECHATTPAY1_TYPE);
+			orderEntity.setPlay_begin_time(dto.getStartDate());
+			orderEntity.setPlay_end_time(dto.getEndDate());
+			orderEntity.setPrice(dto.getAd_price());
+			orderEntity.setVedio_id(ZERO);
+			orderEntity.setResult("");
+			String currDate=DateUtils.TimestamptoString(new Timestamp(System.currentTimeMillis()),DateUtils.DATE_FORMAT_YYYYMMDDHHMMSS);
+			String serialNumber=currDate+dto.getDevice_id()+WECHATTPAY1_TYPE+dto.getAccount_id().substring(dto.getAccount_id().length()-4);
+			orderEntity.setSerial_number(serialNumber);
+			orderEntity.setShop_name(dto.getShop_name());
+			orderEntity.setOld_total_price(new BigDecimal(dto.getSumPrice()));
+			
+			//得到播放天数
+			Long time =(sdf.parse(dto.getEndDate()).getTime()-sdf.parse(dto.getStartDate()).getTime())/(3600 * 24 * 1000);
+			logWriteUtil.writeLog("", "===time:"+(time+1), LOGLEVEL_INFO, OrderService.class);
+			if(time<0||sdf.parse(dto.getStartDate()).getTime()<=new Date().getTime()){
+				return RespCodeEnum.order_playCycle_error.getCode();
+			}
+			for (int i = 0; i < time+1; i++) {
+				
+				boolean bl=true;//标识不能下单的时间
+				Date date=new Date((sdf.parse(dto.getStartDate()).getTime()+(3600 * 24 * 1000)*i));//播放时间
+				if(!RegUtil.getUtil().isNull(str)){
+					String[] strs = str.split(",");
+					//剔除不能下单时段
+					for (int j = 0; j < strs.length; j++) {
+						if(strs[j].equals(sdf.format(date))){
+							orderEntity.setOld_total_price(orderEntity.getOld_total_price().subtract(orderEntity.getPrice()));//减去不能购买天数的价格
+							bl=false;
+							break;
+						}
+					}
+				}
+				
+				if(bl){
+					Tb_Order_Detail detailEntity=new Tb_Order_Detail();//生成订单详情
+					detailEntity.setAccount_id(dto.getAccount_id());
+					detailEntity.setBegin_time(dto.getIdle_time().split("-")[0]);
+					detailEntity.setCommit_time(new Timestamp(System.currentTimeMillis()));
+					detailEntity.setDevice_id(dto.getDevice_id());
+					detailEntity.setEnd_time(dto.getIdle_time().split("-")[1]);
+					detailEntity.setPlay_date(date);
+					detailEntity.setSerial_number(orderEntity.getSerial_number());
+					temOrderDetailList.add(detailEntity);//加入集合
+				}
+			}
+			orderEntity.setTotal_price(orderEntity.getOld_total_price().multiply(new BigDecimal(disCount)));
+			if(temOrderDetailList.size()>0){
+				total=total.add(orderEntity.getOld_total_price());
+				orderList.add(orderEntity);//加入集合
+				orderDetailList.addAll(temOrderDetailList);
+			}else{
+				return RespCodeEnum.order_create_notTimeInterval.getCode();
+			}
+		}
+		logWriteUtil.writeLog("", "===orderListSize:"+orderList.size()+"---orderDetailListSize:"+orderDetailList.size(), LOGLEVEL_INFO, OrderService.class);
+		
+		batchCreateOrderAndOrderDetail(orderList,orderDetailList);//生成订单和订单详情
+		updateOrInsertVideoCount(orderDetailList);//插入或更新设备视频播放数量
+		if(shoppIds!=null){
+			shoppCartService.deleteByAccountId(list.get(0).getAccount_id(), shoppIds);
+		}
+		return RespCodeEnum.SUCCESS.getCode()+"-"+total+"-"+total.multiply(new BigDecimal(disCount));
+	}
+	//生成订单和订单详情
+	public int batchCreateOrderAndOrderDetail(List<Tb_Order> orderList,List<Tb_Order_Detail> orderDetailList) throws Exception{
+   		 List<Object[]> batch = new ArrayList<Object[]>();
+   		 for (Tb_Order order : orderList) {
+   			 Object[] values = new Object[] {//封装订单数据
+   				 order.getSerial_number(),
+   				 order.getDevice_id(),
+   				 order.getOrder_status(),
+   				 order.getVedio_id(),
+   				 order.getAccount_id(),
+   				 order.getAccount_ip(),
+   				 order.getCommit_time(),
+   				 order.getPay_type(),
+   				 order.getPlay_begin_time(),
+   				 order.getPlay_end_time(),
+   				 order.getShop_name(),
+   				 order.getTotal_price(),
+   				 order.getPrice(),
+   				 order.getResult(),
+   				 order.getAdvertiser_id()
+   			 };
+   			 batch.add(values);
+   		 }
+   		 int[] orderCount = advertiseOrderDao.batchInsertOrder(batch);//批量生成订单
+   		 logWriteUtil.writeLog("", "====orderCount:"+orderCount.length, LOGLEVEL_INFO, OrderService.class);
+   		 batch.clear();
+   		 for (Tb_Order_Detail orderDetail : orderDetailList) {
+   			 Object[] values = new Object[] {//封装订单详情数据
+				orderDetail.getSerial_number(),
+				orderDetail.getDevice_id(),
+				orderDetail.getBegin_time(),
+				orderDetail.getEnd_time(),
+				orderDetail.getCommit_time(),
+				orderDetail.getPlay_date(),
+				orderDetail.getAccount_id()
+   			 };
+   			 batch.add(values);
+   		 }
+   		 int[] detailCount = advertiseOrderDetailDao.batchInsertOrderDetail(batch);//批量生成订单详情
+   		 logWriteUtil.writeLog("", "====detailCount:"+detailCount.length, LOGLEVEL_INFO, OrderService.class);
+   		return orderCount.length+detailCount.length;
+	}
+	
+	//修改和插入设备视频播放统计
+	public int updateOrInsertVideoCount(List<Tb_Order_Detail> orderDetailList) throws Exception{ 
+		List<Object[]> insertBatch = new ArrayList<Object[]>();
+		List<Object[]> updateBatch = new ArrayList<Object[]>();
+		for (Tb_Order_Detail orderDetail : orderDetailList) {
+  			 Object[] values = new Object[] {//封装订单详情数据
+				orderDetail.getDevice_id(),
+				orderDetail.getBegin_time(),
+				orderDetail.getEnd_time(),
+				orderDetail.getPlay_date()
+  			 };
+  			 DeviceVedioCountDto dto = deviceVedioCountDao.findByAll(values);
+  			 if(dto==null){
+  				Object[] insertValues = new Object[] {//封装插入数据
+  					orderDetail.getDevice_id(),
+  					orderDetail.getBegin_time(),
+  					orderDetail.getEnd_time(),
+  					1,
+  					orderDetail.getPlay_date()
+  	  			 };
+  				insertBatch.add(insertValues);
+  			 }else{
+  				Object[] updateValues = new Object[] {//封装更新数据
+					dto.getId()
+  	  			 };
+  				updateBatch.add(updateValues);
+  			 }
+  		 }
+		int[] insertCount = deviceVedioCountDao.batchInsertCount(insertBatch);//批量插入
+		int[] updateCount = deviceVedioCountDao.batchUpdateCount(updateBatch);//批量修改
+		logWriteUtil.writeLog("", "====insertBatch:"+insertBatch.size()+"--updateBatch:"+updateBatch.size()+"--insertCount:"+insertCount.length+"--updateCount:"+updateCount.length, LOGLEVEL_INFO, OrderService.class);
+		return insertCount.length+updateCount.length;
+	}
+}

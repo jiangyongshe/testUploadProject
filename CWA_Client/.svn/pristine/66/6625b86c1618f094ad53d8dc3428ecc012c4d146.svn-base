@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<title>翔云播——共享广告新媒体</title>
+<meta name="keywords" content="共享广告屏，投放广告，橱窗媒体广告，人人共享">
+<meta name="description" content="全国首家共享橱窗媒体广告，它致力于解决广告主投放广告难，投放流程复杂繁琐，投放广告不精准，以及广告投放费用门槛高等一系列问题" />
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="width clear font14">
+ <div class="mar-auto">
+  <div class="width clear quan pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <div class="clear width bg-f3 wddd">
+        <h2 class="fl font16 pad-t7 pad-b5">提现</h2>
+      </div>
+      
+      <div class="clear pad-t20">
+        <p>选择提现方式</p>
+        <ul class="zf-xz2">
+          <li class="active"><img src="images/zf01.jpg" alt="微信" /></li>
+          <li><img src="images/zf02.jpg" alt="支付宝" /></li>
+          <li><img src="images/zf03.jpg" alt="银联" /></li>
+        </ul>
+      </div>
+      
+      
+      
+      <div class="ggtf-sc pad-t20 font14 clear">
+        <ul class="">
+          <li>
+            <span class="pos-a ggtf-sc-bt">微信账号</span>
+            <input type="text" class="wenb03" placeholder="请输入微信账号" />
+          </li>
+        
+          <li>
+            <span class="pos-a ggtf-sc-bt">真实姓名</span>
+            <input type="text" class="wenb03" placeholder="请输入真实姓名" />
+          </li>
+          
+          <li>
+            <span class="pos-a ggtf-sc-bt">提现金额</span>
+            <input type="text" class="wenb03" placeholder="可提现金额10000元" />
+          </li>
+        </ul>
+        
+        <ul class="hide">
+          <li>
+            <span class="pos-a ggtf-sc-bt">支付宝账号</span>
+            <input type="text" class="wenb03" placeholder="请输入微信账号" />
+          </li>
+        
+          <li>
+            <span class="pos-a ggtf-sc-bt">真实姓名</span>
+            <input type="text" class="wenb03" placeholder="请输入真实姓名" />
+          </li>
+          
+          <li>
+            <span class="pos-a ggtf-sc-bt">提现金额</span>
+            <input type="text" class="wenb03" placeholder="可提现金额10000元" />
+          </li>
+        </ul>
+        
+        <ul class="hide">
+          <li>
+            <span class="pos-a ggtf-sc-bt">银行名称</span>
+            <select name="" class="font14 xlb04">
+             <option>中国银行</option>
+             <option>中国建设银行</option>
+             <option>中国农业银行</option>
+             <option>中国工商银行</option>
+           </select>
+          </li>
+        
+          <li>
+            <span class="pos-a ggtf-sc-bt">银行账号</span>
+            <input type="text" class="wenb03" placeholder="请输入银行账号" />
+          </li>
+          
+          <li>
+            <span class="pos-a ggtf-sc-bt">证件类型</span>
+            <select name="" class="font14 xlb04">
+              <option>身份证</option>
+            </select>
+          </li>
+          
+          <li>
+            <span class="pos-a ggtf-sc-bt">证件号码</span>
+            <input type="text" class="wenb03" placeholder="请输入证件号码" />
+          </li>
+          
+          <li>
+            <span class="pos-a ggtf-sc-bt">真实姓名</span>
+            <input type="text" class="wenb03" placeholder="请输入真实姓名" />
+          </li>
+          
+          <li>
+            <span class="pos-a ggtf-sc-bt">提现金额</span>
+            <input type="text" class="wenb03" placeholder="可提现金额10000元" />
+          </li>
+        </ul>
+      </div>
+      
+      <ul class="ggtf-sc font14">
+        <li>
+          <input name="" type="button" value="提交" class="btn btn05 bg-red font16" />
+        </li>
+      </ul>
+      
+      <div class="ggtf-city width bg-f9 mar-t20">
+        <div class="pos-r font14 ggs-sea-list">
+          <span class="pos-a ggs-sea-bt">开始日期</span>
+          <input type="text" class="wenb07" placeholder="请输入开始日期">
+          <i class="fa fa-angle-right pos-a" aria-hidden="true"></i>
+        </div>
+        
+        <div class="pos-r font14 ggs-sea-list">
+          <span class="pos-a ggs-sea-bt">结束日期</span>
+          <input type="text" class="wenb07" placeholder="请输入结束日期">
+          <i class="fa fa-angle-right pos-a" aria-hidden="true"></i>
+        </div>
+        
+        <div class="pos-r font14 ggs-sea-list">
+          <span class="pos-a ggs-sea-bt">提现类型</span>
+          <select name="" class="font14 xlb05">
+            <option>全部</option>
+            <option>微信</option>
+            <option>支付宝</option>
+            <option>银联</option>
+          </select>
+        </div>
+        
+        <div class="fl width24 mar-l15">
+          <input name="" type="button" value="搜索" class="btn btn06 bg-blue font14 width33">
+          <input name="" type="button" value="清空" class="btn btn06 bg-999 font14 width33 mar-l5">
+        </div>
+      </div>
+
+
+      <div class="rmgg-table font13">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th>序号</th>
+    <th>日期</th>
+    <th>资金变动（元）</th>
+    <th>类型</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>2017-09-20</td>
+    <td>1892</td>
+    <td>微信</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>2017-09-20</td>
+    <td>1892</td>
+    <td>支付宝</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>2017-09-20</td>
+    <td>1892</td>
+    <td>银联</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>2017-09-20</td>
+    <td>1892</td>
+    <td>支付宝</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>2017-09-20</td>
+    <td>1892</td>
+    <td>支付宝</td>
+  </tr>
+</table>
+          </div>
+          
+        <div class="fenye font14 text-c">
+           <a href="javascript:;" class="btn-fy"><i class="fa fa-chevron-left"></i></a>
+           <a href="javascript:;" class="btn-fy active">1</a>
+           <a href="javascript:;" class="btn-fy">2</a>
+           <a href="javascript:;" class="btn-fy">3</a>
+           <a href="javascript:;" class="btn-fy">...</a>
+           <a href="javascript:;" class="btn-fy">9</a>
+           <a href="javascript:;" class="btn-fy">10</a>
+           <a href="javascript:;" class="btn-fy"><i class="fa fa-chevron-right"></i></a>
+        </div>
+    </div>
+  </div>
+ </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

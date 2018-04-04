@@ -1,0 +1,37 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var pay_type="";
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	
+	$("#commit").bind("click",function(){
+		commit();
+	})
+	
+	$(document).on("click",".zf-xz li",function(){
+		$(".zf-xz li").removeClass("active");
+		pay_type=$(this).attr("data");
+		$(this).addClass("active");//激活样式
+	})
+})
+
+function commit(){//加载用户信息
+	var amount=$(".amount").val();
+	disabledBtn("commit");//禁用提交按钮
+	if(isNaN(amount)){
+		showJudegTip("fail","提示","金额输入错误");
+		startBtn("commit");
+		return;
+	}
+	jsonAjax("/"+language+"/customerWallet/walletRecharge.do",{amount:amount,pay_type:pay_type,flow_type:1},function(res){
+		if(res.success){
+			showJudegTip("success","提示","充值成功");
+		}else{
+			showJudegTip("fail","提示","充值失败");
+		}
+		startBtn("commit");
+	},function(){},"get");
+	startBtn("commit");
+}

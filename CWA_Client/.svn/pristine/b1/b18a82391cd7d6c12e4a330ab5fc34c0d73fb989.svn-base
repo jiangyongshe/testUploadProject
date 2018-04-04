@@ -1,0 +1,405 @@
+var pageNo=1,count=8,playIdle="",orderStatus="",adName="";
+
+$(function(){
+	$("#headerTitle").text("广告订单");
+	initMescroll();//初始化下拉控件
+	addWhereQuery();//筛选条件
+	appendDetailDiv();//详情弹出框
+})
+
+/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+function upCallback(page){
+	//联网加载数据
+	console.log("page.num="+page.num);
+	loadOrderInfo({
+		pageNo:page.num,
+		pageSize:count,
+		playIdle:playIdle,
+		orderStatus:orderStatus,
+		adName:adName
+	});
+	changeStatus($("ul .active").attr("id"),$("ul .active")[0]);
+}
+//加载用户订单
+function loadOrderInfo(obj){
+	jsonAjax("/"+language+"/order/queryOrder.do",obj,function(res){
+		//联网成功的回调,隐藏上拉加载的状态
+		if(res.data==null||res.data==[]){
+			mescroll.endSuccess(0);
+			return;
+		}
+		mescroll.endSuccess(res.data.list.length);//传参:数据的总数; mescroll会自动判断列表如果无任何数据,则提示空;列表无下一页数据,则提示无更多数据;
+		if(res.data.list.length>0){
+			var data=res.data,date=new Date().format(DATE_FORMAT_YTD);
+			var listDom=document.getElementById("dataList");
+			for (var i = 0; i < data.list.length; i++) {
+				var dto=data.list[i],statusText="",cssClass="",imgs="";
+				if(dto.order_status==1){
+					statusText="未支付";
+					cssClass="withoutPayment";
+				}else if(dto.order_status<4){
+					statusText="申请中";
+					cssClass="application";
+				}else if(dto.order_status==4){
+					if(date<dto.startDate&&dto.order_type!=4){
+						statusText="等待播放";
+						cssClass="watingPlay";
+					}else if(dto.startDate<=date&&date<=dto.endDate){
+						statusText="播放中";
+						cssClass="playing";
+					}else if(dto.order_type==4){
+						statusText="已停播";
+						cssClass="played";
+					}else if(date>dto.endDate){
+						statusText="已关闭";
+						cssClass="closed";
+					}
+				}else{
+					if(dto.order_status==5){
+						statusText="审核不通过";
+						cssClass="auditNotPass";
+					}else if(dto.order_status==6||dto.order_status==8){
+						statusText="已取消";
+						cssClass="canceled";
+					}else if(dto.order_status==7){
+						statusText="已关闭";
+						cssClass="closed";
+					}
+				}
+				var fileType="视频";//上传文件类型
+				if(dto.file_type=="2"){
+					fileType="图文模板";
+				}else if(dto.file_type=="3"){
+					fileType="图片";
+				}
+				if(dto.pics!=null&&dto.pics!=""){
+					imgs=dto.pics.split(",");
+				}
+				/*if(addr!=null&&addr!=""){,addr=dto.mailing_address
+					var addrList=dto.mailing_address.split("*");
+					if(addrList[0]==addrList[1]){
+						addr=dto.mailing_address.replace(addrList[0],"");
+					}
+				}*/
+				var str='<div class="ggdd-tit bor-b pad-b5 font13 ">';
+				if(dto.if_sub==2){
+					if($("#"+dto.unified_serial_number).length==0){
+						str+='<span><i class="fa fa-angle-right pad-r5" aria-hidden="true"></i>'+(dto.adName==null?"<span class='red'>未上传广告</span>":dto.adName)+'</span>';
+						str+='<b class="fr red">'+statusText+'</b>';
+						str+='</div>';
+						str+='<div id="'+dto.unified_serial_number+'"><div class="ggdp-ny bor-b2 pos-r">';
+						str+='<div class="ggdp-list1-tp pos-a" onclick="showShopDetail(\''+dto.shop_name+'\',\''+dto.mailing_address+'\',\''+dto.pics+'\')">';
+						str+='<span><img src="'+imagePath+imgs[0]+'" /></span>';
+						str+='<p class="sbmc">'+dto.shop_name+'</p>';
+						str+='</div>';
+						str+='<div class="ggdp-list1-nr">';
+						str+='<p class="col-999 dis-in pad-t2">设备编号：<span class="col-666">'+dto.device_code+'</span></p>';
+						str+='<p class="col-999">播放时段：<span class="col-666">'+dto.idle_time+'</span></p>';
+						str+='<div class="clear pad-t15"><span class="btn btn03 bor-rad bg-red" onclick="queryEffectualTimeByOrderNo({orderNo:\''+dto.serial_number+'\'})">有效时段</span></div>';
+						str+='</div>';
+						str+='</div></div>';
+						str+='<div class="pad-t10">';
+						str+='<p class="col-999 dis-in width49">播放类型：<span class="col-666">'+fileType+'</span></p>';
+						str+='<p class="col-999 dis-in width49">播放周期：<span class="col-666">'+dto.days+'天</span></p>';
+						str+='<p class="col-999 dis-b">支付费用：<em class="col-666"><span class="sumPrice">'+dto.sumPrice+'</span>元</em></p>';
+						str+='<p class="col-999 dis-in width49">播放开始日期：<span class="col-666">'+dto.startDate+'</span></p>';
+						str+='<p class="col-999 dis-in width49">播放结束日期：<span class="col-666">'+dto.endDate+'</span></p>';
+						str+='<p class="col-999">';
+						str+='<span class="dis-in">广告视频：</span>';
+						if(dto.order_status>=4){
+							if(dto.order_status==5){
+								str+='<a href="shangchuanshipin.html?type=u&adNo='+dto.unified_serial_number+'&fileType='+dto.file_type+'" class="red pad-l5 pad-r5"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+								//html+='  <a href="/'+language+'/forward/updateOrUploadVideo.do?type=u&adNo='+dto.serial_number+'&fileType='+dto.file_type+'" class="red"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+							}else if(dto.order_status==6){
+								
+							}else if(dto.order_status==8){
+								
+							}else{
+								str+='<a href="chakanshipin.html?type=q&adNo='+dto.unified_serial_number+'" class="red pad-l5"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a>';
+							}
+							
+							//html+='<a href="/'+language+'/forward/lookVideo.do?type=q&adNo='+dto.serial_number+'" class="red"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a> ';
+						}else{
+							if(dto.order_status==2){
+								str+='<a href="shangchuanshipin.html?adNo='+dto.unified_serial_number+'&isInterCut=2&fileType='+dto.file_type+'" class="red pad-l5"><i class="fa fa-upload" aria-hidden="true"></i> 上传</a>';
+								//html+='  <a href="/'+language+'/forward/updateOrUploadVideo.do?adNo='+dto.serial_number+'&isInterCut=2&fileType='+dto.file_type+'" class="red"><i class="fa fa-upload" aria-hidden="true"></i> 上传</a> ';
+							}else if(dto.order_status==3){
+								str+='<a href="shangchuanshipin.html?type=u&adNo='+dto.unified_serial_number+'&fileType='+dto.file_type+'" class="red pad-l5"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+								str+='<a href="chakanshipin.html?type=q&adNo='+dto.unified_serial_number+'" class="red pad-l10"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a>';
+								//html+='  <a href="/'+language+'/forward/updateOrUploadVideo.do?type=u&adNo='+dto.serial_number+'&fileType='+dto.file_type+'" class="red"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+								//html+='| <a href="/'+language+'/forward/lookVideo.do?type=q&adNo='+dto.serial_number+'&fileType='+dto.file_type+'" class="red"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a> ';
+							}else{
+								str+='<a href="tfgg01.html?orderNo='+dto.unified_serial_number+'&pay=1'+(dto.order_type==2?'&isInterCut=2"':'"')+' class="red pad-l5 payHref"><i class="fa fa-building-o" aria-hidden="true"></i> 未支付,去支付</a>';
+								//html+=' <a href="/'+language+'/forward/confirmOrder.do?checkTimes='+dto.startDate+'@'+dto.endDate+'&checkAdvertiseId='+dto.id+'&deviceId='+dto.device_id+'&timeInterval='+dto.idle_time+'&orderNo='+dto.serial_number+'&fileType='+dto.file_type+'&pay=1&sumPrice='+dto.sumPrice+(dto.order_type==2?'&isInterCut=2"':'"')+' class="red">未支付,去支付</a> ';
+							}
+						}
+						str+='</p>';
+						str+='</div>';
+						if(dto.order_status==5){
+							str+='<p class="red pad-t5">驳回原因：<span class="col-666">'+dto.result+'</span></p>';
+						}
+					}else{
+						var html="";
+						html+='<div class="ggdp-ny bor-b2 pos-r"><div class="ggdp-list1-tp pos-a" onclick="showShopDetail(\''+dto.shop_name+'\',\''+dto.mailing_address+'\',\''+dto.pics+'\')">';
+						html+='<span><img src="'+imagePath+imgs[0]+'" /></span>';
+						html+='<p class="sbmc">'+dto.shop_name+'</p>';
+						html+='</div>';
+						html+='<div class="ggdp-list1-nr">';
+						html+='<p class="col-999 dis-in pad-t2">设备编号：<span class="col-666">'+dto.device_code+'</span></p>';
+						html+='<p class="col-999">播放时段：<span class="col-666">'+dto.idle_time+'</span></p>';
+						html+='<div class="clear pad-t15"><span class="btn btn03 bor-rad bg-red" onclick="queryEffectualTimeByOrderNo({orderNo:\''+dto.serial_number+'\'})">有效时段</span></div>';
+						html+='</div></div>';
+						$("#"+dto.unified_serial_number).append(html);
+						var sumPrice =$("#"+dto.unified_serial_number).parent().find(".sumPrice");//费用总计
+						if(dto.order_status==1){
+							var payHref =$("#"+dto.unified_serial_number).parent().find(".payHref");//支付路径
+							payHref.attr("href",payHref.attr("href").replace("&sumPrice="+sumPrice.text(),"&sumPrice="+(parseFloat(sumPrice.text())+parseFloat(dto.sumPrice))));
+						}
+						sumPrice.text(parseFloat(sumPrice.text())+parseFloat(dto.sumPrice));
+					}
+				}else{
+					str+='<span><i class="fa fa-angle-right pad-r5" aria-hidden="true"></i>'+(dto.adName==null?"<span class='red'>未上传广告</span>":dto.adName)+'</span>';
+					str+='<b class="fr red">'+statusText+'</b>';
+					str+='</div>';
+					str+='<div class="ggdp-ny pos-r">';
+					str+='<div class="ggdp-list1-tp pos-a" onclick="showShopDetail(\''+dto.shop_name+'\',\''+dto.mailing_address+'\',\''+dto.pics+'\')">';
+					str+='<span><img src="'+imagePath+imgs[0]+'" /></span>';
+					str+='<p class="sbmc">'+dto.shop_name+'</p>';
+					str+='</div>';
+					str+='<div class="ggdp-list1-nr">';
+					str+='<p class="col-999 dis-in pad-t2">设备编号：<span class="col-666">'+dto.device_code+'</span></p>';
+					str+='<p class="dw-bflx">';
+					str+='<span class="col-999 dis-in">播放类型：</span>';
+					str+='<span class="dis-in">'+fileType+'</span>';
+					str+='</p>';
+					str+='<p class="col-999">播放时段：<span class="col-666">'+dto.idle_time+'</span></p>';
+					str+='<p class="col-999 dis-in">播放周期：<span class="col-666">'+dto.days+'天</span></p>';
+					str+='<p class="col-999 dis-in pad-l10">支付费用：<em class="col-666">'+dto.sumPrice+'元</em></p>';
+					str+='<p class="col-999">播放开始日期：<span class="col-666">'+dto.startDate+'</span></p>';
+					str+='<p class="col-999">播放结束日期：<span class="col-666">'+dto.endDate+'</span></p>';
+					str+='<p class="col-999">';
+					str+='<span class="dis-in">广告视频：</span>';
+					if(dto.order_status>=4){
+						if(dto.order_status==5){
+							str+='<a href="shangchuanshipin.html?type=u&adNo='+dto.serial_number+'&fileType='+dto.file_type+'" class="red pad-l5 pad-r5"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+							//html+='  <a href="/'+language+'/forward/updateOrUploadVideo.do?type=u&adNo='+dto.serial_number+'&fileType='+dto.file_type+'" class="red"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+						}
+						str+='<a href="chakanshipin.html?type=q&adNo='+dto.serial_number+'" class="red pad-l5"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a>';
+						//html+='<a href="/'+language+'/forward/lookVideo.do?type=q&adNo='+dto.serial_number+'" class="red"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a> ';
+					}else{
+						if(dto.order_status==2){
+							str+='<a href="shangchuanshipin.html?adNo='+dto.serial_number+'&isInterCut=2&fileType='+dto.file_type+'" class="red pad-l5"><i class="fa fa-upload" aria-hidden="true"></i> 上传</a>';
+							//html+='  <a href="/'+language+'/forward/updateOrUploadVideo.do?adNo='+dto.serial_number+'&isInterCut=2&fileType='+dto.file_type+'" class="red"><i class="fa fa-upload" aria-hidden="true"></i> 上传</a> ';
+						}else if(dto.order_status==3){
+							str+='<a href="shangchuanshipin.html?type=u&adNo='+dto.serial_number+'&fileType='+dto.file_type+'" class="red pad-l5"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+							str+='<a href="chakanshipin.html?type=q&adNo='+dto.serial_number+'" class="red pad-l10"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a>';
+							//html+='  <a href="/'+language+'/forward/updateOrUploadVideo.do?type=u&adNo='+dto.serial_number+'&fileType='+dto.file_type+'" class="red"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+							//html+='| <a href="/'+language+'/forward/lookVideo.do?type=q&adNo='+dto.serial_number+'&fileType='+dto.file_type+'" class="red"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a> ';
+						}else{
+							str+='<a href="tfgg01.html?orderNo='+dto.serial_number+'&pay=1'+(dto.order_type==2?'&isInterCut=2"':'"')+' class="red pad-l5"><i class="fa fa-building-o" aria-hidden="true"></i> 未支付,去支付</a>';
+							//html+=' <a href="/'+language+'/forward/confirmOrder.do?checkTimes='+dto.startDate+'@'+dto.endDate+'&checkAdvertiseId='+dto.id+'&deviceId='+dto.device_id+'&timeInterval='+dto.idle_time+'&orderNo='+dto.serial_number+'&fileType='+dto.file_type+'&pay=1&sumPrice='+dto.sumPrice+(dto.order_type==2?'&isInterCut=2"':'"')+' class="red">未支付,去支付</a> ';
+						}
+					}
+					/*str+='<a href="shangchuanshipin.html" class="red pad-l5"><i class="fa fa-upload" aria-hidden="true"></i> 上传</a>';
+					str+='<a href="shangchuanshipin.html" class="red pad-l10"><i class="fa fa-building-o" aria-hidden="true"></i> 查看</a>';
+					str+='<a href="shangchuanshipin.html" class="red pad-l10"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改</a>';
+					*/
+					str+='</p>';
+					str+='</div>';
+					str+='</div>';
+					if(dto.order_status==5){
+						str+='<p class="red pad-t5">驳回原因：<span class="col-666">'+dto.result+'</span></p>';
+					}
+					str+='<div class="ggdd-an bor-t2 text-r clear">';
+					str+='<span class="btn btn03 bor-rad bg-red" onclick="queryEffectualTimeByOrderNo({orderNo:\''+dto.serial_number+'\'})">有效时段</span>';
+					if(dto.order_status==4&&dto.order_type==2){
+						str+='    <span class="btn btn03 bor-rad bg-999 mar-l5" data-orNo="'+dto.serial_number+'" onclick="cancerInterCut(this)">取消插播</span>';
+					}else if(dto.order_status==4&&dto.order_type==3){
+						str+='<span class="btn btn03 bor-rad bg-999 mar-l5 disabled">已取消插播</span>'; 
+					}
+					str+='</div>';
+				}
+				if(str!="<div class=\"ggdd-tit bor-b pad-b5 font13 \">"){
+					var liDom=document.createElement("li");
+					liDom.setAttribute('class','dingdan '+cssClass);
+					liDom.innerHTML=str;
+					listDom.appendChild(liDom);//加在列表的后面,上拉加载
+				}
+			}
+			
+		}else{
+			if(obj.pageNo==1){
+				showEmplyDiv("无订单记录,<a href='tfgg.html' class='red'>去下单</a>","#dataList");
+			}
+		}
+	},function(){},"get",null,null,false);
+}
+function search(){
+	playIdle=$(".playIdle").find("option:selected").text();
+	orderStatus=$(".orderStatus").find("option:selected").val();
+	adName=$(".adName").val();
+	if(playIdle=="全部"){
+		playIdle="";
+	}
+	scrollCommonMethod();//公共下拉刷新条件筛选
+}
+var orderNo="";
+function queryEffectualTimeByOrderNo(obj){
+	if(orderNo==""){
+		initQueryDate();//第一次弹出初始化日期控件
+	}
+	if(obj.orderNo!=null&&obj.orderNo!=undefined&&obj.orderNo!=""){
+		orderNo=obj.orderNo;
+	}else{
+		obj.orderNo=orderNo;
+	}
+	jsonAjax("/"+language+"/order/queryEffectualTimeByOrderNo.do",obj,function(res){
+		if(res.data!=null&&res.data!=[]){
+			var html="",data=res.data,date=new Date().format(DATE_FORMAT_YTD);
+			html+='<tr>';
+			html+='  <th>时间</th>';
+			html+='  <th>状态</th>';
+			html+='</tr>';
+			for (var i = 0; i < data.length; i++) {
+				var status="未播放",cl="red";
+				if(new Date(data[i].play_date.replace(/-/g, "/"))<new Date(date.replace(/-/g, "/"))){
+					status="已播放",cl="green";
+				}else if(data[i].play_date==date){
+					status="正在播放",cl="col-999";
+				}
+				html+='<tr>';
+				html+='  <td>'+data[i].play_date+'</td>';
+				html+='  <td><span class="'+cl+'">'+status+'</span></td>';
+				html+='</tr>';
+			}
+			$("#timeTable").html("");
+			$("#timeTable").html(html);
+			$("#shiduandiv").show();
+		}
+	},function(){},"get");
+}
+//有效时段搜索按钮
+function seachEffectualTimeBtn(){
+	var beginTime=$("#user_age1").val();
+	var endTime=$("#user_age2").val();
+	
+	queryEffectualTimeByOrderNo({beginTime:beginTime,endTime:endTime});
+	
+}
+//取消插播
+function cancerInterCut(obj){
+	showConfimTip("提示","确认取消插播吗？",function(){
+		var orNo=$(obj).attr("data-orNo");
+		jsonAjax("/"+language+"/order/cancerInterCut.do",{orderNo:orNo},function(res){
+			if(res.success){
+				showJudegTip("success","取消插播成功!");
+				$("#successdiv").remove();
+				$(obj).parents(".interDiv").append('<span class="btn btn03 bg-999 disabled">已取消插播</span>');
+				$(obj).remove();
+			}else{
+				showJudegTip("fail",res.data);
+			}
+		},function(){});
+	})
+}
+//清空时间
+function clearDate(){
+	$(".beginTime").val("");
+	$(".endTime").val("");
+}
+
+//增加订单查询条件
+function addWhereQuery(){
+    var html='<li>';
+    html+='  <span class="pos-a screen-list-bt">广告名称</span>';
+    html+='  <input type="text" class="wenb03 width100 adName" placeholder="请输入广告名称" />';
+    html+='</li>';
+    html+='<li>';
+    html+='  <span class="pos-a screen-list-bt">播放时段</span>';
+    html+='  <select name="" class="xlb01 width100 playIdle">';
+    html+='    <option>全部</option>';
+    html+='    <option>07:00:00-08:00:00</option>';
+    html+='    <option>08:00:00-09:00:00</option>';
+    html+='    <option>09:00:00-10:00:00</option>';
+    html+='    <option>10:00:00-11:00:00</option>';
+    html+='    <option>11:00:00-12:00:00</option>';
+    html+='    <option>12:00:00-13:00:00</option>';
+    html+='    <option>13:00:00-14:00:00</option>';
+    html+='    <option>14:00:00-15:00:00</option>';
+    html+='    <option>15:00:00-16:00:00</option>';
+    html+='    <option>16:00:00-17:00:00</option>';
+    html+='    <option>17:00:00-18:00:00</option>';
+    html+='    <option>18:00:00-19:00:00</option>';
+    html+='    <option>19:00:00-20:00:00</option>';
+    html+='    <option>20:00:00-21:00:00</option>';
+    html+='    <option>21:00:00-22:00:00</option>';
+    html+='  </select>';
+    html+='</li>';
+    html+='<li>';
+    html+='  <span class="pos-a screen-list-bt">订单状态</span>';
+    html+='  <select name="" class="xlb01 width100 orderStatus">';
+    html+='  	<option value="">全部</option>';
+    html+='    <option value="1">未支付</option>';
+    html+='    <option value="2-3">申请中</option>';
+    html+='    <option value="4-1">等待播放</option>';
+    html+='    <option value="4-2">播放中</option>';
+    html+='    <option value="4-3">已停播</option>';
+    html+='    <option value="5">审核不通过</option>';
+    html+='    <option value="6">已取消</option>';
+    html+='    <option value="7">已关闭</option>';
+    html+='  </select>';
+    html+='</li>';
+    html+='<li>';
+    html+='  <button name="" onclick="search()" type="button" class="btn btn07 bg-blue bor-rad font13 width100 mar-t10">搜索</button>';
+    html+='</li>';
+    $(".screen-list").html(html);
+}
+//点击店铺名店铺详情信息
+function showShopDetail(shopName,addr,imgs){
+	$(".shopName").text(shopName);
+	if(addr!=null){
+		var addrList=addr.split("*");
+		if(addrList[0]==addrList[1]){
+			addr=addr.replace(addrList[0],"");
+		}
+	}
+	$(".addrDetail").text(addr.replace(/\*/g,"").replace(/&/g,""));
+	$(".imgs").html("");
+	if(imgs!="null"){
+		var imgList=imgs.split(","),str="";
+		for (var i = 0; i < imgList.length; i++) {
+			str+='<img src="'+imagePath+imgList[i]+'"/>';//onclick="showPicPopup(this.cloneNode(true),event)"
+		}
+		$(".imgs").html(str);
+	}
+	$("#tc-eject2").show();
+}
+//加入详情弹出框
+function appendDetailDiv(){
+	var html='<div class="shade" id="tc-eject2" style="display: ;">';
+	html+='  <span class="cd-close2 text-c pad-l5" onclick="javascript:turnoff(\'tc-eject2\')" title="关闭"></span>';
+	html+='  <ul class="screen-list screen-list2">';
+	html+='	    <li>';
+	html+='        <p><b>店铺名称：</b><span class="shopName"></span></p>';
+	html+='        <p class="pad-t7"><b>详细地址：</b><span class="addrDetail"></span></p>';
+	html+='        <div class="dp-tp imgs">';
+	html+='        </div>';
+	html+='     </li>';
+	html+='     <li>';
+	html+='        <button name="" type="button" onclick="javascript:turnoff(\'tc-eject2\')" class="btn btn03 bg-blue bor-rad font13 width100 mar-t10 mar-b10">关闭</button>';
+	html+='     </li>';
+	html+='  </ul>';
+	html+='</div>';
+	$("body").append(html);
+}
+//根据不同订单状态显示
+function changeStatus(id,obj){
+	$(".dingdan").hide();
+	if(id==""||id==null||id==undefined){
+		$(".dingdan").show();
+	}else{
+		$("."+id).show();
+	}
+	$(obj).parent().find("li").removeClass("active");
+	$(obj).addClass("active");
+}

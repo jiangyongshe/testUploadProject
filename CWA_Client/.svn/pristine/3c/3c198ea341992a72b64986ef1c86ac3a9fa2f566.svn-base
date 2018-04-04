@@ -1,0 +1,17 @@
+<#-- 热门广告 -->
+<#list data as product>
+	<#if product.pics??>
+		<#assign pics=product.pics?split(',')/>
+	</#if>
+    <dd>
+      <p class="ggdp-bt">
+      	<script>
+	      	document.write(
+				<#-- 图片 -->
+				'<img src="'+imagePath+'${pics[0]}"/>'
+			);
+		</script>
+      </p>
+      <p class="title">${product.name}</p>
+    </dd>
+</#list>

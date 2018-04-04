@@ -1,0 +1,452 @@
+package com.cwa.client.web;
+
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dao.AdvertiseOrderDao;
+import com.cwa.client.dao.AdvertiserDao;
+import com.cwa.client.dao.BuyInformationDao;
+import com.cwa.client.dao.ClientInOutMoneyDao;
+import com.cwa.client.dto.AdDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.model.Tb_Order_Number;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.redis.UserRedis;
+import com.cwa.client.service.AdvertiserService;
+import com.cwa.client.service.AgentService;
+import com.cwa.client.service.CustomerWalletService;
+import com.cwa.client.service.FileService;
+import com.cwa.client.service.OrderService;
+import com.cwa.client.service.SalesmanService;
+import com.cwa.client.service.ShoppCartService;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.RespCodeEnum;
+import com.cwa.client.web.nettytcpsocket.PayUtil;
+import com.cwa.client.web.nettytcpsocket.RequestMsgDto;
+import com.cwa.client.web.nettytcpsocket.RespMsgDto;
+
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/*/exclude")
+public class ExcludeRequestController extends BaseController<GobalRespParameter> implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource// 普通用户service层
+	private UserService userService;
+	
+	@Resource// 购物车
+	private ShoppCartService shoppCartService;
+	
+	@Resource
+	private UserRedis userRedis;
+	
+	@Resource//代理service层
+	private AgentService agentService;
+	
+	@Resource//销售员service层
+	private SalesmanService salesmanService;
+	
+	@Resource// 广告商service层
+	private AdvertiserService advertiserService;
+	
+	@Resource
+	private FileService fileService;
+	
+	@Resource
+	private AdvertiserDao advertiserDao;
+	
+	@Resource
+	private AdvertiseOrderDao advertiseOrderDao;
+	
+	@Resource// 广告求购信息
+	private BuyInformationDao buyInformationDao;
+	
+	@Resource
+	CustomerWalletService customerWalletService;
+	
+	@Resource
+	private ClientInOutMoneyDao clientInOutMoneyDao;
+	
+	@Resource
+	private OrderService orderService;
+	
+	/**
+	 * 转发到首页
+	 * @return
+	 */
+	@RequestMapping("/forward/home.do")
+	public String gotoHome(){
+		return "index";
+	}
+	
+	@RequestMapping("/redirect/home.do")
+	public void gotoHome(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		res.sendRedirect("/chinese/exclude/forward/home.do");
+	}
+	
+	/**
+	 * 充值-支付-同步返回
+	 * @return
+	 */
+	@RequestMapping("/pay/alipayReturnUrl.do")
+	public void payReturnUrl(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		System.out.println("===========return url :"+req.getRequestURL());
+		
+		res.sendRedirect("/chinese/html/chongzhizhifuchenggong.html");
+	}
+	/**
+	 * 订单-支付-同步返回
+	 * @return
+	 */
+	@RequestMapping("/orderPay/alipayOrderReturnUrl.do")
+	public void alipayOrderReturnUrl(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		System.out.println("===========return url :"+req.getRequestURL());
+		
+		res.sendRedirect("/chinese/html/dingdanzhifuchenggong.html");
+	}
+	
+	/**
+	 * 转发到登录页
+	 * @return
+	 */
+	@RequestMapping("/forward/login.do")
+	public String gotoLogin(){
+		return "login";
+	}
+	
+	/**
+	 * 转发到广告店铺
+	 * @return
+	 */
+	@RequestMapping("/forward/adStore.do")
+	public String adStore(){
+		return "adStore";
+	}
+	
+	/**
+	 * 转发到求购信息
+	 * @return
+	 */
+	@RequestMapping("/forward/askToBuy.do")
+	public String askToBuy(){
+		return "askToBuy";
+	}
+	
+	/**
+	 * 转发到忘记密码
+	 * @return
+	 */
+	@RequestMapping("/forward/forgetPwd.do")
+	public String gotoForgetPassword(){
+		return "forgetPassword";
+	}
+	
+	
+	
+	/**
+	 * 加载图片(用于“成为广告商”和首页展示广告)
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/AD/loadADPic.do")
+	public void loadADPic(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		fileService.loadPicFile(res, ServletRequestUtils.getStringParameter(req, "filePath",""));
+	}
+	
+	/**
+	 * 激活为店主
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/AD/activeAD.do")
+	public void activeAD(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 返回的消息对象
+		RuturnMessageDto rt = new RuturnMessageDto();
+		// 判断是否登录
+		if(req.getSession().getAttribute(SESSION_USER_NAME)==null){
+			rt.setMsg("999");
+			writeJSON(res, rt);
+			return;
+		}
+		// 语言包
+		RequestContext reqCt= new RequestContext(req);
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" active AD .", LOGLEVEL_INFO, ExcludeRequestController.class);
+		//session得到user信息
+		CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);
+		// 判断是否已经激活过
+		if(userService.getUser(customerDto.getMobile(), USERTYPE_CUSTOMER_ADVERTISER)!=null){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User have active.", LOGLEVEL_INFO, ExcludeRequestController.class);
+			rt.setMsg(reqCt.getMessage("active.ad.tip.havaActive"));
+			writeJSON(res, rt);
+			// 修改session
+			req.getSession().setAttribute("userType",USERTYPE_CUSTOMER_ADVERTISER);
+			return;
+		}
+		// 插入店主数据
+		Tb_Advertiser entity = new Tb_Advertiser();
+		entity.setMobile(customerDto.getMobile());
+		entity.setReal_name(customerDto.getUser_name());
+		entity.setUser_status(customerDto.getUser_status());
+		entity.setOpen_date(new Timestamp(new Date().getTime()));
+		entity.setEmail(customerDto.getEmail());
+		entity.setAccount_id(customerDto.getAccount_id());
+		entity.setAgent_id(customerDto.getAgent_id());
+		entity.setAudit_status(ONE);
+		entity.setCompany_id(customerDto.getCompany_id());
+		entity.setPassword(customerDto.getPassword());
+		entity.setReferrals_type(customerDto.getReferrals_type());
+		entity.setReferrals_id(customerDto.getReferrals_id().toString());
+		entity.setReg_status(ONE);
+		entity.setSuperior(ONE);
+		if(entity.getReferrals_type()==3){
+			entity.setSuperior(TWO);
+		}
+		advertiserService.saveUserAndInit(entity);
+		// 修改session
+		req.getSession().setAttribute("userType",USERTYPE_CUSTOMER_ADVERTISER);
+		// 激活成功
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User active success.", LOGLEVEL_INFO, ExcludeRequestController.class);
+		rt.setMsg(reqCt.getMessage("active.ad.tip.success"));
+		rt.setSuccess(true);
+		writeJSON(res, rt);
+	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * 查询店铺广告
+	 */
+	@RequestMapping("/AD/queryForStore.do")
+	public void queryForStore(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 查询参数
+		AdDto param = new AdDto();
+		// 地址参数
+		String addr = ServletRequestUtils.getStringParameter(req, "addr","");
+		if(addr!=null&&!addr.trim().equals("")){
+			addr = addr + "%";
+			param.setAddr(addr);
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Addr:"+addr, LOGLEVEL_INFO, ExcludeRequestController.class);
+		}
+		// 价格参数
+		String lessPrice = ServletRequestUtils.getStringParameter(req, "lessPrice","");
+		Double lessPriceD = 0d;
+		try {
+			lessPriceD = Double.parseDouble(lessPrice);
+			param.setLessPrice(lessPriceD.toString());
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "lessPrice:"+lessPriceD, LOGLEVEL_INFO, ExcludeRequestController.class);
+		} catch (Exception e) {
+			param.setLessPrice("");
+		}
+		String greaterPrice = ServletRequestUtils.getStringParameter(req, "greaterPrice","");
+		Double greaterPriceD = 0d;
+		try {
+			greaterPriceD = Double.parseDouble(greaterPrice);
+			param.setGreaterPrice(greaterPriceD.toString());
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "greaterPrice:"+greaterPriceD, LOGLEVEL_INFO, ExcludeRequestController.class);
+		} catch (Exception e) {
+			param.setGreaterPrice("");
+		}
+		// 店铺名
+		String name = ServletRequestUtils.getStringParameter(req, "keyword","");
+		if(name!=null&&!name.trim().equals("")){
+			param.setName("%"+name+"%");
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "name:"+name, LOGLEVEL_INFO, ExcludeRequestController.class);
+		}
+		// 分页参数
+		String pageNoStr = ServletRequestUtils.getStringParameter(req, "pageNo","");
+		String pageSizeStr = ServletRequestUtils.getStringParameter(req, "pageSize","");
+		if(Pattern.matches(REGEX_POSITIVE_INTEGER, pageNoStr)){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "pageNo:"+pageNoStr, LOGLEVEL_INFO, ExcludeRequestController.class);
+			param.setPageNo(Integer.parseInt(pageNoStr));
+		}
+		if(Pattern.matches(REGEX_POSITIVE_INTEGER, pageSizeStr)){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "pageSizeStr:"+pageSizeStr, LOGLEVEL_INFO, ExcludeRequestController.class);
+			param.setPageSize(Integer.parseInt(pageSizeStr));
+		}
+		// 查询并返回数据
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("data", advertiserDao.queryADForBuy(param));
+		// 数据总量
+		map.put("count", advertiserDao.queryADForBuyCount(param));
+		writeJSON(res, map);
+	}
+	/**
+	 * 充值-阿里支付异步回调url
+	 */
+	@RequestMapping("/pay/alipayNotifyUrl.do")
+	public void alipayNotifyUrl(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%alipayNotifyUrl success url:" + req.getRequestURL(),
+				LOGLEVEL_INFO, ExcludeRequestController.class);
+		PayUtil payUtil = PayUtil.getSignPayUtil();
+		RequestMsgDto requestDto=new RequestMsgDto();
+		if(getParameter(req, "out_trade_no")==null){
+			return;
+		}
+		Map<String, Object> map = payUtil.getAllRequestParam(req, "UTF-8");
+		requestDto.setUuid(getParameter(req, "out_trade_no"));
+		requestDto.setPayType(ALIPAY_TYPE1);
+		requestDto.setInOutType(THREE);
+		requestDto.setOrderNo(getParameter(req, "out_trade_no"));
+		requestDto.setOrderAmount(getParameter(req, "sign"));
+		requestDto.setContent(payUtil.getSignStr(map));
+		
+		RespMsgDto resp = payUtil.checkSign(requestDto);
+		if(RespCodeEnum.SUCCESS.getCode().equals(resp.getRespCode())){
+			Tb_client_in_out_money inOutInfo = clientInOutMoneyDao.queryClientInOutInfo(requestDto.getOrderNo());
+			if(inOutInfo!=null){
+				customerWalletService.notifySaveInfo(inOutInfo);
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%alipayNotifyUrl end inOutInfo:" + JSONObject.fromObject(inOutInfo),
+						LOGLEVEL_INFO, ExcludeRequestController.class);
+			}else{
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%alipayNotifyUrl end order exception",
+						LOGLEVEL_INFO, ExcludeRequestController.class);
+			}
+		}
+		
+	}
+	
+	/**
+	 * 充值-微信支付异步回调url
+	 */
+	@RequestMapping("/pay/wechatnotifyUrl.do")
+	public void wechatnotifyUrl(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%wechatnotifyUrl success url:" + req.getRequestURL(),
+				LOGLEVEL_INFO, ExcludeRequestController.class);
+		PayUtil payUtil = PayUtil.getSignPayUtil();
+		RequestMsgDto requestDto=new RequestMsgDto();
+		String respxml = payUtil.getDataFromInputStream(req);
+		 Map<String, Object> reponseMap=new HashMap<String, Object>();
+		 reponseMap.put("return_code", PAY_STATUS_SUCCESS);
+		 reponseMap.put("return_msg", "OK");
+		 String respXml=payUtil.getWeChatPostXml(reponseMap);
+		 writeJSON(res,respXml);
+		if(null==respxml){
+			return;
+		}
+		Map<String, Object> map = payUtil.getMapFromXML(respxml);
+		requestDto.setUuid(map.get("out_trade_no").toString());
+		requestDto.setPayType(WECHATTPAY1_TYPE);
+		requestDto.setInOutType(THREE);
+		requestDto.setOrderNo(map.get("out_trade_no").toString());
+		requestDto.setOrderAmount(map.get("sign").toString());
+		requestDto.setContent(payUtil.getSignStr(map));
+		
+		RespMsgDto resp = payUtil.checkSign(requestDto);
+		if(RespCodeEnum.SUCCESS.getCode().equals(resp.getRespCode())){
+			Tb_client_in_out_money inOutInfo = clientInOutMoneyDao.queryClientInOutInfo(requestDto.getOrderNo());
+			if(inOutInfo!=null){
+				customerWalletService.notifySaveInfo(inOutInfo);
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%wechatnotifyUrl end inOutInfo:" + JSONObject.fromObject(inOutInfo),
+						LOGLEVEL_INFO, ExcludeRequestController.class);
+			}else{
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%wechatnotifyUrl end order exception",
+						LOGLEVEL_INFO, ExcludeRequestController.class);
+			}
+		}
+	}
+	
+	/**
+	 * 订单-阿里支付异步回调url
+	 */
+	@RequestMapping("/orderPay/alipayOrderNotifyUrl.do")
+	public void alipayOrderNotifyUrl(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%alipayOrderNotifyUrl success url:" + req.getRequestURL(),
+				LOGLEVEL_INFO, ExcludeRequestController.class);
+		PayUtil payUtil = PayUtil.getSignPayUtil();
+		RequestMsgDto requestDto=new RequestMsgDto();
+		Map<String, Object> map = payUtil.getAllRequestParam(req, "UTF-8");
+		if(getParameter(req, "out_trade_no")==null){
+			return;
+		}
+		requestDto.setUuid(getParameter(req, "out_trade_no"));
+		requestDto.setPayType(ALIPAY_TYPE1);
+		requestDto.setInOutType(THREE);
+		requestDto.setOrderNo(getParameter(req, "out_trade_no"));
+		requestDto.setOrderAmount(getParameter(req, "sign"));
+		requestDto.setContent(payUtil.getSignStr(map));
+		
+		RespMsgDto resp = payUtil.checkSign(requestDto);
+		if(RespCodeEnum.SUCCESS.getCode().equals(resp.getRespCode())){
+			List<Tb_Order_Number> list = clientInOutMoneyDao.queryOrderReNumber(requestDto.getOrderNo());
+			Tb_client_in_out_money inOutInfo = clientInOutMoneyDao.queryClientInOutInfo(requestDto.getOrderNo());
+			if(inOutInfo!=null&&list.size()>0){
+				inOutInfo.setBank_flow(map.get("trade_no").toString());
+				orderService.payOrder(list, inOutInfo);
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%alipayOrderNotifyUrl end inOutInfo:" + JSONObject.fromObject(inOutInfo),
+						LOGLEVEL_INFO, ExcludeRequestController.class);
+			}else{
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%alipayOrderNotifyUrl end order exception",
+						LOGLEVEL_INFO, ExcludeRequestController.class);
+			}
+		}
+		
+	}
+	
+	/**
+	 * 订单-微信支付异步回调url
+	 */
+	@RequestMapping("/orderPay/wechatOrderNotifyUrl.do")
+	public void wechatOrderNotifyUrl(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%wechatOrderNotifyUrl success url:" + req.getRequestURL(),
+				LOGLEVEL_INFO, ExcludeRequestController.class);
+		PayUtil payUtil = PayUtil.getSignPayUtil();
+		RequestMsgDto requestDto=new RequestMsgDto();
+		String respxml = payUtil.getDataFromInputStream(req);
+		 Map<String, Object> reponseMap=new HashMap<String, Object>();
+		 reponseMap.put("return_code", PAY_STATUS_SUCCESS);
+		 reponseMap.put("return_msg", "OK");
+		 String respXml=payUtil.getWeChatPostXml(reponseMap);
+		 writeJSON(res,respXml);
+		if(null==respxml){
+			return;
+		}
+		Map<String, Object> map = payUtil.getMapFromXML(payUtil.getDataFromInputStream(req));
+		requestDto.setUuid(map.get("out_trade_no").toString());
+		requestDto.setPayType(WECHATTPAY1_TYPE);
+		requestDto.setInOutType(THREE);
+		requestDto.setOrderNo(map.get("out_trade_no").toString());
+		requestDto.setOrderAmount(map.get("sign").toString());
+		requestDto.setContent(payUtil.getSignStr(map));
+		
+		RespMsgDto resp = payUtil.checkSign(requestDto);
+		if(RespCodeEnum.SUCCESS.getCode().equals(resp.getRespCode())){
+			List<Tb_Order_Number> list = clientInOutMoneyDao.queryOrderReNumber(requestDto.getOrderNo());
+			Tb_client_in_out_money inOutInfo = clientInOutMoneyDao.queryClientInOutInfo(requestDto.getOrderNo());
+			if(inOutInfo!=null&&list.size()>0){
+				inOutInfo.setBank_flow(map.get("trade_no").toString());
+				orderService.payOrder(list, inOutInfo);
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%wechatOrderNotifyUrl end inOutInfo:" + JSONObject.fromObject(inOutInfo),
+						LOGLEVEL_INFO, ExcludeRequestController.class);
+			}else{
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "#####====%%%%%wechatOrderNotifyUrl end order exception",
+						LOGLEVEL_INFO, ExcludeRequestController.class);
+			}
+		}
+		
+	}
+}

@@ -1,0 +1,62 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%-- 引入spring标签  --%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="/<spring:message code="url.language"/>/images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/font-awesome.min.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/public.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/index.css">
+<script src="/js/jquery.min.js"></script>
+<!-- 语言选择JS-->
+<script type="text/javascript" src="/js/language.js"></script>
+<!--返回顶部-->
+<script src="/js/top.js"></script>
+<!-- 公共方法 -->
+<script src="/js/common.js"></script>
+<!-- 登录逻辑 -->
+<script src="/js/core/login.js"></script>
+<style>
+footer {
+	background-color: #f6f6f6;
+}
+
+footer a {
+	color: #333;
+}
+</style>
+</head>
+
+<body>
+	<header> 
+		<a href="index.html" class="logo"><img src="/<spring:message code="url.language"/>/images/logo.png" alt="<spring:message code="common.head.alt.ADSERVICE"/>" /></a>
+		<div class="fr hear-r font14">
+			<span class="dis-in col-999"> 
+				<a href="/<spring:message code="url.language"/>/forward/home.do"><spring:message code="common.head.href.home"/></a>
+			</span>
+			<!-- 语言 --> 
+			<select id="lanauge" class="xlb01 dis-in col-666" onchange="changeLanguage()"></select>
+			<script type="text/javascript">
+				// 加载语言
+				$('#lanauge').append(languageHtml);
+			</script>
+		</div>
+	</header>
+
+	<div class="banner login">
+		<%-- 会员登录开始--%>
+		<%@ include file="/commonJSP/loginInput.jsp" %>
+	</div>
+
+	<!-- 公用底部JS-->
+	<script type="text/javascript" src="/<spring:message code="url.language"/>/js/footer.js"></script>
+</body>
+</html>

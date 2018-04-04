@@ -1,0 +1,86 @@
+package com.cwa.client.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.AdvertiseInfoDao;
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.PageVars;
+import com.cwa.client.utils.RegUtil;
+
+@Service
+public class AdvertiseInfoService implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private AdvertiseInfoDao advertiseInfoDao;
+	
+	public PageModel<AdvertiseInfoDto> getPageModel(AdvertiseInfoDto dto){
+    	PageVars pvNm=this.getVars(dto,1);
+		PageVars pvlist=this.getVars(dto,0);
+		PageModel<AdvertiseInfoDto> pm=advertiseInfoDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    	
+    }
+    
+    
+    private PageVars getVars(AdvertiseInfoDto dto,int type){
+    	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+    	 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from tb_advertiser A,tb_advertiser_device B,tb_device_vedio_plan C  where A.AUDIT_STATUS=2 and A.id=B.ADVERTISER_ID and B.DEVICE_ID=C.DEVICE_ID ");
+    	 } else {
+    		 sbStr.append("select @rowno:=@rowno+1 as rowNo,A.id,A.SHOP_NAME,B.DEVICE_ID,A.MAILING_ADDRESS,C.AD_PRICE ,C.AD_LENGTH,C.PLAY_NUMBER,CONCAT(C.BEGIN_TIME,\"-\",C.END_TIME) as idle_time, "
+    				 +"(SELECT Group_concat(PIC ) FROM tb_advertiser_pic WHERE ADVERTISER_ID=A.ACCOUNT_ID) pics "
+    				 +"from tb_advertiser A,tb_advertiser_device B,tb_device_vedio_plan C,(select @rowno:=0) t  where A.AUDIT_STATUS=2 and A.id=B.ADVERTISER_ID and B.DEVICE_ID=C.DEVICE_ID ");
+    	 }
+    	 if(!RegUtil.getUtil().isNull(dto.getMailing_address())){
+    		 if(dto.getMailing_address().split("\\*").length>=4){
+    			 sbStr.append(" and substring_index(A.MAILING_ADDRESS,\"*\","+dto.getMailing_address().split("\\&").length+")=:MAILING_ADDRESS");
+    		 }else{
+    			 sbStr.append(" and substring_index(A.MAILING_ADDRESS,\"*\","+dto.getMailing_address().split("\\*").length+")=:MAILING_ADDRESS");
+    		 }
+    		 params.put("MAILING_ADDRESS", dto.getMailing_address());
+    	 }     
+    	 
+    	      
+    	   
+    	  if (type!=1) {
+				sbStr.append(" ORDER BY id desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+		  }
+    	  System.out.println("sql:"+sbStr.toString());
+    	  pv.setSbstr(sbStr);
+	      pv.setParams(params);
+		 
+		 return pv;
+    }	
+  
+    public List<AdvertiseInfoDto> findAdvertiseInfoByAdvertiserId(String ids,String deviceIds,String timeInterval){
+    	 List<AdvertiseInfoDto> list = advertiseInfoDao.queryAdvertiseInfo(ids,deviceIds);
+    	 List<AdvertiseInfoDto> list1=new ArrayList<>();
+    	 //筛选相同设备时段不同的数据
+    	 String[] strs = timeInterval.split(",");
+    	 String[] strs1 = ids.split(",");
+    	 String[] strs2 = deviceIds.split(",");
+    	 for (int i = 0; i < strs.length; i++) {
+    		 for (AdvertiseInfoDto dto : list) {
+				if((dto.getId()+"").equals(strs1[i])&&dto.getDevice_id().equals(strs2[i])&&dto.getIdle_time().equals(strs[i])){
+					list1.add(dto);
+					break;
+				}
+    		 }
+    	 }
+    	 logWriteUtil.writeLog("", "listSize:"+list.size()+"===list1Size:"+list1.size(), LOGLEVEL_INFO, AdvertiseInfoService.class);
+    	 return list1;
+    }
+}

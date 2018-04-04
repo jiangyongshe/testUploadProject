@@ -1,0 +1,66 @@
+body, html {
+	color: #2badd7;
+	background-color: #1f71a1;
+	background-image: url(../images/login-bg.jpg);
+	background-size: cover;
+}
+a {
+	color: #2badd7;
+	text-decoration: none;
+}
+a:hover {
+	color: #2badd7;
+	text-decoration: none;
+}
+
+/*登录注册样式*/
+.login-logo {
+	padding: 65px 0;
+}
+.login-logo img {
+	width: 50%;
+}
+.login {
+	padding-left: 30px;
+	padding-right: 30px;
+}
+.login2 {
+	padding-left: 20px;
+	padding-right: 20px;
+}
+.login-tb {
+	left: 14px;
+	top: 13px;
+	line-height: 20px;
+	color: #2179ac;
+}
+.login-yzm {
+	right: 4px;
+	top: 12px;
+	padding: 4px 16px;
+	border-left: 1px solid #2179ac;
+	color: #2179ac;
+	background-color: #0c2e51;
+}
+.wenb01 {
+	padding: 10px 4px 10px 40px;
+	color: #2179ac;
+	border: 1px solid #0c2e51;
+	border-radius: 0;
+	background-color: #0c2e51;
+}
+.btn03 {
+	padding: 14px 20px;
+}
+.pad-l70 {
+	padding-left: 70px;
+}
+
+@media (min-width:400px) {
+  .pad-l70 {
+    padding-left: 90px;
+  }
+  .login-tb {
+	top: 14px;
+  }
+}

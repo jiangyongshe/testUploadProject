@@ -1,0 +1,32 @@
+var html="<script src=\"/js/globalVar.js\"></script>\n";// 全局变量
+ 	html+="<script src=\"/js/common.js\"></script>\n";// 公共方法
+ 	html+="<script src=\"/js/language.js\"></script>\n";// 语言
+ 	html+="<header>\n";
+	html+="<a href=\"/chinese/forward/home.do\" class=\"logo\"><img src=\"/chinese/images/logo.png\" alt=\"橱窗广告\" /></a>\n";
+	html+="<div class=\"fr hear-r font14\">\n";
+	html+="<span class=\"dis-in col-999\">\n";
+	html+="<span id=\"loginRegSpan\"><a href=\"/chinese/forward/login.do\">登录</a>|<a href=\"/chinese/user/reg.do\">免费注册</a></span>\n";
+	html+="<span class=\"hide\">欢迎你，<a class=\"red\" id=\"userName\"></a>|<a id=\"exit\" href=\"/chinese/user/exit.do\">退出</a></span>\n";
+	html+="</span>\n";
+	html+="<select id=\"lanauge\" class=\"xlb01 dis-in col-666\" onchange=\"changeLanguage()\"></select>\n";
+	html+="</div>\n";
+	html+="<menu><ul>\n";
+	html+="<li name=\"home\"><a href=\"/chinese/forward/home.do\">首页</a></li>\n";
+	html+="<li name=\"customerAdvertise\"><a href=\"/chinese/forward/customerAdvertise.do?userType=1\">投放广告</a></li>\n";
+	html+="<li id=\"gggg\" name=\"gywm\"><a href=\"/chinese/html/gywm.html\">关于我们</a></li>\n";
+	html+="</ul></menu>\n";
+	html+="</header>\n";
+document.writeln(html);
+$(function(){
+	// 加载语言
+	$('#lanauge').append(languageHtml);
+	//加载用户信息
+	loadUserMsg();
+	//根据页面url修改选中状态
+	var urlStr = window.location.href.split("/");
+	var menuName = urlStr[urlStr.length-1].split(".")[0];
+	var menuNameEles = document.getElementsByName(menuName);
+	for(var i=0;i<menuNameEles.length;++i){
+		menuNameEles[i].setAttribute('class','active');
+	}
+})

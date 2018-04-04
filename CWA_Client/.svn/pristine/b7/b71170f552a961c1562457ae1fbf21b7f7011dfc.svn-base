@@ -1,0 +1,1163 @@
+/**
+ * 对Date的扩展，将 Date 转化为指定格式的String 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
+ * 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字) 例子： (new
+ * Date()).Format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423 (new
+ * Date()).Format("yyyy-M-d h:m:s.S") ==> 2006-7-2 8:9:4.18
+ */
+Date.prototype.format = function (fmt) { // author: meizz
+    var o = {
+        "M+": this.getMonth() + 1, // 月份
+        "d+": this.getDate(), // 日
+        "h+": this.getHours(), // 小时
+        "m+": this.getMinutes(), // 分
+        "s+": this.getSeconds(), // 秒
+        "q+": Math.floor((this.getMonth() + 3) / 3), // 季度
+        "S": this.getMilliseconds() // 毫秒
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var k in o)
+    if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+};
+
+//两个时间相差天数 兼容firefox chrome
+function datedifference(sDate1, sDate2) {    //sDate1和sDate2是2006-12-18格式  
+    var dateSpan,tempDate,iDays;
+    sDate1 = Date.parse(sDate1);
+    sDate2 = Date.parse(sDate2);
+   
+    dateSpan = sDate2 - sDate1;
+    dateSpan = Math.abs(dateSpan);
+    iDays = Math.floor(dateSpan / (24 * 3600 * 1000));
+    return iDays
+};
+
+/**
+ * 对String的扩展，去除前后空格
+ */
+String.prototype.trim=function() {
+    return this.replace(/(^\s*)|(\s*$)/g,'');
+};
+
+/**
+ * 将数值四舍五入后格式化.
+ * @param num 数值(Number或者String)
+ * @param cent 要保留的小数位(Number)
+ * @param isThousand 是否需要千分位 0:不需要,1:需要(数值类型);
+ * @return 格式的字符串,如'1,234,567.45'
+ * @type String
+ */
+function formatNumber(num,cent,isThousand) {
+	num = num.toString().replace(/\$|\,/g,'');
+
+	// 检查传入数值为数值类型
+	if(isNaN(num)) num = "0";
+
+	// 获取符号(正/负数)
+	sign = (num == (num = Math.abs(num)));
+
+	 num = Math.floor(num*Math.pow(10,cent)+0.50000000001); // 把指定的小数位先转换成整数.多余的小数位四舍五入
+	 cents = num%Math.pow(10,cent);       // 求出小数位数值
+	 num = Math.floor(num/Math.pow(10,cent)).toString();  // 求出整数位数值
+	 cents = cents.toString();        // 把小数位转换成字符串,以便求小数位长度
+
+	 // 补足小数位到指定的位数
+	 while(cents.length<cent) cents = "0" + cents;
+
+	 if(isThousand) {
+		 // 对整数部分进行千分位格式化.
+	     for (var i = 0; i < Math.floor((num.length-(1+i))/3); i++)
+	     num = num.substring(0,num.length-(4*i+3))+','+ num.substring(num.length-(4*i+3));
+	 }
+
+	 if (cent > 0) return (((sign)?'':'-') + num + '.' + cents);
+	 
+	 else return (((sign)?'':'-') + num);
+};
+
+/**
+ * 根据键值对字符串的key获取value
+ * @param key
+ * @param str
+ * @eg: 例如传入'name','name=Abel;age=23' return 'Abel'
+ * @returns
+ */
+function getValueByStrKV(key,str){
+	var arr,reg=new RegExp("(^|\\S)"+key+"=([^;]*)(;|$)");
+	if(arr=str.match(reg))
+	return unescape(arr[2]);
+	else
+	return null;
+};
+
+/**
+ * 禁用按钮
+ * @param id 元素ID
+ * @returns
+ */
+function disabledBtn(id){
+	var ele = document.getElementById(id);
+	ele.disabled = true;
+}
+
+/**
+ * 启用按钮
+ * @param id 元素ID
+ * @returns
+ */
+function startBtn(id){
+	var ele = document.getElementById(id);
+	ele.disabled = false;
+}
+
+//写cookies
+function setCookie(name, value) {
+	var Days = 15;
+	var exp = new Date();
+	exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
+	document.cookie = name + "=" + escape(value) + ";expires="
+			+ exp.toGMTString();
+}
+
+/**
+ * get username from cookie
+ */
+function getCookie(name) {
+	var cookieValue = '';
+	var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+	if (arr = document.cookie.match(reg)) {
+		cookieValue = unescape(arr[2]);
+	}
+	return cookieValue;
+
+}
+
+/**
+ * clear all cookie
+ */
+function clearCookie(){ 
+	var keys=document.cookie.match(/[^ =;]+(?=\=)/g); 
+	if (keys) { 
+		for (var i = keys.length; i--;) 
+			document.cookie=keys[i]+'=0;expires=' + new Date(0).toUTCString() 
+	} 
+} 
+
+/**
+ * 从url获取参数
+ */
+function getURLParam(queryName) {
+	var queryValue = '';
+	var name, value, i;
+	var str = location.href;
+	var num = str.indexOf("?")
+	str = str.substr(num + 1);
+	var arrtmp = str.split("&");
+	for (i = 0; i < arrtmp.length; i++) {
+		num = arrtmp[i].indexOf("=");
+		if (num > 0) {
+			name = arrtmp[i].substring(0, num);
+			value = arrtmp[i].substr(num + 1);
+			if (queryName === name) {
+				queryValue = value;
+				break;
+			}
+		}
+	}
+    if(queryValue.indexOf("#")>=0){
+      queryValue=queryValue.split("#")[0];
+    }
+	return queryValue;
+}
+
+/**
+ * 开启等待动画
+ */
+function openWaitAnimation(obj){
+	if(obj==null||obj==undefined||obj==""){
+		obj="正在加载中...";
+	}
+	var loadEle = document.getElementById('loadDiv');
+	if(!loadEle){
+		var loadDivEle = document.createElement('div');
+		loadDivEle.style.display = 'block';
+		loadDivEle.setAttribute('id','loadDiv');
+		loadDivEle.setAttribute('class','loading01 text-c red font12');
+		var loadDivHTML =  ''
+			   +  '	     <div class="loader">'
+			   +  '	        <div class="loader-inner ball-clip-rotate-pulse">'
+			   +  '	          <div></div>'
+			   +  '	          <div></div>'
+			   +  '	        </div>'
+			   +  '	     </div>'
+			   +  '		 <div class="jizai" id="loadingDiv">'+obj+'</div>';
+		loadDivEle.innerHTML = loadDivHTML;
+		document.getElementsByTagName('body')[0].appendChild(loadDivEle);
+	}else{
+		document.getElementById("loadingDiv").innerText=obj;
+		loadEle.style.display = 'block';
+		$("#loadDiv").attr("style","display:block;");
+	}
+	$("body").addClass("disabled");
+}
+
+/**
+ * 关闭等待动画
+ */
+function closeWaitAnimation(){
+	$("body").removeClass("disabled");
+	var loadEle = document.getElementById('loadDiv');
+	if(loadEle){
+		loadEle.style.display = 'none';
+		$("#loadDiv").attr("style","display:none;");
+	}
+}
+
+/**
+ * 获取组合方式
+ * @param arr 需要进行组合的数组
+ * @param num 每次组合的长度
+ * @returns 组合方式
+ */
+function C(arr, num) {
+
+    var r=[];
+
+    (function f(t,a,n){
+	
+        if (n==0) return r.push(t);
+        
+        for (var i=0,l=a.length; i<=l-n; i++){
+        	f(t.concat(a[i]), a.slice(i+1), n-1);
+        }
+        
+    })([],arr,num);
+    
+    return r;
+}
+
+/**
+ * 
+ * @param {}
+ *            url 必须有
+ * @param {}
+ *            obj 请求参数 按照对象的形式 可为空
+ * @param {}
+ *            type 默认是POST 可为空
+ * @param {}
+ *            dataType 默认是json 可为空
+ * @param {}
+ *            successFun 请求成功回调的函数必须有
+ * @param {}
+ *            errorFun 请求失败回调的函数
+ *            
+ * @param loadAnimation 
+ * 				val:true or false 是否开启动画
+ * @author yw
+ */
+function jsonAjax(url, obj, successFun, errorFun, type, dataType,loadAnimation,isAsync) {
+	if (url == undefined || url == null) {
+		console.log("url不可以不填写");
+		return;
+	}
+	if (!typeof successFun == 'function' || !typeof errorFun == 'function') {
+		console.log("successFun 或者 errorFun  不是一个函数");
+		return;
+	}
+	if (errorFun != undefined) {
+		if (!typeof errorFun == 'function') {
+			console.log("errorFun 不是一个函数");
+			return;
+		}
+	}
+	if (type == null || type == undefined || type == "") {
+		type = 'POST';
+	}
+	if (dataType == null || dataType == undefined || dataType == "") {
+		dataType = 'json';
+	}
+	
+	if (loadAnimation === null || loadAnimation === undefined || loadAnimation === "") {
+		loadAnimation = true;
+	}
+	
+	if (isAsync === null || isAsync === undefined || isAsync === "") {
+		isAsync = true;
+	}
+
+	if(loadAnimation){ openWaitAnimation()};
+
+	$.ajax({
+		url : url,
+		data : obj,
+		type : type,
+		cache:false,
+		async: isAsync,
+		timeout : 30000,
+		dataType : dataType,
+		success : function(res) {
+			isLogin(res,successFun);
+		},
+		error : function(res) {
+			errorFun(res);
+		},
+		complete : function(XHR, TR) {
+			if(loadAnimation){
+				// 关闭等待动画
+				closeWaitAnimation();
+			}
+			if (TR == 'timeout') {// 超时
+				showJudegTip('fail','Time out,please refresh.');
+			} else if (XHR.status == '500' || TR == 'error') {// 异常
+				showJudegTip('fail','Server error.');
+			}
+		}
+	});
+
+}
+
+function isLogin(res, successFun) {
+	if (res.msg == "10001" || res.respCode == "10001" && res.respMessge == "会话过期") {
+		clearLocalStorage();//清空缓存
+		location.href = languageMobile+'/html/login.html';
+		return;
+	}
+	successFun(res);
+	if(myScroll){
+		myScroll.refresh();
+	}
+}
+
+/**
+ * 获取localStorage
+ * @param key
+ */
+function getLocalStorage(key){
+	return localStorage.getItem(key);
+}
+
+/**
+ * 设置localStorage
+ * @param key
+ * @param value
+ */
+function setLocalStorage(key,value){
+	localStorage.setItem(key,value);
+}
+
+/**
+ * 根据key删除localStorage
+ * @param key
+ */
+function removeLocalStorage(key){
+	localStorage.removeItem(key);
+}
+
+/**
+ * 清空localStorage
+ */
+function clearLocalStorage(){
+	localStorage.clear();
+}
+
+/**
+ * 获取localStorage
+ * @param key
+ */
+function getSessionStorage(key){
+	return sessionStorage.getItem(key);
+}
+
+/**
+ * 设置localStorage
+ * @param key
+ * @param value
+ */
+function setSessionStorage(key,value){
+	sessionStorage.setItem(key,value);
+}
+
+/**
+ * 根据key删除localStorage
+ * @param key
+ */
+function removeSessionStorage(key){
+	sessionStorage.removeItem(key);
+}
+
+/**
+ * 清空localStorage
+ */
+function clearSessionStorage(){
+	sessionStorage.clear();
+}
+
+/**
+ * 审核提示
+ * @param status 状态 success-成功,fail-失败,normal-无状态
+ * @param title 提示的标题
+ * @param content 提示的内容
+ * @param hideCloseBtn 是否隐藏关闭框,默认显示
+ * @returns
+ */
+var tipCloseTimeout;
+function showJudegTip(status,content,hideCloseBtn){
+	var tipEle = document.getElementById('judgeTipDiv');
+	if(!tipEle){
+		var tipDiv = document.createElement('div');
+		tipDiv.style.display = 'none';
+		tipDiv.setAttribute('id','judgeTipDiv');
+		tipDiv.setAttribute('class','shade');
+		tipDiv.innerHTML = '<div class="tanchu">'+
+			'<a href="#0" id="judegTipCloseBtn" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff(\'judgeTipDiv\')"><i class="fa fa-close" aria-hidden="true"></i></a>'+
+			'<div class="tanchu-nr text-c">'+
+				'<p class="">'+
+					'<i id="judgeStatus" class="fa fa-smile-o fa-3x green" aria-hidden="true"></i>'+
+				'</p>'+
+				'<p class="pad-t10 pad-b10" id="judgeTipContent"></p>'+
+			'</div>'+
+		'</div>';
+		document.getElementsByTagName('body')[0].appendChild(tipDiv);
+		tipEle = document.getElementById('judgeTipDiv');
+	}
+	document.getElementById('judgeTipContent').innerHTML = content;
+	if(hideCloseBtn===true){
+		document.getElementById('judegTipCloseBtn').style.display = 'none';
+	}else{
+		document.getElementById('judegTipCloseBtn').style.display = 'block';
+	}
+	var judgeStatusEle = document.getElementById('judgeStatus');
+	if(status=='success'){
+		judgeStatusEle.setAttribute('class','fa fa-3x fa-smile-o green');
+	}else if(status=='fail'){
+		judgeStatusEle.setAttribute('class','fa fa-3x fa-frown-o red');
+	}else{
+		judgeStatusEle.setAttribute('class','fa fa-3x fa-meh-o yellow');
+	}
+	tipEle.style.display = 'block';
+	
+	tipCloseTimeout=setTimeout(hideJudegTip,1500);
+}
+
+function showEmplyDiv(str,obj){
+	var emplyDiv=document.getElementById("mplyDiv");
+	if(emplyDiv){
+		emplyDiv.style.display="block";
+	}else{
+		emplyDiv = document.createElement('div');
+		emplyDiv.setAttribute('id','mplyDiv');
+		emplyDiv.setAttribute('class','col-ccc text-c sea-fruit');
+		emplyDiv.innerHTML = '<p class="pad-t10"><i class="fa fa-5x fa-meh-o" aria-hidden="true"></i></p>'
+			+'<p class="font14 pad-t10">'+str+'</p>';
+		$(obj).before(emplyDiv);
+		//document.getElementsByTagName('body')[0].appendChild(emplyDiv);
+	}
+	emplyDiv.style.display="block";
+}
+function hideEmplyDiv(){
+	var emplyDiv=document.getElementById("mplyDiv");
+	if(emplyDiv){
+		emplyDiv.style.display="none";
+	}
+}
+
+/**
+ * 弹出图片
+ * @param imgEle
+ * @returns
+ */
+function showPicPopup(imgEle,event){
+	// 阻止冒泡
+    var e = event;
+    if (e && e.stopPropagation) {
+    	e.stopPropagation();
+    } else if (window.event) {
+    	window.event.cancelBubble = true;
+    }
+	var tipEle = document.getElementById('picPopup');
+	if(!tipEle){
+		var tipDiv = document.createElement('div');
+		tipDiv.style.display = 'none';
+		tipDiv.setAttribute('id','picPopup');
+		tipDiv.setAttribute('class','shade');
+		tipDiv.innerHTML = 
+			'<div class="tanchu3">'+
+				'<div class="tanchu3-nr text-c" id="imgEleDIV">'+
+				'</div>'+
+			'</div>';
+		document.getElementsByTagName('body')[0].appendChild(tipDiv);
+		tipEle = document.getElementById('picPopup');
+	}
+	if(window.attachEvent) {
+		tipEle.attachEvent('click', function(){turnoff('picPopup')});            
+		imgEle.attachEvent('click', function(){turnoff('picPopup')});            
+	} else {    
+		tipEle.addEventListener('click', function(){turnoff('picPopup')},false);
+		imgEle.addEventListener('click', function(){turnoff('picPopup')},false);
+	}
+	document.getElementById('imgEleDIV').innerHTML='';
+	imgEle.style.maxWidth = screen.width+'px';
+	imgEle.style.maxHeight = screen.height/2+'px';
+	imgEle.style.width = '100%';
+	document.getElementById('imgEleDIV').append(imgEle);
+	document.getElementById('picPopup').style.display = 'block';
+	document.getElementById('imgEleDIV').style.marginTop=window.innerHeight/4+'px';
+}
+
+/**
+ * 弹出确认框
+ * @returns
+ */
+function showConfimTip(title,content,confirmFun){
+	var div = document.getElementById("successdiv");
+	if(!div){
+		var confirmdiv = document.createElement('div');
+		confirmdiv.setAttribute('id','successdiv');
+		confirmdiv.setAttribute('class','shade');
+		confirmdiv.innerHTML=
+		  '<div class="tanchu" style="margin-top:-100px;">'+
+		    '<div class="tanchu-bt"><span id="confirmTitle">'+title+'</span><a class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff(\'successdiv\')"><i class="fa fa-close" aria-hidden="true"></i></a></div>'+
+		    '<div class="tanchu-nr text-c">'+
+		      '<p class="pad-t5" id="confirmContent">'+content+'</p>'+
+		       '<div class="tanchu-xyan text-c" style=" padding-bottom:0px;position:relative;top:10px">'+
+		           '<input name="confirm" type="button" value="确定" class="btn btn01 bor-rad font14 mar-l10 bg-red" />'+
+		           '<input name="" type="button" onclick="turnoff(\'successdiv\')" value="取消" class="btn btn01 bor-rad font14 mar-l10 bg-999" />'+
+		       '</div>'+
+		    '</div>'+
+		  '</div>';
+		document.getElementsByTagName('body')[0].appendChild(confirmdiv);
+		$("input[name='confirm']").bind("click",confirmFun);
+		div =document.getElementById("successdiv");
+	}
+	document.getElementById("confirmTitle").innerHTML = title;
+	document.getElementById("confirmContent").innerHTML = content;
+	div.style.display = 'block';
+}
+/**
+ * 隐藏审核提示
+ * @returns
+ */
+function hideJudegTip(){
+	var tipEle = document.getElementById('judgeTipDiv');
+	if(tipEle){
+		tipEle.style.display = 'none';
+	}
+	clearTimeout(tipCloseTimeout);
+}
+
+//验证身份证是否正确
+function validateIdCard(idCard) {
+	// 15位和18位身份证号码的正则表达式
+	var regIdCard = /^(^[1-9]\d{7}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])\d{3}$)|(^[1-9]\d{5}[1-9]\d{3}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])((\d{4})|\d{3}[Xx])$)$/;
+	// 如果通过该验证，说明身份证格式正确，但准确性还需计算
+	if (regIdCard.test(idCard)) {
+		if (idCard.length == 18) {
+			var idCardWi = new Array(7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10,
+					5, 8, 4, 2); // 将前17位加权因子保存在数组里
+			var idCardY = new Array(1, 0, 10, 9, 8, 7, 6, 5, 4, 3, 2); // 这是除以11后，可能产生的11位余数、验证码，也保存成数组
+			var idCardWiSum = 0; // 用来保存前17位各自乖以加权因子后的总和
+			for (var i = 0; i < 17; i++) {
+				idCardWiSum += idCard.substring(i, i + 1) * idCardWi[i];
+			}
+
+			var idCardMod = idCardWiSum % 11;// 计算出校验码所在数组的位置
+			var idCardLast = idCard.substring(17);// 得到最后一位身份证号码
+
+			// 如果等于2，则说明校验码是10，身份证号码最后一位应该是X
+			if (idCardMod == 2) {
+				if (idCardLast == "X" || idCardLast == "x") {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				// 用计算出的验证码与最后一位身份证号码匹配，如果一致，说明通过，否则是无效的身份证号码
+				if (idCardLast == idCardY[idCardMod]) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
+function currErrorArray(chineseError,englishError,twError){
+	if(language=="chinese"){
+		return chineseError;
+	}else if(language=="english"){
+		return englishError;
+	}else if(language=="TW"){
+		return twError;
+	}
+	
+}
+
+//点击关闭层
+function turnoff(obj){
+	var div=document.getElementById(obj);
+	if(div!=undefined&&div!=null&&div!=""){
+		div.style.display="none";
+	}
+	clearTimeout(tipCloseTimeout);
+  }
+//点击显示层
+function elementDisplay(objid){
+ var obj=document.getElementById(objid);
+ if(obj){
+  obj.style.display='inline-block';
+  }
+ }
+//点击关闭层
+function turnoffByCss(obj){
+	var div=$(obj).parent();
+	if(div!=undefined&&div!=null&&div!=""){
+		div[0].style.display="none";
+	}
+	clearTimeout(tipCloseTimeout);
+  }
+
+
+/**
+ * 生成翻页的HTML代码
+ * @param arrLength 数组长度
+ * @param obj 加载数据的参数
+ * @param loadFn 加载数据的函数
+ * @param count 每页显示的数量
+ * @param sign id标识
+ * @returns
+ */
+function pageNumber(arrLength,obj,loadFn,count,sign){
+	var page = obj.pageNo;
+	var pageTurnId = '#'+sign+'PageTurn';
+	var pageLeftId = '#'+sign+'PageLeft';
+	var pageRightId = '#'+sign+'PageRight';
+	var pageNumberOfMoreId = '#'+sign+"PageNumberOfMore";
+	var pageNumberOfId = '#'+sign+"PageNumberOf";
+	// 最大页数
+	var maxPage = (arrLength-(arrLength%count))/count+(arrLength%count==0?0:1);
+	var allSection = [];// 所有页码区间
+	// 计算区间的最大下标
+	var maxSectionIndex = maxPage<=10?1:((maxPage-maxPage%7)/7+(maxPage%7==0?0:1));
+	for(var i=1;i<=maxSectionIndex;++i){
+		var arr = [];
+		if(i!=maxSectionIndex){
+			for(var j=1;j<=7;++j){
+				arr.push(j+(i-1)*7);
+			};
+			var maxValue = arr[arr.length-1];
+			if((maxValue+1)==maxPage){
+				arr.push(maxPage);
+				allSection.push(arr);
+				break;
+			}else if((maxValue+2)==maxPage){
+				arr.push(maxPage-1);
+				arr.push(maxPage);
+				allSection.push(arr);
+				break;
+			}else if((maxValue+3)==maxPage){
+				arr.push(maxValue+1);
+				arr.push(maxPage-1);
+				arr.push(maxPage);
+				allSection.push(arr);
+				break;
+			}else{
+				arr.push('...');
+				arr.push(maxPage-1);
+				arr.push(maxPage);
+			}
+		}else{
+			for(var k=(i-1)*7+1;k<=maxPage;++k){
+				arr.push(k);
+			}
+		}
+		allSection.push(arr);
+	}
+	// 判断当前页码在哪个区间
+	var currSection;
+	for(var i=0;i<allSection.length;++i){
+		for(var j=0;j<allSection[i].length;j++){
+			if(i!=allSection.length-1 && j<7){
+				if(page == allSection[i][j]){
+					currSection = allSection[i];
+					break;
+				}
+			}else{
+				if(page == allSection[i][j]){
+					currSection = allSection[i];
+					break;
+				}
+			}
+		}
+	}
+	// 遍历生成翻页的HTML元素
+	$(pageTurnId).hide();
+	$(pageTurnId).append('<a id="'+pageLeftId.replace('#','')+'" class="btn-fy suspendPointer"><i class="fa fa-chevron-left"></i></a>');
+	var id,pageText;
+	for(var i=0;i<currSection.length;++i){
+		pageText = currSection[i];
+		
+		if(pageText=='...') id = pageNumberOfMoreId.replace('#','');
+		
+		else id = pageNumberOfId.replace('#','')+pageText;
+		
+		$(pageTurnId).append(
+			'<a id='+id+' class="btn-fy suspendPointer">'+pageText+'</a>'
+		);
+	}
+	$(pageTurnId).append('<a id="'+pageRightId.replace('#','')+'" class="btn-fy suspendPointer"><i class="fa fa-chevron-right"></i></a>');
+	$(pageNumberOfId+page).addClass('active');
+	// 判断当前页是否为第一页或者最后最后一页,第一页则禁用"<"按钮,最后一页则禁用">"按钮
+	if(page==1) $(pageLeftId).addClass('disabled');
+	if(page==maxPage) $(pageRightId).addClass('disabled');
+	$(pageTurnId).show();
+	// 添加单击事件
+	$(pageTurnId).find('a').unbind('click').bind('click',function(){
+		var $ths = $(this),
+			index = $ths.index(),
+			text = String($ths.html());
+		switch(text){
+		case '<i class="fa fa-chevron-left"></i>':
+			// 获取当前选中元素
+			var clickText = $ths.parent().find('a.active').text();
+			text = Number(clickText)-1;
+			break;
+		case '...':
+			// 获取左侧元素
+			var leftText = $ths.parent().find('a').eq(index-1).text();
+			text = Number(leftText)+1;
+			break;
+		case '<i class="fa fa-chevron-right"></i>':
+			// 获取当前选中元素
+			var clickText = $ths.parent().find('a.active').text();
+			text = Number(clickText)+1;
+			break;
+		}
+		// 修改页码
+		obj.pageNo = text;
+		// 加载数据
+		loadFn(obj);
+	});
+};
+
+//加载省市区街道
+function initAddr(){ 
+	 var $town = $('.searchEv select[name="town"]');
+	  /* var defaultcode='350203003';*/
+	  var defaultname=''; 
+	  /*var defaultCity = remote_ip_info['city'];
+	  var defaultProvince = remote_ip_info['province'];*/
+	  var defaultCity = '';
+	  var defaultProvince = '';
+	  if($(".currCity").length>0){
+		  if(isWeiXin()){
+			    var curryUrl = window.location.href;
+			  	// 发送请求  /'+language+'/exclude/weChat/getShareInfo.do
+				jsonAjax('/'+language+'/exclude/weChat/getShareInfo.do',{curryUrl:curryUrl},
+				function(res){
+					var msg = res.msg;
+					if(msg=='10000'){
+						  var  obj=JSON.parse(res.data);
+						  wx.config({
+								      debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+								      appId: obj.appid, // 必填，公众号的唯一标识
+								      timestamp: obj.timestamp, // 必填，生成签名的时间戳
+								      nonceStr: obj.noncestr, // 必填，生成签名的随机串
+								      signature: obj.signature,// 必填，签名，见附录1
+								      jsApiList: ['getLocation','openLocation'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+						  });
+						setTimeout(function(){
+							wx.getLocation({
+							    type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+							    success: function (res) {
+							        var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+							        var longitude = res.longitude ; // 经度，浮点数，范围为180 ~ -180。
+							        var pt = new BMap.Point(longitude,latitude);
+							        var geoc = new BMap.Geocoder();
+							        geoc.getLocation(pt,function(rs){
+										var addComp = rs.addressComponents;
+										$(".currCity").text(addComp.city.replace("市",""));
+							        });
+							    },fail:function(e){
+								alert(e);
+								},complete:function(){
+								}
+
+							});},2000);
+					}else{
+						showJudegTip('fail',"监听异常");
+					}
+				},function(){});
+		  }else{
+			  var geoc = new BMap.Geocoder(); 
+			  var geolocation = new BMap.Geolocation();
+				geolocation.getCurrentPosition(function(r){
+					if(this.getStatus() == BMAP_STATUS_SUCCESS){
+						geoc.getLocation(r.point, function(rs){
+							//showJudegTip("success","browser local!");
+							var addComp = rs.addressComponents;
+							$(".currCity").text(addComp.city.replace("市",""));
+						});
+					}else {
+						//showJudegTip("success","ip local!");
+						//showJudegTip("fail","定位失败！");
+						//当前位置
+						var myCity = new BMap.LocalCity();
+						myCity.get(function(result){
+							$(".currCity").text(result.name.replace("市",""));
+						});
+					} 
+					       
+				},{enableHighAccuracy: true})
+				//关于状态码
+				//BMAP_STATUS_SUCCESS	检索成功。对应数值“0”。
+				//BMAP_STATUS_CITY_LIST	城市列表。对应数值“1”。
+				//BMAP_STATUS_UNKNOWN_LOCATION	位置结果未知。对应数值“2”。
+				//BMAP_STATUS_UNKNOWN_ROUTE	导航结果未知。对应数值“3”。
+				//BMAP_STATUS_INVALID_KEY	非法密钥。对应数值“4”。
+				//BMAP_STATUS_INVALID_REQUEST	非法请求。对应数值“5”。
+				//BMAP_STATUS_PERMISSION_DENIED	没有权限。对应数值“6”。(自 1.1 新增)
+				//BMAP_STATUS_SERVICE_UNAVAILABLE	服务不可用。对应数值“7”。(自 1.1 新增)
+				//BMAP_STATUS_TIMEOUT	超时。对应数值“8”。(自 1.1 新增)
+		  }
+	  }
+	  
+	  var townFormat = function(info){
+	  	$town.empty();
+	  	$town.append('<option value="">商圈</option>');
+	  	if(info['code']%1e4&&info['code']<7e5){	//是否为“区”且不是港澳台地区
+	  		$.ajax({
+	  			url:'/chinese/town/'+info['code']+'.json',
+	  			dataType:'json',
+	  			async:false,
+	  			success:function(town){
+	  				$town.show();
+	  				for(i in town){
+	  					   if(defaultname==town[i]){
+	  					      $town.append('<option value="'+i+'" selected="selected">'+town[i]+'</option>');
+	  					   }else{
+	  					     $town.append('<option value="'+i+'">'+town[i]+'</option>');
+	  					   }
+	  						
+	  				}
+	  			}
+	  		});
+	  	}
+	  };
+	  $('.searchEv').citys({
+	  	province:defaultProvince,
+	  	city:defaultCity,
+	  	area:'',
+	  	required: false,
+	  	nodata: '',    
+	  	onChange:function(info){
+	  		 townFormat(info);
+	  	}
+	  },function(api){
+	  	var info = api.getInfo();
+	  	townFormat(info);
+	  });
+}
+
+/**
+ * 加载省市区,不包含街道
+ * @returns
+ */
+function initAddrExclusiveStreet(){
+	$('.advArea').citys({
+	  	province:'',
+	  	city:'',
+	  	area:'',
+	  	required: false,
+	  	nodata: ''
+	 });
+}
+
+/**
+ * 获取屏幕滚动的距离
+ * @returns [x,y]
+ */
+function getPageScroll() {
+	  var xScroll, yScroll;
+	  if (self.pageYOffset) {
+	    yScroll = self.pageYOffset;
+	    xScroll = self.pageXOffset;
+	  } else if (document.documentElement && document.documentElement.scrollTop) { // Explorer 6 Strict
+	    yScroll = document.documentElement.scrollTop;
+	    xScroll = document.documentElement.scrollLeft;
+	  } else if (document.body) {// all other Explorers
+	    yScroll = document.body.scrollTop;
+	    xScroll = document.body.scrollLeft;  
+	  }
+	  arrayPageScroll = new Array(xScroll,yScroll);
+	  return arrayPageScroll;
+};
+
+//div的id      二维码宽度和高度     url
+function createQrcode(id,url){
+	$("#"+id).qrcode({width: 180,height: 180,text: ""+url+""});
+}
+
+//防止不能自动识别：
+//从 canvas 提取图片 image 
+function convertCanvasToImage(id) { 
+	//新Image对象，可以理解为DOM 
+	var image = new Image(); 
+	// canvas.toDataURL 返回的是一串Base64编码的URL，当然,浏览器自己肯定支持 
+	// 指定格式 PNG 
+	var paycanvas=document.getElementsByTagName('canvas')[0]; 
+	image.src = paycanvas.toDataURL("image/png"); 
+	$("#"+id).html(image);
+} 
+
+//判断是否微信登陆
+function isWeiXin() {
+	var ua = window.navigator.userAgent.toLowerCase();
+	if (ua.match(/MicroMessenger/i) == 'micromessenger') {
+		return true;
+	} else {
+		return false;
+	}
+}
+//点击店铺名店铺详情信息
+function showShopDetail(shopName,addr,imgs){
+	$("#shopImage").html("");
+	if(imgs!="null"){
+		var imgList=imgs.split(","),str="";
+		for (var i = 0; i < imgList.length; i++) {
+			str+='<li><a class="pic" href="#"><img src="'+imagePath+imgList[i]+'"/></a></li>';//onclick="showPicPopup(this.cloneNode(true),event)"
+		}
+		$("#shopImage").html(str);
+		$(".allImgNumber").text(imgList.length);
+		
+		$("#tc-eject2").show();
+		var effect="leftLoop";
+		TouchSlide({ 
+			slideCell:"#slideBox",
+			titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+			mainCell:".bd ul", 
+			effect:effect, 
+			autoPage:true,//自动分页
+			autoPlay:false, //自动播放
+			endFun:function(){
+				$(".currImgIndex").text($(".hd .on").text());
+			}
+		});
+		if(imgList.length<=1){
+			$("#shopImage").addClass("disabled");
+		}else{
+			$("#shopImage").removeClass("disabled");
+		}
+	}
+	
+}
+//加入详情弹出框
+function appendDetailDiv(){
+	var html='<div class="shade" id="tc-eject2" style="display: ;">';
+	html+='  <span class="cd-close2 text-c pad-l5" onclick="javascript:turnoff(\'tc-eject2\')" title="关闭"></span>';
+//	html+='  <ul class="screen-list screen-list2">';
+//	html+='	    <li>';
+//	html+='        <p><b>店铺名称：</b><span class="shopName"></span></p>';
+//	html+='        <p class="pad-t7"><b>详细地址：</b><span class="addrDetail"></span></p>';
+//	html+='        <div class="dp-tp imgs">';
+//	html+='        </div>';
+//	html+='     </li>';
+//	html+='     <li>';
+//	html+='        <button name="" type="button" onclick="javascript:turnoff(\'tc-eject2\')" class="btn btn03 bg-blue bor-rad font13 width100 mar-t10 mar-b10">关闭</button>';
+//	html+='     </li>';
+//	html+='  </ul>';
+	html+='<div class="tanchu7">';
+	html+='<div id="slideBox" class="slideBox">';
+	html+='<div class="shuzi pos-a">';
+	html+='<span class="currImgIndex">1</span>/<span class="allImgNumber">1</span>';
+	html+='</div>';
+	html+='	<div class="bd">';
+	html+='		<ul id="shopImage">';
+	html+='		</ul>';
+	html+='	</div>';
+	html+='	<div class="hd sc">';
+	html+='		<ul>';
+	html+='     </ul>';
+	html+='	</div>';
+	html+='</div>';
+	html+='</div>';
+	html+='</div>';
+	
+	$("body").append(html);
+}
+//查找字符中某个字符第n次出现的位置
+function findCharIndex(str,cha,num){
+    var x=str.indexOf(cha);
+    for(var i=0;i<num-1;i++){
+        x=str.indexOf(cha,x+1);
+    }
+    return x;
+}
+
+//银行卡号验证
+function checkCard(bankno){
+	 if (bankno.length < 16 || bankno.length > 19) {
+         return false;
+     }
+     var num = /^\d*$/;  //全数字
+     if (!num.exec(bankno)) {
+         return false;
+     }
+     //开头6位
+     var strBin="10,18,30,35,37,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,58,60,62,65,68,69,84,87,88,94,95,98,99";
+     if (strBin.indexOf(bankno.substring(0, 2))== -1) {
+         //$("#banknoInfo").html("银行卡号开头6位不符合规范");
+         return false;
+     }
+     var lastNum=bankno.substr(bankno.length-1,1);//取出最后一位（与luhm进行比较）
+
+     var first15Num=bankno.substr(0,bankno.length-1);//前15或18位
+     var newArr=new Array();
+     for(var i=first15Num.length-1;i>-1;i--){    //前15或18位倒序存进数组
+         newArr.push(first15Num.substr(i,1));
+     }
+     var arrJiShu=new Array();  //奇数位*2的积 <9
+     var arrJiShu2=new Array(); //奇数位*2的积 >9
+
+     var arrOuShu=new Array();  //偶数位数组
+     for(var j=0;j<newArr.length;j++){
+         if((j+1)%2==1){//奇数位
+             if(parseInt(newArr[j])*2<9)
+                 arrJiShu.push(parseInt(newArr[j])*2);
+             else
+                 arrJiShu2.push(parseInt(newArr[j])*2);
+         }
+         else //偶数位
+             arrOuShu.push(newArr[j]);
+     }
+
+     var jishu_child1=new Array();//奇数位*2 >9 的分割之后的数组个位数
+     var jishu_child2=new Array();//奇数位*2 >9 的分割之后的数组十位数
+     for(var h=0;h<arrJiShu2.length;h++){
+         jishu_child1.push(parseInt(arrJiShu2[h])%10);
+         jishu_child2.push(parseInt(arrJiShu2[h])/10);
+     }
+
+     var sumJiShu=0; //奇数位*2 < 9 的数组之和
+     var sumOuShu=0; //偶数位数组之和
+     var sumJiShuChild1=0; //奇数位*2 >9 的分割之后的数组个位数之和
+     var sumJiShuChild2=0; //奇数位*2 >9 的分割之后的数组十位数之和
+     var sumTotal=0;
+     for(var m=0;m<arrJiShu.length;m++){
+         sumJiShu=sumJiShu+parseInt(arrJiShu[m]);
+     }
+
+     for(var n=0;n<arrOuShu.length;n++){
+         sumOuShu=sumOuShu+parseInt(arrOuShu[n]);
+     }
+
+     for(var p=0;p<jishu_child1.length;p++){
+         sumJiShuChild1=sumJiShuChild1+parseInt(jishu_child1[p]);
+         sumJiShuChild2=sumJiShuChild2+parseInt(jishu_child2[p]);
+     }
+     //计算总和
+     sumTotal=parseInt(sumJiShu)+parseInt(sumOuShu)+parseInt(sumJiShuChild1)+parseInt(sumJiShuChild2);
+
+     //计算Luhm值
+     var k= parseInt(sumTotal)%10==0?10:parseInt(sumTotal)%10;
+     var luhm= 10-k;
+
+     if(lastNum==luhm){
+         return true;
+     }
+     else{
+         return false;
+     }
+}
+//地区联动查询
+function bindSearchBtn(){
+	initAddr();//加载省市区
+	/*$(".searchByAddr").bind("click",function(){//省市区条件查询改变
+		deviceIndustry=$(".searchEv .deviceIndustry").val();
+		var province=$(".searchEv select[name='province1']").find("option:selected").text();
+		var city=$(".searchEv select[name='city']").find("option:selected").text();
+		var area=$(".searchEv select[name='area']").find("option:selected").text();
+		
+		if(province.indexOf("请选择")<0){
+			addr=province;
+		}
+		if(city.indexOf("请选择")<0){
+			addr+="*"+city;
+		}
+		if(area.indexOf("请选择")<0){
+			addr+="*"+area;
+		}
+		scrollCommonMethod();//公共下拉刷新条件筛选
+		checkSum();
+	})*/
+	$(".searchEv select").bind("change",function(){//省市区条件查询改变
+		advertiseSearchMethod();
+	})
+}
+function advertiseSearchMethod(isInit){
+	var province=$(".searchEv select[name='province']").find("option:selected").text();
+	var city=$(".searchEv select[name='city']").find("option:selected").text();
+	var area=$(".searchEv select[name='area']").find("option:selected").text();
+	var town=$(".searchEv select[name='town']").find("option:selected").text();
+	addr="",deviceIndustry=$(".searchEv .deviceIndustry").val();
+	if(province.indexOf("省份")<0){
+		addr+=province;
+	}
+	if(city.indexOf("城市")<0){
+		addr+="*"+city;
+	}
+	if(area.indexOf("区/县")<0){
+		addr+="*"+area;
+	}
+	if(town.indexOf("商圈")<0){
+		addr+="*"+town;
+	}
+	/*if($(this).attr("name")=="city"){//改变城市
+		if(city.indexOf("请选择")>0){
+			addr=province;
+		}else{
+			addr=province+"*"+city;
+		}
+	}else if($(this).attr("name")=="area"){//改变地区
+		if(area.indexOf("请选择")>0){
+			addr=province+"*"+city;
+		}else{
+			addr=province+"*"+city+"*"+area;
+		}
+	}else if($(this).attr("name")=="town"){//改变街道
+		if(town.indexOf("请选择")>0){
+			addr=province+"*"+city+"*"+area;
+		}else{
+			addr=province+"*"+city+"*"+area+"*"+town;
+		}
+		
+	}else if($(this).attr("name")=="province1"){
+		if(province.indexOf("请选择")>0){
+			addr="";
+		}else{
+			addr=province;
+		}
+	}else{
+		
+	}
+	if(!isInit){
+		$("#dataList").html("");
+		hideEmplyDiv();
+		mescroll.scrollTo(0, 0);
+		mescroll.resetUpScroll(false);
+	}*/
+	/*if(!isInit){
+		scrollCommonMethod();
+	}*/
+	scrollCommonMethod();
+}
+
+//百度统计
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?0fe0f0f871d77d496b1a72e354cfcbd9";
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);

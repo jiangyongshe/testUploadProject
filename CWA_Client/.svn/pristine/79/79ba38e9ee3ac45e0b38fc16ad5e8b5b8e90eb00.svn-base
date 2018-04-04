@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="  
+    http://www.springframework.org/schema/beans  
+    http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+	<!-- spring自动任务调度器配置 -->
+	
+	<!-- 定时器1,清除过期文件 -->
+	<bean id="clearFile" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用正在任务目标(作业) -->
+		<property name="targetObject">
+			<bean class="com.cwa.client.web.quartzJob.ClearFileTaskTimer" />
+		</property>
+		<!-- 调用目标(作业)方法,方法是真正执行任务的内容 -->
+		<property name="targetMethod" value="execute" />
+		<!-- 作业不并发调度 -->
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="clearFileTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="clearFile" />
+		<!-- 每周一凌晨五点执行 -->
+		<property name="cronExpression" value="0 0 5 ? * 2" /> 
+	</bean>
+
+	<!-- 总管理类 如果将lazy-init='false'那么容器启动就会执行调度程序 -->
+	<bean id="startQuertz" lazy-init="false" autowire="no"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="clearFileTrigger" />
+			</list>
+		</property>
+	</bean>
+
+</beans> 

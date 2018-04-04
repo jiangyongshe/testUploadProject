@@ -1,0 +1,121 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %> 
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="/<spring:message code="url.language"/>/images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/font-awesome.min.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/public.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/neiye.css">
+<script src="/js/jquery.min.js"></script>
+<script src="/js/top.js"></script><!--返回顶部-->
+<script>
+
+</script>
+</head>
+
+<body>
+<script type="text/javascript" src="/<spring:message code="url.language"/>/js/head.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script type="text/javascript" src="/<spring:message code="url.language"/>/js/customerMenu.js"></script>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <ul class="jindu font16">
+        <li class="active">购买广告时段<span class="pos-a">1</span></li>
+        <li class="">上传视频<span class="pos-a">2</span></li>
+        <li class="">审核通过<span class="pos-a">3</span></li>
+      </ul>
+      
+      <h2 class="clear font18 pad-t40 pad-b10 bor-b">已选广告投放时段</h2>
+      
+      <div class="rmgg-table rmgg-table2 font13">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+   <th><label class="checkbox"><input type="checkbox" name="checkbox" id="ckAll" checked><i>✓</i></label></th>
+    <th>序号</th>
+    <th>设备编号</th>
+    <th>店铺详情</th>
+    <th>空闲时段</th>
+    <th>广告时长</th>
+    <th>播放次数</th>
+    <th>价格（元/天）</th>
+    <th>播放周期</th>
+    <th>费用（元）</th>
+  </tr>
+  <c:forEach var="item" items="${data}"  varStatus="vs">  
+  <tr>
+  	<td><label class="checkbox"><input type="checkbox" data-id="${item.id}" name="checkbox" class="checkAd" checked ><i>✓</i></label></td>
+  	<td>${item.rowNo}</td>
+ 
+    <td class="deviceId">${item.device_id}</td>
+    <td><span class="red dian-bt" onclick="showShopDetail('${item.shop_name}','${item.mailing_address}','${item.pics}')">${item.shop_name}</span></td>
+    <td id="timeInterval">${item.idle_time}</td> 
+    <td>${item.ad_length}秒</td>
+    <td>${item.play_number}次</td>
+    <td>${item.ad_price}</td>
+    <td>
+     <input id="" type="date" class="dis-in startDate" style="width:135px" value="${item.startDate}"/> - <input id="" type="date" class="dis-in endDate"  value="${item.endDate}" style="width:135px"/>
+    </td>
+    <td class="sumPrice" data-price="${item.ad_price}">${item.sumPrice}</td>
+  </tr>
+   </c:forEach>
+</table>
+      </div>
+      <div id="payWay" class="hide">
+      <h2 class="clear font18 pad-t40 pad-b10 bor-b">选择支付方式</h2>
+      <span style="display:none" data-disCount="${disCount}" id="span"></span>
+      <ul class="zf-xz clear">
+      	<li class="active" data="4"><a href="#"><i class="fa fa-gg-circle red" aria-hidden="true"></i> 翔云宝: <span class="amount">0</span> 元</a></li>
+        <li data="1"><a href="#"><img src="/<spring:message code="url.language"/>/images/zf01.jpg" /></a></li>
+        <li data="2"><a href="#"><img src="/<spring:message code="url.language"/>/images/zf02.jpg" /></a></li>
+        <li data="3"><a href="#"><img src="/<spring:message code="url.language"/>/images/zf03.jpg" /></a></li>
+      </ul>
+       </div>
+      <div class="text-r pad-t30 clear ggtf-gm">
+        <span class="dis-in font14">支付方式：微信支付 | 费用总计：<span class="red font18 totalBal">${totalBal}元</span></span>
+        <input name="" id="payOrder" onclick="payOrder()" type="button" value="确定支付" class="btn btn01 bg-red font16 mar-l15 hide"  />
+        <input name="" id="commit" onclick="commit()" type="button" value="确定下单" class="btn btn01 bg-red font16 mar-l15"  /><!-- onclick="elementDisplay('ewmdiv')" -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript" src="/<spring:message code="url.language"/>/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/js/core/customer_buyConfirm.js"></script>
+<!--店铺详情提示宽   onmouseout="javascript:turnoff('diandiv')"-->
+<div class="shade" id="diandiv" style="display: ;">
+  <div class="dian-xq">
+    <p class="pos-a dian-close text-c" onclick="javascript:turnoff('diandiv')"><i class="fa fa-close" aria-hidden="true"></i></p>
+    <p><b>店铺名称：</b><span class="shopName"></span></p>
+    <p><b>详细地址：</b><span class="addrDetail"></span></p>
+    <p class="dian-xq-img imgs">
+      
+    </p>
+  </div>
+</div>
+<!--弹出微信支付提示宽-->
+<div class="shade" id="ewmdiv" style="display: ;">
+  <div class="tanchu">
+    <div class="tanchu-bt"><span>微信支付</span><a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('ewmdiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-nr text-c">
+      <p class="tanchu-tspc">请用微信扫一下二维码，完成支付。</p>
+      <p class="tanchu-tssj">长按二维码，自动识别。</p>
+      <p class="pad-t20"><img src="/<spring:message code="url.language"/>/images/ewm.jpg" /></p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

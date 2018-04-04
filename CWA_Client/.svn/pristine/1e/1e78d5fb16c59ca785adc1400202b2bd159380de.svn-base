@@ -1,0 +1,47 @@
+package com.cwa.client.service;
+
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.AdvertiserCommReportDao;
+import com.cwa.client.dao.AdvertiserDao;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.model.Tb_advertiser_comm_report;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.DateUtils;
+import com.cwa.client.utils.LogWriteUtil;
+
+@Service
+public class AdvertiserService implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	@Resource
+	private AdvertiserDao advertiserDao;
+	@Resource
+	private AdvertiserCommReportDao advertiserCommReportDao;
+  
+	public Tb_Advertiser findById(Integer id){
+		return advertiserDao.findById(id);
+	}
+	
+	public void save(Tb_Advertiser entity) throws Exception{
+		advertiserDao.save(entity);
+	}
+	
+	
+	public void update(Tb_Advertiser entity) throws Exception {
+		advertiserDao.update(entity);
+	}
+	
+	public void saveUserAndInit(Tb_Advertiser entity) throws Exception{
+		advertiserDao.insert(entity);
+		Tb_advertiser_comm_report entity1=new Tb_advertiser_comm_report();
+		entity1.setAdvertiser_id(entity.getAccount_id());
+		entity1.setSettlement_date(DateUtils.getNowDay(DateUtils.DATE_FORMAT_YYYY_MM_dd));
+		entity1.setShop_name("");
+		advertiserCommReportDao.insert(entity1);
+		logWriteUtil.writeLog("", "register ad success advertiserId:"+entity.getAccount_id(), LOGLEVEL_INFO, AdvertiserService.class);
+	}
+}

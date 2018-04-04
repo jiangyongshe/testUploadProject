@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script src="/chinese/mobile/js/commonRel.js"></script><!--通用引用-->
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+</head>
+
+<body class="body1">
+<div id="mescroll" class="mescroll">
+
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<a href="javascript:;" onclick="elementDisplay('tc-eject')" class="font12 col-fff header-r2">筛选<i class="fa fa-filter pad-l5" aria-hidden="true"></i></a>
+
+<div class="font12 col-fff">
+  <ul class="yjmx-list">
+    <li>
+      <p class="yjmx-list01">序号</p>
+      <p class="yjmx-list22">日期</p>
+      <p class="yjmx-list23">类型</p>
+      <p class="yjmx-list24">金额（元）</p>
+    </li>
+  </ul>
+  
+  <ul id="dataList" class="yjmx-list">
+  </ul>
+</div>
+
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_wallet-mx.js"></script>
+</div>
+
+</body>
+</html>

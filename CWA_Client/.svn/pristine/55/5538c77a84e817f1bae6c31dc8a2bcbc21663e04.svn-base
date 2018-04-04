@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <div class="left">
+       <span class="menu01"><i class="fa fa-globe" aria-hidden="true"></i> 关于我们</span>
+       <ul class="menu02">
+          <li class=""><a href="gywm.html">企业介绍<i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+          <li class="active"><a href="lxwm.html">联系我们<i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+          <li class=""><a href="fwtk.html">服务条款<i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+          <li class=""><a href="cjwt.html">常见问题<i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+	   </ul>
+    </div>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <h2 class="clear font18 pad-b10 bor-b">联系我们</h2>
+     
+      <div class="text-c pad-t40">
+        <p class="col-999"><i class="fa fa-3x fa-hourglass-half" aria-hidden="true"></i></p>
+        <p class="red font16 pad-t15">资料整理中...</p>
+      </div>
+      
+     <!-- <div class="pad-t30 font15 lxwm">
+        <p class="col-999"><i class="fa fa-volume-control-phone" aria-hidden="true"></i> 客服热线：<span class="font20 col-333">400-0000-000</span></p>
+        
+        <p class="col-999 pad-t15"><i class="fa fa-qq" aria-hidden="true"></i> 在线 QQ：<a href="http://shang.qq.com/open_webaio.html?sigt=aee13bbbcde528e3c323930b1cc6d53a03ed4c9e226527482bc9ab6049d999d974ecb8cef5ff4daa7ae4d909582a4155&amp;sigu=ed12a3cd98aa878febdbe86ba813e84d241540a95db936fac33b3107adfdce3663ea081925f9402b&amp;tuin=1234567" target="_blank"><span class="font20 col-333">1234567</span>（点此发起对话）</a></p>
+        
+        <p class="col-999 pad-t15"><i class="fa fa-envelope-o" aria-hidden="true"></i> 邮件服务：<span class="col-333"><a href="mailto:1234567@qq.com">1234567@qq.com</a></span></p>
+        
+        <p class="col-999 pad-t15"><i class="fa fa-history" aria-hidden="true"></i> 服务时间：<span class="col-333">9:00-18:00（周一至周五）及时解答您的疑问</span></p>
+        
+        <p class="col-999 pad-t15"><i class="fa fa-map-marker" aria-hidden="true"></i> 联系地址：<span class="col-333">深圳市罗湖区东门南路3001号天俊大厦3A01室</span></p>
+        
+        <p class="col-999 pad-t15">
+          <span class="dis-in" style="vertical-align:top;"><i class="fa fa-random" aria-hidden="true"></i> 乘车路线：</span>
+          <span class="dis-in lxwm-r col-333" style="vertical-align:top;">乘坐307路，351路，369路，M383路，M402路，M403路，M404路，M407路，M408路、102路，11路，14路等到金城大厦站台约100米到天俊大厦，地铁9号线在向西村站D2出入口下。走约540米到天俊大厦，</span>
+        </p>
+      </div>-->
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+
+<!--加入购物车提示宽-->
+<div class="shade" id="gwcdiv" style="display: ;">
+  <div class="tanchu tanchu2">
+    <div class="tanchu-bt"><span>加入购物车</span><a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('gwcdiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-nr text-c">
+      <p class="pad-t10"><i class="fa fa-smile-o fa-3x green" aria-hidden="true"></i></p>
+      <p class="pad-t10">加入成功，您可要通过点击 <a href="gwc.html" class="red">我的购物车</a> 完成支付</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

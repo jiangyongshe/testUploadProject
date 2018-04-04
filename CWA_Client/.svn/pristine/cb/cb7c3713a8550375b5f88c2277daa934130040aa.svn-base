@@ -1,0 +1,51 @@
+package com.cwa.client.web;
+
+import java.util.Map;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.support.RequestContext;
+import com.cwa.client.service.AdvertiserService;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.RespCodeEnum;
+
+@Controller
+@RequestMapping("/*/customer")
+public class CustomerController extends BaseController<GobalRespParameter> implements Constant{
+
+	@Resource// 普通用户service层
+	private UserService userService;
+	
+	@Resource// 广告商service层
+	private AdvertiserService advertiserService;
+	
+	@RequestMapping("/updUserInfo.do")
+	public void updUserInfo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		userService.updUserInfo(req, res);
+	}
+	
+	@RequestMapping("/updPassWord.do")
+	public void updPassWord(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		GobalRespParameter parameter=new GobalRespParameter();
+		//获取请求参数并判断是否为空
+		Map<String,String[]> map = getAllParameter(req,"updPassWord.do","mobile","validCode","passWord","passWord1","registerType");
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				
+			}else{//请求参数无效
+				parameter.setRespCode(RespCodeEnum.global_parameter_isnull.getCode());
+				parameter.setRespMessge(reqCt.getMessage("common.exception.parameter"));
+			}
+		} catch (Exception e) {
+			parameter.setRespCode(RespCodeEnum.global_unknow_expiration.getCode());
+			parameter.setRespMessge(reqCt.getMessage("common.exception.unknow"));
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+}

@@ -1,0 +1,113 @@
+/**
+ * 微信分享处理
+ */
+//判断是不是微信客户端
+///console.info('isWeiXin '+isWeiXin())
+var curryUrl = window.location.href;
+var shareTitle='翔云播——共享广告平台';
+var shareDesc='注册/投放广告/商家合作/联系我们';
+var shareImgeUrl='https://www.luckicloud.com/chinese/mobile/images/logo3.png';
+if(isWeiXin()){
+         
+   		// 发送请求
+		jsonAjax('/'+language+'/exclude/weChat/getShareInfo.do',{curryUrl:curryUrl},
+		function(res){
+			var msg = res.msg;
+			if(msg=='10000'){
+			var  obj=JSON.parse(res.data);
+				  wx.config({
+						      debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+						      appId: obj.appid, // 必填，公众号的唯一标识
+						      timestamp: obj.timestamp, // 必填，生成签名的时间戳
+						      nonceStr: obj.noncestr, // 必填，生成签名的随机串
+						      signature: obj.signature,// 必填，签名，见附录1
+						       jsApiList: ["onMenuShareTimeline","onMenuShareAppMessage","onMenuShareQQ","onMenuShareWeibo","onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+				     });
+				     
+				     wx.ready(function(){
+				        // alert('wx.ready');
+				         //分享到朋友圈
+				         wx.onMenuShareTimeline({
+												    title: shareTitle, // 分享标题
+												    link: curryUrl, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+												    imgUrl: shareImgeUrl, // 分享图标
+												    success: function () {
+												        //alert('分享成功');
+												     },cancel: function () {
+											          // 用户取消分享后执行的回调函数
+											        }
+											});
+							//分享给朋友
+							 wx.onMenuShareAppMessage({
+												        title: shareTitle, // 分享标题
+														desc: shareDesc, // 分享描述
+														link: curryUrl, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+														imgUrl: shareImgeUrl, // 分享图标
+														type: 'link', // 分享类型,music、video或link，不填默认为link
+														dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+														success: function () {
+														   // alert('分享成功');
+														},
+														cancel: function () {
+														   // 用户取消分享后执行的回调函数
+														}
+												     });
+							  
+							  //分享到QQ
+							  wx.onMenuShareQQ({
+													 title: shareTitle, // 分享标题
+													desc: shareDesc, // 分享描述
+													link: curryUrl, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+														imgUrl: shareImgeUrl, // 分享图标
+														success: function () {
+													     // alert('分享成功');
+													},
+													cancel: function () {
+													    // 用户取消分享后执行的回调函数
+													}
+												});
+								
+								//分享到腾讯微博
+								wx.onMenuShareWeibo({
+														title: shareTitle, // 分享标题
+														desc: shareDesc, // 分享描述
+														link: curryUrl, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+														imgUrl: shareImgeUrl, // 分享图标
+													     success: function () {
+														  //  alert('分享成功');
+														},
+														cancel: function () {
+														   // 用户取消分享后执行的回调函数
+														}
+													});
+				            //分享qq空间
+				            wx.onMenuShareQZone({
+													  title: shareTitle, // 分享标题
+														desc: shareDesc, // 分享描述
+														link: curryUrl, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+														imgUrl: shareImgeUrl, // 分享图标 
+														success: function () {
+													     // alert('分享成功');
+													},
+													cancel: function () {
+													    // 用户取消分享后执行的回调函数
+													}
+												});
+					 });
+					 
+					 wx.error(function(res){
+					   //  alert(res);
+    				  });
+				
+				 //define(['../js/jweixin-1.2.0.js'],function(wx){ 
+					　　
+				//}) 
+			}else{
+				 alert('分享监听异常');
+			}
+		},function(){});
+		
+		
+
+	
+}

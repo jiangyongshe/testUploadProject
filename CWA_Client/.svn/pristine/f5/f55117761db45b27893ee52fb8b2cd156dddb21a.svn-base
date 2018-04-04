@@ -1,0 +1,77 @@
+#url language
+url.language=english
+system.exception=System exception,please relation service
+#common head
+common.head.alt.ADSERVICE=AD SERVICE
+common.head.href.exit=Exit
+common.head.language.cn=Chinese
+common.head.language.en=English
+common.head.tip.welcomeToYou=Welcome to you
+common.head.href.home=Home
+common.head.href.deliverAds=Deliver ads
+common.head.href.aboutUs=About us
+common.head.href.login=Login
+common.head.href.register=Free registration
+#common foot
+common.foot.href.aboutUs=About us
+common.foot.href.connectUs=Connect us
+common.foot.href.serviceTerms=Service terms
+common.foot.href.familiarQuestion=Familiar question
+common.foot.href.AllRightsReserved=All Rights Reserved
+#common exception
+common.exception.session=session expired
+common.exception.unknow=unknown exception
+common.exception.parameter=invalid argument
+#login module
+login.div.title=Password Login
+login.input.mobile.placeholder=Please enter phone number
+login.input.password.placeholder=Please enter password
+login.radio.userType.domesticConsumer=General user
+login.radio.userType.advertiser=AD
+login.button.gotoLogin=Login
+login.href.register=Free registration
+login.href.forgetPassword=Forget password
+login.tip.mobileEmpty=Phone number is not empty
+login.tip.mobileWrong=Phone number incorrect format
+login.tip.passwordEmpty=Password is not empty
+login.tip.noChooseRole=Please choose role
+login.tip.accountIdOrPwdMistake=account or password mistake
+#home module
+home.b.recentNews=News
+home.h2.hotAdvertisingPutInTimeFrame=Hot advertising put in time frame
+home.th.deviceNumber=Device number
+home.th.shopDetail=Shop detail
+home.th.leisureTimeFrame=Leisure timeFrame
+home.th.advertiserDuration=Advertiser duration
+home.th.playOfTimes=Play of times
+home.th.price=Price(CNY/Day)
+home.th.operation=Operation
+home.href.morePutInTimeFrame=More put in time frame
+#register module
+register.form.mobile=mobile number
+register.form.mobileTitle=please input mobile number
+register.form.validCode=identifying code
+register.form.validCodeTitle=please enter your mobile phone verification code
+register.form.setPassWord=set password
+register.form.setPassWordTitle=please enter a password
+register.form.confirmPassWord=confirm password
+register.form.confirmPassWordTitle=please confirm password
+register.form.inviteCode=invite code
+register.form.inviteCodeTitle=please enter the invitation code
+register.btn.getValidCode=get validation code
+register.btn.registerNow=register now
+register.text.customer=domestic consumer
+register.text.advertiser=advertiser
+register.text.newCustomerRegister=new user register
+register.text.haveAccount=existing account
+register.text.logonImmediately=logon immediately
+register.text.optional=optional
+register.text.index=home page
+register.text.formaterror=cell phone number format error
+register.text.existed=the cell phone number already register
+register.text.invalidcode=invalid mobile phone verification code
+register.text.invalidTime=the verification code is valid for 2 minutes
+register.text.invaliderror=mobile phone verification code error
+register.text.passWordError=the password for the two time is inconsistent
+#customer data module
+customerData_text_emailError=e-mail format error

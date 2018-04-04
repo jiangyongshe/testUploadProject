@@ -1,0 +1,100 @@
+package com.cwa.client.dto;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+public class DeviceVedioPlanDto {
+
+	private Integer id;
+	private String device_id;
+	private Integer ad_sell_status;
+	private Timestamp begin_time;
+	private Timestamp end_time;
+	private BigDecimal ad_price;
+	private Integer ad_length;
+	private Integer play_number;
+	private String commit_account_id;
+	private Timestamp commit_time;
+	private String update_account_id;
+	private Timestamp update_datetime;
+	private Integer recommend;
+
+	public Integer getAd_sell_status() {
+		return ad_sell_status;
+	}
+	public void setAd_sell_status(Integer ad_sell_status) {
+		this.ad_sell_status = ad_sell_status;
+	}
+	public BigDecimal getAd_price() {
+		return ad_price;
+	}
+	public void setAd_price(BigDecimal ad_price) {
+		this.ad_price = ad_price;
+	}
+	public Integer getAd_length() {
+		return ad_length;
+	}
+	public void setAd_length(Integer ad_length) {
+		this.ad_length = ad_length;
+	}
+	public Integer getPlay_number() {
+		return play_number;
+	}
+	public void setPlay_number(Integer play_number) {
+		this.play_number = play_number;
+	}
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getDevice_id() {
+		return device_id;
+	}
+	public void setDevice_id(String device_id) {
+		this.device_id = device_id;
+	}
+	public Timestamp getBegin_time() {
+		return begin_time;
+	}
+	public void setBegin_time(Timestamp begin_time) {
+		this.begin_time = begin_time;
+	}
+	public Timestamp getEnd_time() {
+		return end_time;
+	}
+	public void setEnd_time(Timestamp end_time) {
+		this.end_time = end_time;
+	}
+	public String getCommit_account_id() {
+		return commit_account_id;
+	}
+	public void setCommit_account_id(String commit_account_id) {
+		this.commit_account_id = commit_account_id;
+	}
+	public Timestamp getCommit_time() {
+		return commit_time;
+	}
+	public void setCommit_time(Timestamp commit_time) {
+		this.commit_time = commit_time;
+	}
+	public String getUpdate_account_id() {
+		return update_account_id;
+	}
+	public void setUpdate_account_id(String update_account_id) {
+		this.update_account_id = update_account_id;
+	}
+	public Timestamp getUpdate_datetime() {
+		return update_datetime;
+	}
+	public void setUpdate_datetime(Timestamp update_datetime) {
+		this.update_datetime = update_datetime;
+	}
+	public Integer getRecommend() {
+		return recommend;
+	}
+	public void setRecommend(Integer recommend) {
+		this.recommend = recommend;
+	}
+}

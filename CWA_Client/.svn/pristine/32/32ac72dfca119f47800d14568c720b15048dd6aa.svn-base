@@ -1,0 +1,430 @@
+var 
+	pageNo = 1,
+	count = 9,
+	orderNo = '';
+
+$(function(){
+	//加载广告商品
+	loadOrderInfo({
+		pageNo:pageNo,
+		pageSize:count
+	});
+	appendDetailDiv();
+	initDate();
+})
+
+/**
+ * 加载用户订单
+ * @param obj
+ */
+function loadOrderInfo(obj){
+	// 清空数据和页码
+	$('#dataList,#oPageTurn').empty();
+	$('#noData').hide();
+	jsonAjax("/"+language+"/order/queryOrder.do",obj,function(res){
+		var data = res.data,
+			list = data.list,// 订单数据
+			length = list.length,// 订单数据长度
+			totalRecords = data.totalRecords;// 总订单数据长度
+		if(length>0){
+			var $dataList = $('#dataList'),
+				orderClassify = {},// 订单分类
+				orderHTML = '';// 遍历生成订单数据
+			$dataList.html(
+				'<li class="wddd-list-bt">'
+			   +'	<div class="wddd-list-a pos-r">'
+			   +'		<span class="pos-a ddrq">近三个月订单</span>'
+			   +'		订单详情'
+			   +'	</div>'
+			   +'	<div class="wddd-list-b">支付费用</div>'
+			   +'	<div class="wddd-list-c">订单状态</div>'
+			   +'	<div class="wddd-list-d">操作</div>'
+			   +'</li>'
+			);
+			for(var i=0;i<length;++i){
+				var orderData = list[i],
+					unified_serial_number = orderData['unified_serial_number'];
+				// 存在总单号则查找分单号数据并记录
+				if(unified_serial_number){
+					jsonAjax("/"+language+"/order/queryOrder.do",{
+						pageNo:1,
+						pageSize:10000,
+						unifiedOrderNo:unified_serial_number,
+					},function(res){
+						orderClassify[unified_serial_number] = res.data.list;
+						orderClassify[unified_serial_number].push(orderData);
+					},function(){},'post','json',false,false);
+				}
+			}
+			for(var i=0;i<length;++i){
+				var orderData = list[i],
+					// 分单号
+					serial_number = orderData['serial_number'],
+					// 总单号
+					unified_serial_number = orderData['unified_serial_number'],
+					// 订单号，显示在标题
+					titleSerialNumber = unified_serial_number?unified_serial_number:serial_number,
+					// 投放类型
+					putTypeText = putTypeChange(Number(orderData['file_type'])),
+					// 屏数
+					buyCount = orderData['buyCount'],
+					// 单价
+					adPrice = formatNumber(orderData['ad_price'],2,1),
+					// 投放天数
+					putDay = orderData['days'],
+					// 总价
+					sumPrice = formatNumber(orderData['sumPrice'],2,1),
+					// 当前时间毫秒
+					nowTimeMS = nowTime,
+					// 开始时间毫秒
+					startTimeMS = new Date(orderData['startDate'].replace(/-/g,"/")+' 00:00:00').getTime(),
+					// 结束时间毫秒
+					endTimeMS = new Date(orderData['endDate'].replace(/-/g,"/")+' 23:59:59').getTime(),
+					// 订单类型
+					orderType = Number(orderData['order_type']),
+					// 订单状态
+					orderStatus = Number(orderData['order_status']),
+					// 上传数量 
+					upFileNumHTML = Number(orderData['file_type'])===3?'<span class="dis-in">上传数量</span><span class="dis-in fr">'+orderData['upFileNum']+' 个</span>':'',
+					// 删除订单
+					deleteOrderHTML = (orderStatus === 1 || orderStatus > 4)?'<a id="deleteOrder'+titleSerialNumber+'" style="cursor:pointer;" class="fr col-999 font16"><i class="fa fa-trash-o" aria-hidden="true"></i></a>':'',
+					// 取消原因
+					cancelHTML = orderStatus===5?'<div><em class="red">取消原因：</em>'+orderData['result']+'</div>':'',
+					// 显示的按钮
+					buttonHTML = '',
+					// 具体订单状态，需联合其它字段同时判断
+					orderStatusText = '';
+				// 判断订单状态
+				if(orderStatus === 1){
+					orderStatusText = "待付款";
+				}else if(orderStatus < 4){
+					orderStatusText = "处理中";
+				}else if(orderStatus === 4 && orderType != 4){
+					if(nowTimeMS < startTimeMS){
+						orderStatusText = "待发布";
+					}else if(startTimeMS <= nowTimeMS && nowTimeMS <= endTimeMS){
+						orderStatusText = "播放中";
+					}else if(nowTimeMS > endTimeMS){
+						orderStatusText = "已取消";
+					}
+				}else if(orderType === 4 && orderStatus === 4){
+					orderStatusText = "已取消";
+				}else{
+					if(orderStatus === 5){
+						orderStatusText = "已取消";
+					}else if(orderStatus === 6 || orderStatus === 8){
+						orderStatusText = "已取消";
+					}else if(orderStatus === 7 ){
+						orderStatusText = "已取消";
+					}
+				}
+				// 根据订单状态展示不同的按钮
+				if(orderStatus === 1){
+					// 支付
+					buttonHTML += '<a style="cursor:pointer;" class="dis-in"><i class="fa fa-money pad-r5" aria-hidden="true"></i>去支付</a>';
+				}else if(orderStatus === 2){
+					// 待上传
+					buttonHTML += '<a href="updateOrUploadVideo.do?type=u&adNo='+titleSerialNumber+'&fileType='+orderData['file_type']+'&fileNum='+orderData['upFileNum']+'" target="_blank" class="dis-in"><i class="fa fa-upload pad-r5" aria-hidden="true"></i>上传'+putTypeText+'</a>';
+				}else if(orderStatus === 3 || orderStatus === 5){
+					// 查看和修改 
+					buttonHTML += '<a href="lookVideo.do?adNo='+titleSerialNumber+'" target="_blank" class="dis-in"><i class="fa fa-building-o pad-r5" aria-hidden="true"></i>查看'+putTypeText+'</a>'
+						       +  '<a href="updateOrUploadVideo.do?type=m&adNo='+titleSerialNumber+'&fileType='+orderData['file_type']+'&fileNum='+orderData['upFileNum']+'" target="_blank" class="dis-in"><i class="fa fa-pencil-square-o pad-r5" aria-hidden="true"></i>修改'+putTypeText+'</a>';
+				}else if(orderStatus === 4/*审核通过*/ || orderStatus === 7){
+					// 查看
+					buttonHTML += '<a href="lookVideo.do?adNo='+titleSerialNumber+'" target="_blank" class="dis-in"><i class="fa fa-building-o pad-r5" aria-hidden="true"></i>查看'+putTypeText+'</a>';
+				}else if(orderStatus === 6 || orderStatus === 8){
+					// 不显示任何按钮
+					buttonHTML = '';
+				}else if(orderStatus === 9){
+					// 已完成，只能查看
+					buttonHTML += '<a href="lookVideo.do?adNo='+titleSerialNumber+'" target="_blank" class="dis-in"><i class="fa fa-building-o pad-r5" aria-hidden="true"></i>查看'+putTypeText+'</a>';
+				}
+				orderHTML += ''
+						  +  '<li>'
+						  +  '	<div class="wddd-list-e bg-f9 clear">'
+						  +  '		<span>'
+						  +	 '			<i class="fa fa-angle-right pad-r5" aria-hidden="true"></i>'
+						  +	 '			订单编号：'+titleSerialNumber
+						  +	 '		</span>'
+						  +  deleteOrderHTML
+						  +  '	</div>'
+						  +  '	<div class="wddd-list-a">'
+						  +  '		<div class="clear fl width100 pad-b10 bor-b pos-r">'
+						  +  '  		<div class="fl width100">'
+						  +  '    			<p class="fl width24">'
+						  +	 '					<span class="dis-in">投放类型</span>'
+						  +	 '					<span class="dis-in fr">'+putTypeText+'</span>'
+						  +	 '				</p>'
+						  +  '    			<p class="fr width32">'
+						  +	 '					<span class="dis-in">单价</span>'
+						  +	 '					<span class="dis-in fr">'+adPrice+'/个</span>'
+						  +  '				</p>'
+						  +  '  		 </div>'
+						  +  ' 	 		 <div class="fl width100">'
+						  +  '   		 	<p class="fl width24">'
+						  +	 '					<span class="dis-in">屏数</span>'
+						  +	 '					<span class="dis-in fr">'+buyCount+'台</span>'
+						  +	 '			 	</p>'
+						  +  '    		 	<p class="fr width32">'
+						  +  '					<span class="dis-in">投放天数</span>'
+						  +  '					<span class="dis-in fr">'+putDay+'天</span>'
+						  +	 '			 	</p>'
+						  +  '	  		</div>'
+						  +  '			<div class="fl width100">'
+						  +  '     			<p class="fl width24">'
+						  +  upFileNumHTML
+						  +  '				</p>'
+						  +  '   		</div>'
+						  +  '		</div>'
+						  +  '		<div class="pad-t10 clear">'
+						  +
+						  // 订单数据
+						  function(){
+							var
+								// 返回的文本
+								s = '',
+								// 数据分为同时下多个订单和单独下单，需区分开来
+								orderDatas = [],
+								// 分订单数据长度
+								jLength = 0;
+							// 数据
+							if(unified_serial_number){
+								orderDatas = orderClassify[unified_serial_number];
+							}else{
+								orderDatas.push(orderData);
+							}
+							jLength = orderDatas.length;
+							// 生成分订单数据
+							for(var j=0;j<jLength;++j){
+								var partOrderData = orderDatas[j],
+									// 图片
+									pics = partOrderData['pics']?imagePath+partOrderData['pics'].split(",")[0]:'/chinese/images/zwtp.png',
+									// 广告屏编号
+									deviceCode = partOrderData['device_code'],
+									// 店铺名
+									shopName = partOrderData['shop_name'],
+									// 地址
+									mailingAddress = partOrderData['mailing_address'].replace(/[&*]/g,''),
+									// class 标记，用于标记大于2条数据时隐藏的部分
+									classSign = unified_serial_number + 'hideData';
+								s += ''
+								  +  '<div class="pos-r wddd-list-a2 bor-b '+(j>1?classSign+' hide':'')+'">'
+								  +  '	<a href="detail.html" class="wddd-list-tp">'
+								  +  '		<img src="'+pics+'" />'
+								  +  '	</a>'
+								  +  ' 	<div class="wddd-list-nr">'
+								  +  '      <p><em class="">广告屏编号：</em>'+deviceCode+'</p>'
+								  +  '		<p class="pad-t10"><em class="">店铺：</em>'+shopName+'</p>'
+								  +  '   	<div class="pos-r pltf-dz pad-t10">'
+								  +  '			<span>'+mailingAddress+'</span>'
+								  +  '			<a href="javascript:;" onclick="elementDisplay(\'mapdiv\')" class="pos-a pltf-dz2">'
+								  +  '				<i class="fa fa-map-marker red" aria-hidden="true"></i>'
+								  +  '			</a>'
+								  +  '		</div>'
+								  +  '  </div>'
+								  +  '</div>';
+							}
+							if(jLength>2){
+								s += '<div class="clear yinxian text-c"><a style="cursor:pointer;" class="xianshi" id="showAll'+unified_serial_number+'">显示全部<i class="fa fa-angle-down pad-l5" aria-hidden="true"></i></a></div>'
+							}
+							return s;
+						  }()
+			              +  '  	</div>'
+			              +  cancelHTML
+			              +  '  </div>'
+			              +  '	<div class="wddd-list-b">'
+			              +  '		￥'+sumPrice
+			              +  '	</div>'
+			              +  '	<div class="wddd-list-c">'
+			              +  ' 		<span class="red">'+orderStatusText+'</span>'
+			              +  '	</div>'
+			              +  '	<div class="wddd-list-d">'
+			              +  buttonHTML
+			              +  '  </div>'
+			              +  '</li>';
+			}
+			$dataList.append(orderHTML);
+			// 绑定'显示全部事件'
+			if($('[id^=showAll]').length>0){
+				$('[id^=showAll]').on('click',function(){
+					var ths = this,
+					$ths = $(ths),
+					$partOrderData = $('.'+ths.id.replace('showAll','')+'hideData');
+					if($partOrderData.hasClass('hide')){
+						$partOrderData.removeClass('hide');
+						$ths.text('隐藏');
+					}else{
+						$partOrderData.addClass('hide');
+						$ths.text('显示全部');
+					}
+				});
+			}
+			// 绑定删除订单事件
+			$('[id^=deleteOrder]').on('click',function(){
+				var ths = this,
+					$ths = $(ths),
+					serialNumber = ths.id.replace('deleteOrder','');
+				jsonAjax("/"+language+"/order/deleteOrder.do",
+						{
+							orderNo:serialNumber
+						},function(res){
+					if(res.success){
+						showJudegTip("success",'提示',res.data);
+						$ths.parents("li").remove();
+					}else{
+						showJudegTip("fail",'提示',res.data);
+					}
+				},function(){});
+			});
+			// 分页代码
+			pageNumber(totalRecords,obj,loadOrderInfo,'o');
+		}else{
+			// 无数据
+			if(obj.pageNo == 1){
+				$('#noData').show();
+			}
+		}
+	},function(){},'post','json',false);
+}
+
+/**
+ * 根据不同订单状态加载不同数据
+ * @param id
+ * @param obj
+ */
+function changeStatus(id,obj){
+	$(".dingdan").hide();
+	if(id==""||id==null||id==undefined){
+		$(".dingdan").show();
+		$("#oPageTurn").show();
+	}else{
+		$("."+id).show();
+		$("#oPageTurn").hide();
+	}
+	$(obj).parent().find("li").removeClass("active");
+	$(obj).addClass("active");
+	//加载广告商品
+	loadOrderInfo({
+		pageNo:pageNo,
+		pageSize:count,
+		orderStatus:$(obj).attr('value')
+	});
+}
+
+/**
+ * 搜索按钮
+ */
+function search(){
+	var playIdle=$(".playIdle").find("option:selected").text();
+	var orderStatus=$(".orderStatus").find("option:selected").val();
+	var adName=$(".adName").val();
+	if(playIdle=="全部"){
+		playIdle="";
+	}
+	loadOrderInfo({
+		pageNo:pageNo,
+		pageSize:count,
+		playIdle:playIdle,
+		orderStatus:orderStatus,
+		adName:adName
+	});
+}
+
+function queryEffectualTimeByOrderNo(obj){
+	if(obj.orderNo!=null&&obj.orderNo!=undefined&&obj.orderNo!=""){
+		orderNo=obj.orderNo;
+	}else{
+		obj.orderNo=orderNo;
+	}
+	jsonAjax("/"+language+"/order/queryEffectualTimeByOrderNo.do",obj,function(res){
+		if(res.data!=null&&res.data!=[]){
+			var html="",data=res.data,date=new Date().format(DATE_FORMAT_YTD);
+			html+='<tr>';
+			html+='  <th>时间</th>';
+			html+='  <th>状态</th>';
+			html+='</tr>';
+			for (var i = 0; i < data.length; i++) {
+				var status="未播放",cl="red";
+				if(new Date(data[i].play_date.replace(/-/g, "/"))<new Date(date.replace(/-/g, "/"))){
+					status="已播放",cl="green";
+				}else if(data[i].play_date==date){
+					status="正在播放",cl="col-999";
+				}
+				html+='<tr>';
+				html+='  <td>'+data[i].play_date+'</td>';
+				html+='  <td><span class="green">'+status+'</span></td>';
+				html+='</tr>';
+			}
+			$("#timeTable").html("");
+			$("#timeTable").html(html);
+			$("#shiduandiv").show();
+		}
+	},function(){},"get");
+}
+
+/**
+ * 有效时段搜索按钮
+ */
+function seachEffectualTimeBtn(){
+	var beginTime=$(".beginTime").val();
+	var endTime=$(".endTime").val();
+	queryEffectualTimeByOrderNo({beginTime:beginTime,endTime:endTime});
+}
+
+/**
+ * 取消插播
+ * @param obj
+ */
+function cancerInterCut(obj){
+	showConfimTip("提示","确认取消插播吗？",function(){
+		var orNo=$(obj).attr("data-orNo");
+		jsonAjax("/"+language+"/order/cancerInterCut.do",{orderNo:orNo},function(res){
+			if(res.success){
+				showJudegTip("success","提示","取消插播成功!");
+				$("#successdiv").remove();
+				$(obj).parents(".interDiv").append('<span class="btn btn03 bg-999 disabled">已取消插播</span>');
+				$(obj).remove();
+			}else{
+				showJudegTip("fail","提示",res.data);
+			}
+		},function(){});
+	})
+}
+
+/**
+ * 清空时间
+ */
+function clearDate(){
+	$(".beginTime").val("");
+	$(".endTime").val("");
+}
+
+/**
+ * 初始化时间控件
+ */
+function initDate(){
+	var currYear = (new Date()).getFullYear();
+	var opt = {};
+	opt.date = {
+		preset : 'date'
+	};
+	opt.datetime = {
+		preset : 'datetime'
+	};
+	opt.time = {
+		preset : 'time'
+	};
+	opt.def = {
+		theme : 'android-ics light', //皮肤样式
+		display : 'modal', //显示方式 
+		mode : 'scroller', //日期选择模式
+		dateFormat : 'yyyy-mm-dd',
+		lang : 'zh',
+		showNow : true,
+		nowText : "今天",
+		startYear : currYear - 50, //开始年份
+		endYear : currYear + 10 //结束年份
+	};
+	$(".beginTime").mobiscroll($.extend(opt['date'], opt['def']));
+	$(".endTime").mobiscroll($.extend(opt['date'], opt['def']));
+}

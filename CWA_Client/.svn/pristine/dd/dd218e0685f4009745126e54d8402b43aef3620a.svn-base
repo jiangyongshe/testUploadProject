@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<title>翔云播——共享广告新媒体</title>
+<meta name="keywords" content="共享广告屏，投放广告，橱窗媒体广告，人人共享">
+<meta name="description" content="全国首家共享橱窗媒体广告，它致力于解决广告主投放广告难，投放流程复杂繁琐，投放广告不精准，以及广告投放费用门槛高等一系列问题" />
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="width clear font14">
+ <div class="mar-auto">
+  <div class="width clear quan pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <div class="clear width bg-f3 wddd">
+        <h2 class="fl font16 pad-t7 pad-b5">支付</h2>
+      </div>
+      
+      <div class="clear width pad-t20">
+        <p class="text-c pad-t30 font28 green"><i class="fa fa-2x fa-check" aria-hidden="true"></i><br />支付成功</p>
+        <p class="text-c pad-t30 font16">您可以在 <a href="javascript:;" class="red">我的订单</a> 查看您的订单进程，或者继续 <a href="javascript:;" class="red">投放广告</a> </p>
+      </div>
+       
+      <div class="clear width pad-t20">
+        <p class="text-c pad-t30 font28 red"><i class="fa fa-2x fa-remove" aria-hidden="true"></i><br />支付失败</p>
+        <p class="text-c pad-t30 font16">支付宝余额不足，<a href="javascript:;" class="red">返回继续支付</a></p>
+      </div>
+    </div>
+  </div>
+ </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

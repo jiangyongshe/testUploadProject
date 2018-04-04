@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播——共享广告平台，注册/投放广告/商家合作/联系我们</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body>
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+    <ul class="ggtf-sc ggtf-sc2 pad-q10 bg-ff">
+        <li>
+          <span class="pos-a ggtf-sc-bt">广告编号</span>
+          <select name="" class="xlb02 width100 adNo">
+          </select>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">广告类型</span>
+          <select name="" class="xlb02 width100 adType">
+            <option value="1">日用品广告</option>
+			<option value="2">食品饮料广告</option>
+			<option value="3">餐饮广告</option>
+			<option value="4">电子家电广告</option>
+			<option value="5">服装服饰广告</option>
+			<option value="6">化妆品广告</option>
+			<option value="7">钟表首饰广告</option>
+			<option value="8">教育培训广告</option>
+			<option value="9">文化广告</option>
+			<option value="10">会展广告</option>
+			<option value="11">商业商场广告</option>
+			<option value="12">娱乐广告</option>
+			<option value="13">社会服务广告</option>
+			<option value="14">金融保险广告</option>
+			<option value="15">汽车广告</option>
+			<option value="16">房地产广告</option>
+			<option value="17">邮电通讯快递物流广告</option>
+			<option value="18">保健广告</option>
+			<option value="19">旅游酒店广告</option>
+			<option value="20">家装建材广告</option>
+			<option value="21">交通运输广告</option>
+			<option value="22">其他广告</option>
+          </select>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">广告名称</span>
+          <input type="text" class="wenb01 adName" placeholder="请输入广告名称" />
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">广告简介</span>
+          <textarea name="" cols="" rows="" class="wby01 adIntroduction"></textarea>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">文件上传</span>
+          <div class="uploader mar-l15 htmlUpl hide" onclick="showUplHtml('htmldiv')">
+            <p><i class="fa fa-building-o fa-2x" aria-hidden="true"></i></p>
+            <p class="font12">点此上传图文模板</p>
+          </div> 
+          <div class="uploader-sp vedio" style="display:block;">
+            <video width="" height="" class="uploader-video adVedio" style="display:none;" controls>
+              <source src="" type="video/ogg">
+              <source src="" type="video/mp4">
+              您的浏览器不支持视频标签.
+            </video>
+           <img src="" onclick="showHtml1()" style="cursor:pointer;display:none;"/> 
+            <!-- <p><a href="#"><i class="fa fa-trash-o" aria-hidden="true"></i>删除 </a></p> -->
+          </div>
+          
+          
+          <div class="uploader-sp clear width pad-b10 imgList" style="display: block;">
+           
+          </div>
+        </li>
+        
+    </ul>
+</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script src="/chinese/mobile/js/core/customer_operateAdVedio.js"></script><!--公用底部JS-->
+
+
+<!--上传html-->
+<div class="shade" id="htmldiv" style="display: none ;">
+  <div class="tanchu-html">
+    <div class="tanchu-bt text-l">选择图文模板<a href="#0" class="tanchu-close text-c" title="关闭" onclick="hideUplHtml('htmldiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <ul class="html-tab">
+      <li class="active" attr-val="1">
+        <span class="html-tab01-l html-bor-r col-ccc"><i class="fa fa-image" aria-hidden="true"></i></span>
+        <span class="html-tab01-r">文字</span>
+      </li>
+      <li attr-val="2">
+        <span class="html-tab02-l html-bor-b col-ccc"><i class="fa fa-image" aria-hidden="true"></i></span>
+        <span class="html-tab02-r">文字</span>
+      </li>
+      <li attr-val="3">
+        <span class="html-tab01-r html-bor-r">文字</span>
+        <span class="html-tab01-l col-ccc"><i class="fa fa-image" aria-hidden="true"></i></span>
+      </li>
+      <li attr-val="4">
+        <span class="html-tab02-r html-bor-b">文字</span>
+        <span class="html-tab02-l col-ccc"><i class="fa fa-image" aria-hidden="true"></i></span>
+      </li>
+      <li attr-val="5">
+        <span class="html-tab02-r" style="padding-top: .6rem;">文字</span>
+      </li>
+    </ul>
+    
+    <ul class="html-tab-nr">
+      <li>
+        <div class="html-nr-l">
+          <div class="uploader uploadBtn" style="display: ;">
+            <p><i class="fa fa-image fa-3x" aria-hidden="true"></i></p>
+            <input type="text" class="filename" value="点此上传图片" readonly/>
+            <input type="button" name="file" class="sc-anniu" value="上传..."/>
+            <input type="file" size="30" class="fileInput"/>
+          </div>
+            
+          <div class="html-nr-img pos-r updUploadBtn" style="display: none;">
+             <div id="imgDiv"><img src="" id="imgUpl"/></div>
+             
+             <div class="uploader pos-a " style="border: 0px;">
+               <input type="text" class="filename point" value="点此修改图片" readonly/>
+               <input type="button" name="file" class="sc-anniu" value="上传..."/>
+               <input type="file" size="30" class="fileInput"/>
+             </div>
+          </div>
+        </div>
+         
+        <div class="html-nr-r">
+          <input name="" type="text" class="wenb01 width100 title" placeholder="请输入标题" />
+          <textarea name="" cols="" rows="" class="wby01 context mar-t8" placeholder="请输入内容"></textarea>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

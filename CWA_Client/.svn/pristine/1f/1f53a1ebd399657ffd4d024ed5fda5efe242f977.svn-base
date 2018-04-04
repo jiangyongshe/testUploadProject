@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script type="text/javascript">
+	document.write('<scr'+'ipt type="text/javascript" src="/chinese/mobile/js/commonRel.js"></sc'+'ript>');
+</script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+  <ul class="ggtf-sc ggtf-sc3 pad-q10">
+        <li>
+          <span class="pos-a ggtf-sc-bt">原密码</span>
+          <input type="password" class="wenb03 width100" id="oldPwd" placeholder="请输入原密码" />
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">新密码</span>
+          <input type="password" class="wenb03 width100" id="newPwd" placeholder="请输入新密码" />
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">确认密码</span>
+          <input type="password" class="wenb03 width100" id="confirmPwd" placeholder="请确认新密码" />
+        </li>
+  </ul>
+  
+  <div class="pad-t10 font12 text-c red tishi01" style="display:none;">原密码错误</div>
+  
+  <input name="" type="button" id="submit" value="提交" class="btn btn11 bg-blue width100 pad-q10 font13 mar-t20" />
+</div>
+
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/updatePwd.js"></script>
+</body>
+</html>

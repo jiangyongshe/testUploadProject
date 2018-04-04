@@ -1,0 +1,7 @@
+#上传文件的路径 服务器路径-/home/data/site/cwa_images/images/
+baseUploadPath=/home/data/site/cwa_images/images/
+#20M
+maxPicSize=20971520
+adPicDir=advertiserPic/
+#密钥路径 服务器路径-/etc/goldwin/pwd_key/datakey.properties
+keyPath=/etc/goldwin/pwd_key/datakey.properties

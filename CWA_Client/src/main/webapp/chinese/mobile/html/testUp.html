@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link href="/chinese/mobile/css/stream-v1.css" rel="stylesheet" />
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+
+<script src="/chinese/mobile/js/upload/browser-md5-file.min.js" type="text/javascript"></script>  
+
+<script type="text/javascript" src="/chinese/mobile/js/upload/stream-v1.js"></script>
+</head>
+
+<body>
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+    <ul class="ggtf-sc ggtf-sc2 pad-q10 bg-ff">
+        <li>
+        <form action="/chinese/video/uploadADPictest.do" enctype="multipart/form-data" method="post">
+          <span class="pos-a ggtf-sc-bt">文件上传</span>
+          <div class="uploader mar-l15 androidImgUpl" onclick="wxChooseImage()">
+            <p><i class="fa fa-video-camera fa-2x" aria-hidden="true"></i></p>
+            <p class="font12">点此上传图片</p>
+            <input type="file" name="fileList" multiple="multiple" />
+          </div> 
+          </form>
+          <p class="col-999 pad-t10 hide imgTip">温馨提示：建议每张图片像素为1920*1080且大小不超过2M</p>
+          <p class="error red"></p>
+          <div class="uploader-sp vedio" style="display:block;">
+            <video width="" height="" class="uploader-video hide adVedio" controls>
+              <source src="" type="video/ogg">
+              <source src="" type="video/mp4">
+              您的浏览器不支持视频标签.
+            </video>
+           <img src="" onclick="showHtml1()" style="cursor:pointer;display:none;"/> 
+            <p class="hide iosPlayVideo" onclick="iosJsMethod()"><a href="#"><i class="fa fa-trash-o" aria-hidden="true"></i>预览视频 </a></p>
+          </div>
+          
+          <div class="uploader-sp clear width pad-b10 imgList" style="display: block;">
+           
+          </div>
+        </li>
+        
+        <!-- <li>
+          <label class="checkbox"><input type="checkbox" name="checkbox" id="" checked><i>✓</i> 我已阅读并同意</label> <a href="#" class="red" onclick="elementDisplay('venturediv')">《上传视频协议》</a>
+        </li> -->
+        
+        <li>
+           <input name="" id="submit"  type="button" value="提交" class="btn btn02 bg-blue bor-rad font13" onclick="submit()" />
+        </li>
+    </ul>
+
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script src="/chinese/mobile/js/jweixin-1.2.0.js"></script>
+<script src="/chinese/mobile/js/core/webchat_upload.js"></script><!-- 公用底部JS -->
+</div>
+
+</body>
+</html>

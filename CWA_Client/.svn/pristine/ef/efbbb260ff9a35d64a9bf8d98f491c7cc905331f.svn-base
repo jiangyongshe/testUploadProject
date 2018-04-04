@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport"/>
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords">
+<meta name="description"/>
+<title>翔云播</title>
+<script type="text/javascript" src="../../js/commonRel.js"></script>
+<script type="text/javascript" src="../../js/userCommon.js"></script>
+<script type="text/javascript">
+	var i = getURLParam('i'), obj;
+	switch(i){
+	case 'recharge':// 充值成功跳转的页面
+		obj = {
+			title:'充值',
+			html:'<div class="clear width pad-t20">'
+				+'	<p class="text-c pad-t30 font28 green">'
+				+'		<i class="fa fa-2x fa-check" aria-hidden="true"></i><br/>充值成功'
+				+'	</p>'
+				+'	<p class="text-c pad-t30 font16">'
+				+'		充值可能存在网络延迟，请稍等几分钟可到<a href="/'+language+'/forward/customerWallet.do" class="red">翔云余额</a>查看您的余额'
+				+'	</p>'
+				+'</div>'
+		};
+		break;
+	case 'pay':// 支付成功跳转的页面
+		obj = {
+			title:'支付',
+			html:'<div class="clear width pad-t20">'
+				+'	<p class="text-c pad-t30 font28 green">'
+				+'		<i class="fa fa-2x fa-check" aria-hidden="true"></i><br/>支付成功'
+				+'	</p>'
+				+'	<p class="text-c pad-t30 font16">'
+				+'		您可以在'
+				+'		<a href="/'+language+'/forward/customerOrder.do" class="red">我的订单</a> 查看您的订单进程，或者继续'
+				+'		<a href="/'+language+'/forward/customerAdvertise.do" class="red">投放广告</a>'
+				+'	</p>'
+				+'</div>'
+		};
+		break;
+	case 'rechargeFail':// 充值失败跳转的页面
+		obj = {
+			title:'充值',
+			html:'<div class="clear width pad-t20">'
+				+'	<p class="text-c pad-t30 font28 red">'
+				+'		<i class="fa fa-2x fa-remove" aria-hidden="true"></i><br/>充值失败'
+				+'	</p>'
+				+'	<p class="text-c pad-t30 font16">'
+				+'		您可以去充值页继续'
+				+'		<a href="/'+language+'/forward/recharge.do" class="red">充值</a>'
+				+'	</p>'
+				+'</div>'
+		};
+		break;
+	case 'payFail':// 支付失败跳转的页面
+		obj = {
+			title:'支付',
+			html:'<div class="clear width pad-t20">'
+				+'	<p class="text-c pad-t30 font28 red">'
+				+'		<i class="fa fa-2x fa-remove" aria-hidden="true"></i><br/>支付失败'
+				+'	</p>'
+				+'	<p class="text-c pad-t30 font16">'
+				+'		您可以在'
+				+'		<a href="/'+language+'/forward/customerOrder.do" class="red">我的订单</a> 支付，或者继续'
+				+'		<a href="/'+language+'/forward/customerAdvertise.do" class="red">投放广告</a>'
+				+'	</p>'
+				+'</div>'
+		};
+		break;
+	}
+	if(obj){
+		window.location.href = '/'+language+'/forward/tradeComplete.do?i='+encodeURIComponent(JSON.stringify(obj));
+	}
+</script>
+</head>
+</html>

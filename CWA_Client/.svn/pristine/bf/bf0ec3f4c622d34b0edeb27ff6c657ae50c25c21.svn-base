@@ -1,0 +1,112 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var mescroll,isDelete=false/*删除标识 如果true 则重新加载数据*/;
+
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	$("#headerTitle").text("广告屏详情");
+	$(".wcBtn").hide();
+	var fileType=getURLParam("fileType"),checkTimes=getURLParam("checkTimes"),checkAdvertiseId=getURLParam("checkAdvertiseId"),deviceIds=getURLParam("deviceId"),timeInterval=getURLParam("timeInterval");
+	loadBuyConfirmInfo({checkAdvertiseId:checkAdvertiseId,deviceId:deviceIds,timeInterval:timeInterval,checkTimes:checkTimes,fileType:fileType});//加载广告商品
+})
+
+
+//加载广告商品
+function loadBuyConfirmInfo(obj){
+	jsonAjax("/"+language+"/customer/queryConfimBuyAdvertiseInfo.do",obj,function(res){
+		if(res.data!=null&&res.data!=[]&&res.success){
+			var data=res.data,pageMenu='',html="";
+			var listDom=document.getElementById("dataList");
+			
+			var dto=data[0],price=dto.pic_price,imgs="",length=dto.pic_length;
+			disCount=res.msg;
+			if(dto.pics!=null&&dto.pics!=""){
+				imgs=dto.pics.split(",");
+				var shopImageHtml="";
+				for (var i = 0; i < imgs.length; i++) {
+					shopImageHtml+='<li><a class="pic" href="#"><img src="'+imagePath+imgs[i]+'"/></a></li>';
+				}
+				$("#shopImage").html(shopImageHtml);
+				TouchSlide({ 
+					slideCell:"#slideBox",
+					titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+					mainCell:".bd ul", 
+					effect:"leftLoop", 
+					autoPage:true,//自动分页
+					autoPlay:true //自动播放
+				});
+			}
+			html+='<p class="pad-t5"><span class="">广告屏编号：</span><span>'+dto.device_code+'</span><span class="deviceId hide" data-id="'+dto.id+'">'+dto.device_id+'</span></p>';
+			html+='<p class="pad-t5"><span class="">店铺：</span>'+dto.shop_name+'</p>';
+			html+=' <p class="pad-t5"><span class="">地址：</span>'+dto.mailing_address.substring(0,findCharIndex(dto.mailing_address,"*",3)).replace(/\*/g,"").replace(/&/g,"")+'</p>';
+			html+=' <p class="pad-t5 red"><span class="">设备播放时段：</span><span class="timeInterval">'+dto.idle_time+'</span></p>';
+			html+='  <p class="pad-t5"><span class="">广告投放最低循环次数：</span>60次</p>';
+			var d=new Date(),showBgTm=dto.startDate,showEdTm=dto.endDate.substring(0,10);
+			if(showBgTm==showEdTm){
+				//默认最大日期
+				d.setMonth(d.getMonth() +1);
+				showEdTm=d.format(DATE_FORMAT_YTD);
+			}
+			
+		    html+='<p class="pad-t8 tflx">';
+		    html+='<span class="dis-in">投放类型：</span>';
+		    html+='<span class="dis-in tfsl fileType">';
+		    html+='	<em onclick="" class="active" data-price="'+dto.pic_price+'" data-length="'+dto.pic_length+'" value="3">图片</em>';
+		    html+='	<em onclick="" data-price="'+dto.ad_price+'" data-length="'+dto.ad_length+'" value="1">视频</em>';
+		    html+='</span>';
+		    html+='<span class="col-999 pad-l5 priceAndLength">';
+		    html+=' 每张图片单价：<em class="red font14"><span class="adPrice">'+price+'</span>元/</em><span class="adLength">'+length+'</span>秒';
+		    html+='</span>';
+		    html+='</p>';
+		    html+='<p class="pad-t10">';
+		    html+='<span class="dis-in">投放数量：</span>';
+		    html+='<span class="dis-in tfsl buyCount">';
+		    html+=' <em onclick="" class="active">1</em>';
+		    html+='<em onclick="">2</em>';
+		    html+='<em onclick="">3</em>';
+		    html+='<em onclick="">4</em>';
+		    html+='<em onclick="">其他</em>';
+		    html+='<input type="text" name="" id="" class="dis-in wenb08 hide buyCountVal" placeholder="" />';
+		    html+='</span>';
+		    html+='</p>';
+		    html+=' <p class="pad-t8 gwc-dw">';
+		    html+='<span class="dis-in font14">投放日期：</span>';
+		    html+='<span class="dis-in riqi pos-r">';
+		    html+='<input type="text" data-playNumber='+dto.play_number+' readonly value="'+showBgTm+'" placeholder="请选择开始时间" class="dis-in wenb02 dt bgDate" />';
+		    html+='  <i class="fa fa-calendar pos-a" aria-hidden="true"></i>';
+		    html+='</span>';
+		    html+='<span class="dis-in pad-l5 pad-r5">-</span>';
+		    html+='<span class="dis-in riqi pos-r">';
+		    html+='<input type="text" value="'+showEdTm+'" placeholder="请选择结束时间" readonly class="dis-in wenb02 dt edDate">';
+		    html+='  <i class="fa fa-calendar pos-a" aria-hidden="true"></i>';
+		    html+='</span>';
+		    html+=' </p>';
+		    if(dto.play_number==dto.toDaySell){
+		    	html+=' <span class="btn btn08 bg-yellow bor-rad pos-a chabo" onclick="intercut(this)">插播</span>';
+			}
+		    listDom.innerHTML=html;
+			createDateControl();//绑定时间控件
+			checkSum();
+		}
+	},function(){
+		//联网失败的回调,隐藏上拉加载的状态
+		mescroll.endErr();
+		},"get",null,null,false);
+}
+
+//插播
+function intercut(obj){
+	var ct=new Date().format(DATE_FORMAT_YTD);
+	isInterCut="2";
+	$(this).hide();
+	$(".bgDate").val(ct).addClass("disabled");
+	$(".edDate").val(ct).addClass("disabled");
+}
+
+//提交
+function detailCommit(obj){
+	commint(obj,true);
+}
+

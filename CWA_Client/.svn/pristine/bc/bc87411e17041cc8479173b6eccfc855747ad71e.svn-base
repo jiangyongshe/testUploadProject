@@ -1,0 +1,140 @@
+var adTypeArr=["日用品广告","食品饮料广告","餐饮广告","电子家电广告","服装服饰广告","化妆品广告","钟表首饰广告","教育培训广告","文化广告","会展广告","商业商场广告","娱乐广告","社会服务广告","金融保险广告","汽车广告","房地产广告","邮电通讯快递物流广告","保健广告","旅游酒店广告","家装建材广告","交通运输广告","其他"];
+var chineseError=["未知异常","视频token无效","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var operateType="",adNo="",id=0,fileName="",filePath="",src="";
+
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	operateType=getURLParam("type");
+	adNo=getURLParam("adNo");
+	$(".adNo").text(adNo);
+	if(operateType!=""){
+		loadAdvertiseVedioInfo();//加载广告详情
+	}
+	$(".filename").bind("click",function(){//上传
+		uploadVideo();
+	})
+})
+//加载用户订单
+function loadAdvertiseVedioInfo(){
+	jsonAjax("/"+language+"/video/queryAdVideoInfo.do",{adNo:adNo},function(res){
+		if(res.data!=null&&res.data!=[]){
+			var data=res.data;
+			fileName=data.file_name;
+			filePath=data.file_path.substring(0,8);
+			src=videoUrl+filePath+"/"+fileName;
+			if(operateType=="u"){
+				id=data.id;
+				$("input[type=checkbox]")[0].checked=true;
+				$(".adType").val(data.vedio_type);
+				$(".adName").val(data.name);
+				$(".adIntroduction").val(data.introduction);
+			}else{
+				$(".adType").text(adTypeArr[data.vedio_type-1]);
+				$(".adName").text(data.name);
+				$(".adIntroduction").text(data.introduction);
+			}
+			$(".adVedio")[0].src=src;
+		}
+	},function(){},"get");
+}
+
+function submit(){//file_name;file_path;play_path;
+	disabledBtn("submit");
+	var adNo=$(".adNo").text();
+	var adType=$(".adType").val();
+	var adName=$(".adName").val();
+	var adIntroduction=$(".adIntroduction").val();
+	if($("input[type=checkbox]")[0].checked==false){//协议未勾选
+		$(".error").html("请同意协议后才能操作！");//信息填写不完整
+		startBtn("submit");
+		return;
+	}
+	if(adNo==""||adType==""||adName==""||adIntroduction==""){
+		$(".error").html("信息填写不完整");//信息填写不完整
+		startBtn("submit");
+		return;
+	}
+	if(fileName==""){
+		$(".error").html("请上传视频！");//信息填写不完整
+		startBtn("submit");
+		return;
+	}
+	jsonAjax("/"+language+"/video/operateAdVideo.do",{name:adName,introduction:adIntroduction,vedio_type:adType,serial_number:adNo,id:id,file_name:fileName,file_path:filePath},function(res){
+		if(res.success){
+			$(".error").hide();
+			showJudegTip("success","提示","您的广告订单已提交成功，我们会尽快审核您的订单，您可以通过点击 <a href=\"/"+language+"/forward/customerOrder.do\" class=\"red\">我的广告订单</a> 查看订单状态，订单通过就可以播放了。</p>");
+			startBtn("submit");
+		}
+	},function(){});
+}
+
+
+
+
+var config = {
+    //postVarsPerFile:postVarsPerFileObj,/** 上传文件时传入的参数，默认: {} */
+	browseFileId : "i_select_files", /** 选择文件的ID, 默认: i_select_files */
+	browseFileBtn : "<div>请选择视频文件</div>", /** 显示选择文件的样式, 默认: `<div>请选择文件</div>` */
+	dragAndDropArea: "i_select_files", /** 拖拽上传区域，Id（字符类型"i_select_files"）或者DOM对象, 默认: `i_select_files` */
+	dragAndDropTips: "<span>或把视频文件拖拽到这里</span>", /** 拖拽提示, 默认: `<span>把文件(文件夹)拖拽到这里</span>` */
+	filesQueueId : "i_stream_files_queue", /** 文件上传容器的ID, 默认: i_stream_files_queue */
+	filesQueueHeight : 150, /** 文件上传容器的高度（px）, 默认: 450 */
+	retryCount:2,
+	maxSize:104857600,/** 单个文件最大上传大小 100M*/
+	tokenURL : "/vedioupload/tk/token.do", /** 根据文件名、大小等信息获取Token的URI（用于生成断点续传、跨域的令牌） */
+	uploadURL : "/vedioupload/upload/getupload.do", /** HTML5上传的URI */
+	messagerId : "i_stream_message_container", /** 消息显示容器的ID, 默认: i_stream_message_container */
+ 	extFilters: [".mp4",".MP4"], /** 允许的文件扩展名, 默认: [],即全部允许 ".avi", ".rmvb",".rm",".mpg",".mpeg",".mpe",".mkv",".mp4",".MP4",".mov"*/
+	multipleFiles: false, /** 多个文件一起上传, 默认: false */
+	autoUploading:false,
+	simLimit:1,//单次最大上传文件个数,	100
+///	autoRemoveCompleted:true,
+	onComplete: function(file) {/** 单个文件上传完毕的响应事件 */
+		///console.log(file);
+		console.log(' upload success '+file.name);
+		var json=eval('('+file.msg+')')
+	    if(json.success){
+	        if(json.message=='10001'){
+	              window.location.href = "/"+language+"/forward/home.do";
+		          return ;
+	        }
+	        fileName=json.name;
+	        filePath=json.message;
+	        src=videoUrl+filePath+"/"+fileName;
+	        closeAndcancel();
+	        playVedio();
+	        showJudegTip("success","提示","文件上传成功！");
+	    }else{
+	    	showJudegTip("fail","提示","上传文件失败！"+json.message);
+	    }
+	    
+	},onDestroy: function() {/** 销毁的响应函数*/
+		  console.log("Stream插件已销毁！");
+	},onMaxSizeExceed: function(file) {
+		showJudegTip("fail","提示","单个文件上传不能超过100M！");
+	}
+
+};
+function closeAndcancel(){
+	_t.cancel();
+    if(_t!=null){
+      _t.destroy();
+      _t=null;
+    }
+	$("#upload-windows-class-div").hide();
+}
+
+function uploadVideo(){
+	 _t=new Stream(config);//创建上传对象
+	 $("#upload-windows-class-div").show();
+}
+
+function playVedio(){//视频播放
+	if(fileName!=""){
+		$(".adVedio")[0].src=src;
+	}
+}
+

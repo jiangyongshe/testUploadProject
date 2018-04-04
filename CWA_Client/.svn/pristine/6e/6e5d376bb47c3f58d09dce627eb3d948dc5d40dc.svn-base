@@ -1,0 +1,33 @@
+$(function(){
+	// 提交按钮
+	submit();
+})
+
+/**
+ * 提交按钮
+ */
+function submit(){
+	$('#submit').on('click',function(){
+		// 获取原密码
+		var oldPwd = $('#oldPwd').val();
+		// 获取新密码
+		var newPwd = $('#newPwd').val();
+		// 获取二次输入的密码
+		var confirmPwd = $('#confirmPwd').val();
+		// 发送请求
+		jsonAjax('/'+language+'/user/updatePwd.do',{oldPwd:oldPwd,newPwd:newPwd,confirmPwd:confirmPwd},
+		function(res){
+			var msg = res.msg;
+			if(msg!='10000'){
+				showJudegTip('fail','提示',msg);
+			}else{
+				showJudegTip('success','提示',res.data);
+				// 清空输入框
+				$('#oldPwd').val('');
+				$('#newPwd').val('');
+				$('#confirmPwd').val('');
+			}
+		},function(){});
+	});
+	
+}

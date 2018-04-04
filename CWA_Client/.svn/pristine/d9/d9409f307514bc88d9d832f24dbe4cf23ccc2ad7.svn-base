@@ -1,0 +1,561 @@
+package com.cwa.client.web;
+
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dao.AdvertiseInfoDao;
+import com.cwa.client.dao.SystemSetDao;
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.dto.VideoDto;
+import com.cwa.client.model.Tb_Order;
+import com.cwa.client.model.Tb_Vedio_Audit;
+import com.cwa.client.redis.UserRedis;
+import com.cwa.client.service.AdvertiseInfoService;
+import com.cwa.client.service.AdvertiseVideoService;
+import com.cwa.client.service.FileService;
+import com.cwa.client.service.OrderService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.DateUtils;
+import com.cwa.client.utils.Encypter;
+import com.cwa.client.utils.GobalProperties;
+import com.cwa.client.utils.HttpUtil;
+import com.cwa.client.utils.RespCodeEnum;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/*/video")
+public class AdVideoController extends BaseController<GobalRespParameter> implements Constant{
+
+	private static String FTL_NAME="muban";
+	private static String FTL_NAME_INDEX="A";
+	private static String BASE_UPLOAD_HTML="STREAM_FILE_REPOSITORY";
+	/**
+	 * 基础路径
+	 */
+	private static final String BASE_UPLOAD_PATH = "baseUploadPath";
+	
+	private static String reqMediaUrl="https://api.weixin.qq.com/cgi-bin/media/get?access_token=token&media_id=media";  
+	@Resource// 普通用户service层
+	private AdvertiseInfoService advertiseInfoService;
+	
+	@Resource// 普通用户service层
+	private AdvertiseVideoService advertiseVideoService;
+	
+	@Resource//文件上传
+	private FileService fileService;
+
+	@Resource// 订单service层
+	private OrderService orderService;
+	
+	@Resource// 普通用户service层
+	private SystemSetDao systemSetDao;
+	
+	@Resource
+	private AdvertiseInfoDao advertiseInfoDao;
+	
+	@Resource
+	private UserRedis userRedis;
+	
+	@RequestMapping("/queryAdVideoInfo.do")
+	public void queryAdVideoInfo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		//获取请求参数并判断是否为空getPageModel
+		String adNo= getParameter(req, "adNo");
+		try {
+			if(adNo!=null){//判断参数是否正确
+				//dto.setPageNo(Integer.parseInt(pageNo));
+				List<VideoDto> listDto = advertiseVideoService.findByOrderNo(adNo);
+				if(listDto.size()>0){
+					if("2".equals(listDto.get(0).getFile_type())||"3".equals(listDto.get(0).getFile_type())){
+						findHtmlContext(listDto.get(0));//获取html内容
+					}
+					/*for (VideoDto dto : listDto) {
+						if(listDto.get(0).getOld_file_name().indexOf(dto.getOld_file_name())<0){
+							listDto.get(0).setOld_file_name((listDto.get(0).getOld_file_name().equals(dto.getOld_file_name())?"":listDto.get(0).getOld_file_name()+",")+dto.getOld_file_name());
+						}
+					}*/
+					parameter.setData(listDto.get(0));
+					parameter.setSuccess(true);
+					writeLog("", "query advertise info success! data:"+listDto.get(0).toString(), LOGLEVEL_INFO, AdVideoController.class);
+				}
+			}
+		} catch (Exception e) {
+			parameter.setMsg(RespCodeEnum.global_unknow_expiration.getCode());
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	@RequestMapping("/operateAdVideo.do")
+	public void operateAdVideo(HttpServletRequest req, HttpServletResponse res, VideoDto dto,MultipartFile  file) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		//获取请求参数并判断是否为空getPageModel
+		try {
+			writeLog("", "operateAdVideo.do  data:"+JSONObject.fromObject(dto), LOGLEVEL_INFO, AdVideoController.class);
+			CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+			List<VideoDto> listDto1 = advertiseVideoService.findByOrderNo(dto.getSerial_number());
+			
+			writeLog("", dto.getSerial_number()+" ==== findById Tb_Vedio_Audit  entity:"+(listDto1.size()==0?"":listDto1.size()), LOGLEVEL_INFO, AdVideoController.class);
+			Map<String, String> map=new HashMap<String, String>();
+			//String [] oldNames=dto.getOld_file_name().split(",");
+			if(listDto1.size()==0){
+				if(util.isNull(dto.getSerial_number())){
+					parameter.setData(reqCt.getMessage("upload.video.order.notExists"));//RespCodeEnum.SUCCESS.getCode()
+					writeJSON(res, parameter);
+					parameter=null;
+					return;
+				}
+				List<Tb_Order> listOrder = orderService.queryOrderListBySerialNum(dto.getSerial_number());
+				if(!dto.getFile_type().equals(listOrder.get(0).getFile_type())){
+					parameter.setData(reqCt.getMessage("upload.video.fileType.error"));
+					writeJSON(res, parameter);
+					parameter=null;
+					return;
+				}
+				if(listOrder.get(0).getOrder_status()==1){
+					parameter.setData(reqCt.getMessage("upload.video.order.noPay"));
+					writeJSON(res, parameter);
+					parameter=null;
+					return;
+				}
+				List<Object[]> batch = new ArrayList<Object[]>();//插入视频
+				for (Tb_Order order : listOrder) {
+					String fileName="",oldName="";
+					
+					if("2".equals(dto.getFile_type())||"3".equals(dto.getFile_type())){
+						if("3".equals(dto.getFile_type())){
+							if(order.getUpload_file_num()!=dto.getImgUrl().split(",").length){
+								parameter.setData(reqCt.getMessage("upload.imgList.not.enough").replace("*", listOrder.size()+"").replace("#", dto.getImgUrl().split(",").length+""));
+								writeJSON(res, parameter);
+								parameter=null;
+								return;
+							}
+							for (int i = 0; i < order.getUpload_file_num(); i++) {
+								fileName=dto.getFile_name()+FTL_NAME_INDEX+(i+1)+FTL_NAME+dto.getModel()+".html";
+								//oldName=oldNames[i];
+								if(!map.containsKey(fileName+","+order.getDevice_id())){
+									map.put(fileName+","+order.getDevice_id(),fileName);
+									break;
+								}
+							}
+						}else{
+							fileName=dto.getFile_name()+FTL_NAME+dto.getModel()+".html";
+						}
+					}else{
+						fileName=dto.getFile_name();
+					}
+					Object[] values = new Object[] {//封装订单数据
+						dto.getName(),
+						fileName,
+						dto.getFile_path()+File.separator+fileName,
+						"",
+						dto.getIntroduction(),
+						customerDto.getAccount_id(),
+						new Timestamp(System.currentTimeMillis()),
+						"",
+						new Timestamp(DateUtils.string2UtilTime("2001-01-01 00:00:00.0", DateUtils.DATE_FORMAT_DEFAULT).getTime()),
+						ONE,
+						dto.getVedio_type(),
+						order.getSerial_number(),
+						oldName,
+						order.getFile_type(),
+						order.getORDER_TYPE(),
+						order.getIf_sub(),
+						order.getUnified_serial_number()==null?"":order.getUnified_serial_number()
+		   			};
+					batch.add(values);
+				}
+				advertiseVideoService.saveVedioAndUpdateOrder(batch,dto.getSerial_number());
+				if("2".equals(dto.getFile_type())||"3".equals(dto.getFile_type())){
+					createHtmlByImg(req,dto,null);
+				}
+				writeLog("", dto.getSerial_number()+" ==== insert success entity:"+JSONArray.fromObject(batch), LOGLEVEL_INFO, AdVideoController.class);
+			}else{
+				if(!listDto1.get(0).getFile_type().equals(dto.getFile_type())){
+					parameter.setData(reqCt.getMessage("upload.video.fileType.error"));
+					writeJSON(res, parameter);
+					parameter=null;
+					return;
+				}
+				for (int i = 0; i < listDto1.size(); i++) {
+					Tb_Vedio_Audit entity=new Tb_Vedio_Audit();
+					VideoDto dto1=listDto1.get(i);
+					BeanUtils.copyProperties(entity,dto1);
+					entity.setIntroduction(util.isNull(dto.getIntroduction())?entity.getIntroduction():dto.getIntroduction());
+					entity.setName(util.isNull(dto.getName())?entity.getName():dto.getName());
+					entity.setAudit_datetime(new Timestamp(DateUtils.string2UtilTime("2001-01-01 00:00:00.0", DateUtils.DATE_FORMAT_DEFAULT).getTime()));
+					entity.setAudit_id("");
+					entity.setAudit_status(ONE);
+					entity.setVedio_type(util.isNull(dto.getVedio_type()+"")?entity.getVedio_type():dto.getVedio_type());
+					String fileName="",oldName="";
+					if("2".equals(dto.getFile_type())||"3".equals(dto.getFile_type())){
+						if(dto.getFile_name().indexOf(".html")<0){//如果是新名称则重新生成文件
+							if("3".equals(dto.getFile_type())){
+								if(dto1.getUpFileNum()!=dto.getImgUrl().split(",").length){
+									parameter.setData(reqCt.getMessage("upload.imgList.not.enough").replace("*", listDto1.size()+"").replace("#", dto.getImgUrl().split(",").length+""));
+									writeJSON(res, parameter);
+									parameter=null;
+									return;
+								}
+								for (int j = 0; j < dto1.getUpFileNum(); j++) {
+									fileName=dto.getFile_name()+FTL_NAME_INDEX+(j+1)+FTL_NAME+dto.getModel()+".html";
+									//oldName=oldNames[j];
+									if(!map.containsKey(fileName+","+dto1.getDevice_id())){
+										map.put(fileName+","+dto1.getDevice_id(),oldName);
+										break;
+									}
+								}
+							}else{
+								fileName=dto.getFile_name()+FTL_NAME+dto.getModel()+".html";
+							}
+							entity.setFile_name(fileName);
+							entity.setFile_path(dto.getFile_path()+File.separator+entity.getFile_name());
+						}
+					}else{
+						entity.setFile_name(util.isNull(dto.getFile_name())?entity.getFile_name():dto.getFile_name());
+						entity.setFile_path(util.isNull(dto.getFile_path())?entity.getFile_path():dto.getFile_path()+File.separator+entity.getFile_name());
+					}
+					entity.setOld_file_name(oldName);
+					entity.setPlay_path("");//留空
+					advertiseVideoService.updateForSub(entity);
+					writeLog("", "==== update success entity:"+entity.toString(), LOGLEVEL_INFO, AdVideoController.class);
+				}
+				//map=null;
+				if("2".equals(dto.getFile_type())||"3".equals(dto.getFile_type())){
+					if(dto.getFile_name().indexOf(".html")<0){//如果是新名称则重新生成文件
+						createHtmlByImg(req,dto,null);
+					}
+				}
+			}
+			parameter.setData(null);//RespCodeEnum.SUCCESS.getCode()
+			parameter.setSuccess(true);
+			writeLog("", "query advertise info success! ", LOGLEVEL_INFO, AdVideoController.class);
+		} catch (Exception e) {
+			parameter.setMsg(RespCodeEnum.global_unknow_expiration.getCode());
+			parameter.setData(reqCt.getMessage("common.exception.unknow"));
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+
+	/**
+	 * 上传图片(用于“视频上传”)
+	 * @param req
+	 * @param res
+	 * @param file
+	 * @throws Exception*/
+	
+	@RequestMapping("/uploadADPic.do")
+	public void uploadPicForChangeAD(HttpServletRequest req,HttpServletResponse res,MultipartFile file) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		writeLog(LOGTYPE_CONTROLLER, "User "+userName+" upload pic . fileName:"+file.getOriginalFilename(), LOGLEVEL_INFO, AdVideoController.class);
+		//System.out.println("-----------data:image/jpeg;base64,"+new String(MD5Util.base64Encode(file.getBytes())));
+		RuturnMessageDto rmt = fileService.uploadPicFile(req, file, "");
+		writeJSON(res, rmt);
+	} 
+	
+	/**
+	 * 上传图片(用于“视频上传”)
+	 * @param req
+	 * @param res
+	 * @param file
+	 * @throws Exception*/
+	
+	@RequestMapping("/downPicToLocal.do")
+	public void downPicToLocal(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		String mediaId=getParameter(req, "mediaId");
+		writeLog(LOGTYPE_CONTROLLER, "User "+userName+" upload pic . mediaId:"+mediaId, LOGLEVEL_INFO, AdVideoController.class);
+		//System.out.println("-----------data:image/jpeg;base64,"+new String(MD5Util.base64Encode(file.getBytes())));
+		RuturnMessageDto rmt = new RuturnMessageDto();
+		rmt.setSuccess(false);
+		if(mediaId!=null){
+			String userType = req.getSession().getAttribute(SESSION_USER_TYPE).toString();
+			Object sessionUser = req.getSession().getAttribute(SESSION_USER);
+			Field accountIdField = sessionUser.getClass().getDeclaredField("account_id");
+			accountIdField.setAccessible(true);
+			String accountId = accountIdField.get(sessionUser).toString();
+        	String path=Encypter.getValueByKey(BASE_UPLOAD_PATH)+NORMAL_YMD.format(new Date()) + "/";
+        	writeLog(LOGTYPE_SERVICE, "save image in local success,filePath is "+path, LOGLEVEL_INFO, AdVideoController.class);
+			//String respMsg = HttpUtil.sendGet(reqMediaUrl.replace("token",WeChatUtil.getAccessToken(userRedis)).replace("media",mediaId));
+			byte [] images = (byte [])HttpUtil.sendGet("http://10.0.0.74:8080/chinese/common/loadIMG/cm.do?filePath=advertiserPic/20180212/1882657143601518403424621.png","image");
+			FileOutputStream fos=null;
+			try {
+				File destFile = new File(path);
+				if(!destFile.exists()){
+					destFile.mkdirs();
+				}
+				// 文件名
+				String fileName = accountId+userType+new Date().getTime()+"."+PIC_TYPE_PNG;
+				fos=new FileOutputStream(path+fileName);
+				fos.write(images);
+				/*// 转存文件
+				ImgCompress ic=new ImgCompress(destFile);
+				ic.resizeFix(path+fileName);*/
+				fos.flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally {
+                try {
+                    if (fos != null) {
+                    	fos.close();
+                    }
+                } catch (Exception e2) {
+                    e2.printStackTrace();
+                }
+            }
+			//rmt.setData(images);
+		}else{
+			rmt.setMsg(RespCodeEnum.global_parameter_isnull.getCode());
+		}
+		writeJSON(res, rmt);
+	} 
+	
+	/*@RequestMapping(value = "/showVideoPicBypath.do")
+	public void showVideoPicBypath(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		showIdPic(req,res);//显示图片
+	} */
+	/**
+	 * 根据上传图片和内容生成html
+	 * @param req
+	 * @param res
+	 * @param file
+	 * @throws Exception
+	 */
+	public void createHtmlByImg(HttpServletRequest req,VideoDto dto,Tb_Vedio_Audit entity) throws Exception{
+		
+		writeLog(LOGTYPE_CONTROLLER, "create html begin!  model:"+dto.getModel()+"===imgUrl:"+dto.getImgUrl()+"===img:"+dto.getImg()+"===title:"+dto.getTitle()+"===context:"+dto.getContext(), LOGLEVEL_INFO, AdVideoController.class);
+		if(entity!=null){
+			/*File file=new File(GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+entity.getFile_path());
+			File fileTemp=new File(GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+entity.getFile_path()+".temp");
+			writeLog(LOGTYPE_CONTROLLER, "delete path: "+GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+entity.getFile_path(), LOGLEVEL_INFO, AdVideoController.class);
+			file.deleteOnExit();
+			fileTemp.deleteOnExit();
+			writeLog(LOGTYPE_CONTROLLER, "delete old html success! ", LOGLEVEL_INFO, AdVideoController.class);*/
+		}
+		int adLength=FIVE;
+		if(!util.isNull(dto.getImgUrl())){
+			if(dto.getModel().equals("6")){
+				if(dto.getImgUrl().indexOf(",")>0){//多张
+					String img [] =dto.getImgUrl().split(",");
+					for (String string : img) {
+						dto.getImgList().add(showIdPic(string.substring(string.lastIndexOf("images")+7)));//图片转base64
+					}
+				} else {
+					dto.getImgList().add(showIdPic(dto.getImgUrl().substring(dto.getImgUrl().lastIndexOf("images")+7)));
+				}
+				List<AdvertiseInfoDto> queryList = advertiseInfoService.queryAdvertiseLength(dto.getSerial_number());
+				if(queryList.size()>0){
+					AdvertiseInfoDto aid=queryList.get(0);
+					if(aid.getOrder_type()==TWO){
+						if("1".equals(aid.getFile_type())){
+							adLength=aid.getInter_cut_length();
+						}else if("2".equals(aid.getFile_type())){
+							adLength=aid.getInter_cut_html_length();
+						}else if("3".equals(aid.getFile_type())){
+							adLength=aid.getInter_cut_pic_length();
+						}
+					}else if(aid.getOrder_type()==ONE){
+						if("1".equals(aid.getFile_type())){
+							adLength=aid.getAd_length();
+						}else if("2".equals(aid.getFile_type())){
+							adLength=aid.getHtml_length();
+						}else if("3".equals(aid.getFile_type())){
+							adLength=aid.getPic_length();
+						}
+					}
+				}else{
+					String str = systemSetDao.getSystemValueByKey(GLOBAL_PIC_TIME);
+					writeLog(LOGTYPE_CONTROLLER, "get global pic time success! time:"+str, LOGLEVEL_INFO, AdVideoController.class);
+					adLength=util.isNull(str)?FIVE:Integer.parseInt(str);
+				}
+			} else {
+				dto.setImg(showIdPic(dto.getImgUrl().substring(dto.getImgUrl().lastIndexOf("images")+7)));
+			}
+			
+			
+		}
+		// 获取配置项
+		Configuration configuration = new Configuration(Configuration.VERSION_2_3_26);
+		// 设置模板目录
+		configuration.setDirectoryForTemplateLoading(new File(req.getSession().getServletContext().getRealPath("")+"WEB-INF"+File.separator+"ftl"));
+		// 设置编码
+		configuration.setDefaultEncoding("utf-8");
+		
+		// 获取模板
+		Template t = configuration.getTemplate(FTL_NAME+dto.getModel()+".ftl");
+		File f=new File(GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+dto.getFile_path());
+		if(!f.exists()){
+			f.mkdirs();
+		}
+		if(dto.getImgList()!=null){
+			// 封装参数
+			Map<String,Object> map = new HashMap<String,Object>();
+			// 输出流
+			Writer writerTemp = new OutputStreamWriter(new FileOutputStream
+					(GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+dto.getFile_path()+File.separator+dto.getFile_name()+FTL_NAME_INDEX+1+FTL_NAME+dto.getModel()+".html.temp"),"UTF-8");
+			for (int i = 0; i < dto.getImgList().size(); i++) {
+				// 输出流
+				Writer writer = new OutputStreamWriter(new FileOutputStream
+						(GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+dto.getFile_path()+File.separator+dto.getFile_name()+FTL_NAME_INDEX+(i+1)+FTL_NAME+dto.getModel()+".html"),"UTF-8");
+				ArrayList<Object> list = new ArrayList<>();
+				list.add(dto.getImgList().get(i));
+				map.put("imgList",list);
+				map.put("adLength", adLength);
+				// 产出文件
+				t.process(map, writer);
+			}
+			String img []=null;
+			if(dto.getImgUrl().indexOf(",")>=0){
+				img =dto.getImgUrl().split(",");
+			} else {
+				img =new String[]{dto.getImgUrl()};
+			}
+			map.put("imgList",img);
+			map.put("adLength", adLength);
+			// 产出temp文件
+			t.process(map, writerTemp);
+		}else{
+			// 输出流
+			Writer writer = new OutputStreamWriter(new FileOutputStream
+					(GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+dto.getFile_path()+File.separator+dto.getFile_name()+FTL_NAME+dto.getModel()+".html"),"UTF-8");
+			// 输出流
+			Writer writerTemp = new OutputStreamWriter(new FileOutputStream
+					(GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+dto.getFile_path()+File.separator+dto.getFile_name()+FTL_NAME+dto.getModel()+".html.temp"),"UTF-8");
+			// 封装参数
+			Map<String,Object> map = new HashMap<String,Object>();
+			map.put("title", dto.getTitle());
+			map.put("context", dto.getContext());
+			map.put("imgUrl",dto.getImg());
+			/*if(dto.getModel().equals("6")){
+				map.put("imgList",dto.getImgList());
+				map.put("adLength", adLength);
+			}*/
+			// 产出文件
+			t.process(map, writer);
+			/*if(dto.getModel().equals("6")){
+				String img []=null;
+				if(dto.getImgUrl().indexOf(",")>=0){
+					 img =dto.getImgUrl().split(",");
+				} else {
+					img =new String[]{dto.getImgUrl()};
+				}
+				map.put("imgList",img);
+				map.put("adLength", adLength);
+			}*/
+			map.put("imgUrl",dto.getImgUrl());
+			// 产出temp文件
+			t.process(map, writerTemp);
+		}
+		writeLog(LOGTYPE_CONTROLLER, "create html end!", LOGLEVEL_INFO, AdVideoController.class);
+	}
+	
+	/**
+	 * 获取html内容
+	 * @param req
+	 * @param res
+	 * @param file
+	 * @throws Exception
+	 */
+	public VideoDto findHtmlContext(VideoDto dto) throws Exception{
+		if(dto==null){
+			return null;
+		}
+		writeLog(LOGTYPE_CONTROLLER, "find html context begin!  dto:"+JSONObject.fromObject(dto), LOGLEVEL_INFO, AdVideoController.class);
+		File file=new File(GobalProperties.getGobalConfig().getValueByKey(BASE_UPLOAD_HTML)+File.separator+dto.getFile_path()+".temp");
+		if(file.exists()){
+			InputStreamReader is=new InputStreamReader(new FileInputStream(file),"utf-8");
+			BufferedReader br=new BufferedReader(is);
+			StringBuilder title=new StringBuilder(),context=new StringBuilder(),imgData=new StringBuilder();
+			boolean tbl=false,cbl=false,ibl=false;
+			dto.setModel(dto.getFile_path().substring(dto.getFile_path().indexOf(FTL_NAME)+FTL_NAME.length(),dto.getFile_path().indexOf(FTL_NAME)+FTL_NAME.length()+1));
+			while (true) {
+				String str = br.readLine();
+				if(str.trim().equals("<end />")){
+					break;
+				}
+				if(ibl){//图片
+					if(str.indexOf("</div>")>0){
+						ibl=false;
+						continue;
+					}
+					imgData.append(str);
+					continue;
+				}
+				if(str.indexOf("id=\"img\"")>0){
+					ibl=true;
+				}
+				
+				if(tbl){//标题
+					if(str.indexOf("</h2>")>0){
+						tbl=false;
+						continue;
+					}
+					title.append(str);
+					continue;
+				}
+				if(str.indexOf("id=\"title\"")>0){
+					tbl=true;
+					continue;
+				}
+				
+				if(cbl){//内容
+					if(str.indexOf("</marquee>")>0){
+						cbl=false;
+						continue;
+					}
+					context.append(str);
+					continue;
+				}
+				if(str.indexOf("id=\"context\"")>0){
+					cbl=true;
+				}
+			}
+			dto.setImg(imgData.toString());
+			dto.setTitle(title.toString().trim());
+			dto.setContext(context.toString().trim());
+			writeLog(LOGTYPE_CONTROLLER, "+++imgData:"+imgData.toString()+"===title:"+title.toString()+"===context:"+context.toString(), LOGLEVEL_INFO, AdVideoController.class);
+			br.close();
+			is.close();
+		}else{
+			writeLog(LOGTYPE_CONTROLLER, "find html context fail!  file not exist!", LOGLEVEL_INFO, AdVideoController.class);
+		}
+		writeLog(LOGTYPE_CONTROLLER, "find html context end!  dto:"+JSONObject.fromObject(dto), LOGLEVEL_INFO, AdVideoController.class);
+		return dto;
+	}
+	
+	
+}

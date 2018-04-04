@@ -1,0 +1,178 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[],date=new Date();
+var disCount="1";
+$(function(){
+	disCount=$("#span").attr("data-disCount");
+	date.setDate(date.getDate()+1);//日期+1
+	var minDate=date.format(DATE_FORMAT_YTD),maxDate;
+	if(eval(date.getMonth()+7)>12){//计算可选择的最大日期
+		maxDate=eval(date.getFullYear()+1)+'-0'+eval(date.getMonth()+7-12)+'-'+date.getDate();
+	}else{
+		if(eval(date.getMonth()+7)<10){
+			maxDate=date.getFullYear()+'-0'+eval(date.getMonth()+7)+'-'+date.getDate();
+		}else{
+			maxDate=date.getFullYear()+'-'+eval(date.getMonth()+7)+'-'+date.getDate();
+		}
+	}
+	$(".startDate").attr("max",maxDate);
+	$(".startDate").attr("min",minDate);
+	$(".endDate").attr("max",maxDate);
+	$(".endDate").attr("min",minDate);
+	currError=currErrorArray(chineseError,englishError,twError);
+	$("#checkAd").bind("click",function(){//复选按钮
+		checkSum();//汇总
+	})
+	
+	$(document).on("change",".endDate",function(){//时间选择变化时间
+		var startDate=$(this).parent().find(".startDate").val();//开始时间
+		var endDate=$(this).val();//结束时间
+		if(endDate<minDate||endDate>maxDate||endDate<startDate){//判断时间选择是否正确
+			showJudegTip("fail","错误提示","日期选择有误！")
+			$(this).val("");
+			return;
+		}
+		if(startDate!=""){
+			startDate=new Date(startDate);
+			endDate=new Date(endDate);
+			selectTimePeriod=parseInt((endDate-startDate)/1000/60/60/24)+1;//得到时间相差的天数
+			var sumPrice=$(this).parents("tr").find(".sumPrice");
+			sumPrice.text(eval(sumPrice.attr("data-price")*selectTimePeriod));//汇总
+			checkSum();
+		}
+	})
+	$(document).on("change",".startDate",function(){//时间选择变化时间
+		var startDate=$(this).val();//开始时间
+		var endDate=$(this).parent().find(".endDate").val();//结束时间
+		if(startDate<minDate||startDate>maxDate||(endDate<startDate&&endDate!="")){//判断时间选择是否正确
+			showJudegTip("fail","错误提示","日期选择有误！")
+			$(this).val("");
+			return;
+		}
+		if(endDate!=""){
+			startDate=new Date(startDate);
+			endDate=new Date(endDate);
+			selectTimePeriod=parseInt((endDate-startDate)/1000/60/60/24)+1;//得到时间相差的天数
+			var sumPrice=$(this).parents("tr").find(".sumPrice");
+			sumPrice.text(eval(sumPrice.attr("data-price")*selectTimePeriod));//汇总
+			checkSum();
+		}
+	})
+})
+
+
+function checkSum(){
+	var objs=$("table input[type='checkbox']:checked").not("#ckAll");//得到所有选中数据
+	var ckAll=$("table tr").find("input[name='checkbox']:checked");
+	var totalBal=0;
+	checkTimes="",checkAdvertiseId="",deviceIds="";
+	if(ckAll.length==objs.length+1){
+		$("#ckAll")[0].checked=true;
+	}else{
+		$("#ckAll")[0].checked=false;
+	}
+	for (var i = 0; i < objs.length; i++) {
+		var sumPrice=$(objs[i]).parents("tr").find(".sumPrice").text();//汇总
+		if(isNaN(sumPrice)){
+			showJudegTip("fail","错误提示","播放周期有误！(播放周期只能大于当前日期并且在往后半年内)");
+			if(ckAll.length==objs.length+1){
+				ckAll.prop("checked",false);
+			}
+			objs[i].checked=false;
+			return;
+		}
+		totalBal=totalBal+parseInt(sumPrice);
+		checkTimes+=$(objs[i]).parents("tr").find(".startDate").val()+"@"+$(objs[i]).parents("tr").find(".endDate").val()+",";
+		checkAdvertiseId+=$(objs[i]).attr("data-id")+",";
+		deviceIds+=$(objs[i]).parents("tr").find(".deviceId").text()+",";
+	}
+	if(disCount!="1"){
+		$(".totalBal").text(totalBal+"元  折后价:"+eval(totalBal*disCount)+"元");//计算总金额
+	}else{
+		$(".totalBal").text(eval(totalBal*disCount)+"元");//计算总金额
+	}
+	checkTimes=checkTimes.substring(0,checkTimes.length-1);
+	deviceIds=deviceIds.substring(0,deviceIds.length-1);
+	checkAdvertiseId=checkAdvertiseId.substring(0,checkAdvertiseId.length-1);
+}
+
+function commit(){
+	disabledBtn("commit");//禁用提交按钮
+	checkSum();
+	var objs=$("table input[type='checkbox']:checked");//得到所有选中数据
+	if(objs.length>0){
+		jsonAjax("/"+language+"/order/queryNoOrderTime.do",{checkTimes:checkTimes,checkAdvertiseId:checkAdvertiseId,deviceId:deviceIds},function(res){
+			if(res.success){
+				startBtn("commit");
+				var data=res.data,str="";
+				for (var o in data) {
+					if(o.indexOf("time")<0){
+						var keys=o.split("-"),time=data["time"+o];
+						var days=(new Date(time.split("==")[1])-new Date(time.split("==")[0]))/1000/3600/24;
+						if(days+1==data[o].split(",").length){
+							str="==店铺:"+keys[3]+" 设备编号:"+keys[0]+" 空闲时段:"+keys[1]+"-"+keys[2]+"在"+time+"周期已被购买完,不能再购买,请重新选择周期!";
+							showJudegTip("normal","提示",str);
+							return;
+						}
+						str+="==店铺:"+keys[3]+" 设备编号:"+keys[0]+" 空闲时段:"+keys[1]+"-"+keys[2]+"在"+time+"时间中 "+data[o]+"</br>";
+					}
+				}
+				if(str!=""){
+					str+="这些天已被购买完,确定继续购买吗?";
+					showConfimTip("下单",str,placeAnOrder);
+				}else{
+					placeAnOrder();//下单
+				}
+			}else{
+				$(".error").html(res.respMessge);//注册回调显示
+				startBtn("commit");
+			}
+		},function(){});
+		startBtn("commit");
+	}else{
+		showJudegTip("normal","提示","请选择购买广告播放时段！");
+		startBtn("commit");
+	}
+}
+
+var placeAnOrder=function placeAnOrder(){
+	jsonAjax("/"+language+"/order/placeAnOrder.do",{checkTimes:checkTimes,checkAdvertiseId:checkAdvertiseId,deviceId:deviceIds},function(res){
+		var msg=res.msg.split("-");
+		if(msg[0]=="10000"){
+			var data=res.data,str="",total=msg[1];
+			for (var o in data) {
+				var keys=o.split("-"),time=data["time"+o];
+				if(o.indexOf("time")<0){
+					str+="==店铺:"+keys[3]+" 设备编号:"+keys[0]+" 空闲时段:"+keys[1]+"-"+keys[2]+"在"+time+"时间中 "+data[o]+"</br>";
+				}
+			}
+			if(str!=""){
+				turnoff('successdiv');
+				str+="这些天已被购买完,不能播放广告。";
+			}
+			showJudegTip("SUCCESS","提示","下单成功! <span class='red font16'>订单支付金额: "+msg[2]+"</span>"+str);
+			var totStr=total+"元";
+			if(msg[2]!=msg[1]){
+				totStr+=" 折后价:"+msg[2]+"元";
+			}
+			$(".totalBal").text(totStr);//计算总金额
+			//startBtn("commitUpdate");
+		}else{
+			$(".error").html(res.respMessge);//注册回调显示
+			//startBtn("commitUpdate");
+		}
+	},function(){});
+}
+
+//点击店铺名店铺详情信息
+function showShopDetail(shopName,addr,imgs){
+	$(".shopName").text(shopName);
+	$(".addrDetail").text(addr.replace("*","").replace("&",""));
+	var imgList=imgs.split(","),str="";
+	for (var i = 0; i < imgList.length; i++) {
+		str+='<img src="'+imagePath+imgList[i]+'" />';
+	}
+	$(".imgs").html(str);
+	$("#diandiv").show();
+}

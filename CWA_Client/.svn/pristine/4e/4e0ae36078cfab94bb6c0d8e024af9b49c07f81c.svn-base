@@ -1,0 +1,46 @@
+$(function(){
+	// 查询可出金额
+	queryAllowWithdrawMoney();
+	// 绑定出金按钮
+	bindWithdrawBtn();
+});
+
+/**
+ * 查询可出金额
+ * @returns
+ */
+function queryAllowWithdrawMoney(){
+	jsonAjax('/'+language+'/customer/query/commission.do',{},
+	function(res){
+		var data = res.data;
+		if(data){
+			$('#allowWithdrawMoney').attr('placeholder',formatNumber(data.available_comm,2,1));
+		}else{
+			$('#allowWithdrawMoney').attr('placeholder',formatNumber(0,2,1));
+		}
+	},
+	function(){});
+}
+
+/**
+ * 绑定出金按钮
+ * @returns
+ */
+function bindWithdrawBtn(){
+	$('#submit').bind('click',function(){
+		jsonAjax('/'+language+'/customer/withdraw.do',{withdrawMoney:$('#withdrawMoney').val()},
+		function(res){
+			var status = res.success;
+			var msg = res.msg;
+			if(status){
+				showJudegTip('success','',msg);
+				$('#withdrawMoney').val('');
+				// 重新查询可出佣金
+				queryAllowWithdrawMoney();
+			}else{
+				showJudegTip('fail','',msg);
+			}
+		},
+		function(){});
+	});
+}

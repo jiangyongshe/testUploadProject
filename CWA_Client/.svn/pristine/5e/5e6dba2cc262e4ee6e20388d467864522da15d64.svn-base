@@ -1,0 +1,395 @@
+package com.cwa.client.web.app;
+
+import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dao.AdvertiserDao;
+import com.cwa.client.dao.CustomerDao;
+import com.cwa.client.dto.AdvertiserDto;
+import com.cwa.client.dto.AgentDto;
+import com.cwa.client.dto.BranchDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.dto.SalesPersonDto;
+import com.cwa.client.dto.SalesmanDto;
+import com.cwa.client.model.Tb_Advertiser;
+import com.cwa.client.model.Tb_Customer;
+import com.cwa.client.model.Tb_Partner;
+import com.cwa.client.redis.RegPhoneRandomNumDto;
+import com.cwa.client.redis.UserRedis;
+import com.cwa.client.service.AdvertiserService;
+import com.cwa.client.service.AgentService;
+import com.cwa.client.service.PartnerService;
+import com.cwa.client.service.SalesmanService;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.Encypter;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.RespCodeEnum;
+import com.cwa.client.utils.Tools;
+import com.cwa.client.web.BaseController;
+import com.cwa.client.web.GobalRespParameter;
+import com.cwa.client.web.UserController;
+
+import net.sf.json.JSONObject;
+@Controller//无需拦截
+@RequestMapping("/app/user")
+public class appController extends BaseController<GobalRespParameter> implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private UserRedis userRedis;
+	
+	@Resource// 普通用户service层
+	private UserService userService;
+	
+	@Resource//代理service层
+	private AgentService agentService;
+	
+	@Resource//销售员service层
+	private SalesmanService salesmanService;
+	
+	@Resource//合伙人service层
+	private PartnerService partnerService;
+	
+	@Resource// 广告商service层
+	private AdvertiserService advertiserService;
+	
+	@Resource// 广告商数据层
+	private AdvertiserDao advertiserDao;
+	
+	@Resource// 普通用户数据层
+	private CustomerDao customerDao;
+	
+	@RequestMapping("/registerUser")
+	private void appRegister(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		GobalRespParameter parameter=new GobalRespParameter();
+		//获取请求参数并判断是否为空
+		Map<String,String[]> map = getAllParameter(req,"registerUser.do","mobile","validCode","passWord","passWord1");
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				String mobile=map.get("mobile")[0];//手机号
+				if(util.isMobileNum(mobile)){
+					Object userObj = userService.queryUserObjByAccountIdAndMobile(mobile);//查询手机是否已注册
+					if(userObj==null){
+						Object obj = userRedis.getObj(mobile);//redies 获取手机验证码
+						RegPhoneRandomNumDto randomDto=null;
+						if(obj!=null){
+							randomDto=(RegPhoneRandomNumDto)obj;
+							writeLog("", randomDto.toString(), LOGLEVEL_INFO, UserController.class);
+						}
+						if(randomDto==null||System.currentTimeMillis()-randomDto.getTimeStamp()>(2*60*1000)){//判断验证码是否超过2分钟失效，如失效需要重新获取
+							parameter.setRespCode(RespCodeEnum.register_mobile_invalidcode.getCode());
+							parameter.setRespMessge(reqCt.getMessage("register.text.invalidcode"));
+							writeJSON(res, parameter);
+							parameter=null;
+							return;
+						}
+						if(!map.get("passWord")[0].equals(map.get("passWord1")[0])){//判断两次密码是否一致
+							parameter.setRespCode(RespCodeEnum.register_passWord_invaliderror.getCode());
+							parameter.setRespMessge(reqCt.getMessage("register.text.passWordError"));
+							writeJSON(res, parameter);
+							parameter=null;
+							return;
+						}
+						if(!map.get("validCode")[0].equals(randomDto.getVaildCode())){//判断验证码是是否正确
+							parameter.setRespCode(RespCodeEnum.register_mobile_invaliderror.getCode());
+							parameter.setRespMessge(reqCt.getMessage("register.text.invaliderror"));
+							writeJSON(res, parameter);
+							parameter=null;
+							return;
+						}
+						if(getParameter(req,"registerType")!=null){//店主直接注册
+							Tb_Advertiser entity=new Tb_Advertiser();
+							entity.setAccount_id(mobile);
+							entity.setMobile(mobile);
+							entity.setUser_status(TWO);
+							entity.setOpen_date(new Timestamp(System.currentTimeMillis()));
+							entity.setPassword(Encypter.getEncryptValue(map.get("passWord")[0]));
+							
+							entity.setAgent_id("");
+							entity.setCompany_id(DEFALT_COMPANY);
+							entity.setReferrals_id("");
+							entity.setMailing_address("");
+							entity.setReferrals_type(ONE);
+							String inviteCode=getParameter(req,"inviteCode");
+							writeLog("", "reigster advertiser start!  inviteCode:"+inviteCode, LOGLEVEL_INFO, UserController.class);
+							//没有用到的属性不能为空  给默认值
+							entity.setEmail("");
+							entity.setAudit_datetime(new Timestamp(System.currentTimeMillis()));
+							entity.setAudit_id("0");
+							entity.setAudit_status(1);
+							entity.setSuperior(ONE);
+							entity.setReal_name("");
+							entity.setRemark("");
+							entity.setScope("");
+							entity.setShop_name("");
+							entity.setReg_status(ONE);
+							writeLog("", "reigster advertiser end! entity:"+JSONObject.fromObject(entity), LOGLEVEL_INFO, UserController.class);
+							advertiserService.saveUserAndInit(entity);
+						}
+						saveCustomerInfo(map,req);//保存用户表信息
+						parameter.setRespCode(RespCodeEnum.SUCCESS.getCode());
+					}else{
+						parameter.setRespCode(RespCodeEnum.register_mobile_existed.getCode());
+						parameter.setRespMessge(reqCt.getMessage("register.text.existed"));
+					}
+				}else{//手机格式错误
+					parameter.setRespCode(RespCodeEnum.register_mobile_formaterror.getCode());
+					parameter.setRespMessge(reqCt.getMessage("register.text.formaterror"));
+				}
+			}else{//请求参数无效
+				parameter.setRespCode(RespCodeEnum.global_parameter_isnull.getCode());
+				parameter.setRespMessge(reqCt.getMessage("common.exception.parameter"));
+			}
+		} catch (Exception e) {
+			parameter.setRespCode(RespCodeEnum.global_unknow_expiration.getCode());
+			parameter.setRespMessge(reqCt.getMessage("common.exception.unknow"));
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	@RequestMapping("/login")
+	private void appLogin(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();
+		// 获取请求参数
+		String accountId = ServletRequestUtils.getStringParameter(req, "accountId","").trim();
+		String pwd = ServletRequestUtils.getStringParameter(req, "pwd","").trim();
+		// 返回消息语言包
+		RequestContext reqCt= new RequestContext(req);
+		// 验证登录号是否为空
+		if(accountId.equals("")){
+			String accountIdEmpty = reqCt.getMessage("login.tip.accountIdEmpty");
+			ruturnMessageDto.setMsg(accountIdEmpty);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login accountId is "+accountId, LOGLEVEL_INFO, UserController.class);
+		// 验证密码是否为空
+		if(pwd.equals("")){
+			String passwordEmpty = reqCt.getMessage("login.tip.passwordEmpty");
+			ruturnMessageDto.setMsg(passwordEmpty);
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login password is "+Encypter.getEncryptValue(pwd), LOGLEVEL_INFO, UserController.class);
+		// 根据用户登录账号和用户类型查询用户
+		Object userObj = userService.queryUserObjByAccountIdAndUserType(accountId, USERTYPE_CUSTOMER);
+		if(userObj==null){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login accountId not exist.", LOGLEVEL_INFO, UserController.class);
+			// 账号错误
+			String accountIdOrPwdMistake = reqCt.getMessage("login.tip.accountIdOrPwdMistake");
+			ruturnMessageDto.setMsg(accountIdOrPwdMistake);
+			// 返回
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断该用户是否禁用
+		Field userStatusField = userObj.getClass().getDeclaredField("user_status");
+		userStatusField.setAccessible(true);
+		Integer userStatus = Integer.parseInt(userStatusField.get(userObj).toString());
+		if(userStatus==ONE){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login accountId forbidden.", LOGLEVEL_INFO, UserController.class);
+			// 账号被禁用
+			String accountIdForbidden = reqCt.getMessage("login.tip.accountIdForbidden");
+			ruturnMessageDto.setMsg(accountIdForbidden);
+			// 返回
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 解密查询出来的密码
+		Field pwdField = userObj.getClass().getDeclaredField("password");
+		pwdField.setAccessible(true);
+		String queryPwd = Encypter.getDecryptValue(pwdField.get(userObj).toString());
+		// 判断密码是否一致
+		if(pwd.equals(queryPwd)){// 密码正确
+			// ID field
+			Field idField = userObj.getClass().getDeclaredField("id");
+			idField.setAccessible(true);
+			// 记录session
+			req.getSession().setAttribute(SESSION_USER, userObj);
+			// 判断该用户是否激活为店主
+			String userTypeName = null;
+			if(userService.queryUserObjByAccountIdAndUserType(accountId, USERTYPE_CUSTOMER_ADVERTISER)==null){
+				// 如果没有激活则用户类型为广告主
+				req.getSession().setAttribute(SESSION_USER_TYPE, USERTYPE_CUSTOMER);
+				userTypeName = "customer";
+			}else{
+				// 如果激活则用户类型为店主+广告主
+				req.getSession().setAttribute(SESSION_USER_TYPE, USERTYPE_CUSTOMER_ADVERTISER);
+				userTypeName = "customer && advertiser";
+			}
+			req.getSession().setAttribute(PAGE_LOGIN_TYPE,ONE);
+			// user name
+			String userName = accountId+"("+"id="+idField.get(userObj)+",type="+userTypeName+")";
+			req.getSession().setAttribute(SESSION_USER_NAME, userName);
+			req.getSession().setAttribute(LOGINTYPE,Tools.checkLoginType(req, req.getParameter("loginType")));
+			// 返回
+			ruturnMessageDto.setSuccess(true);
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" login success.", LOGLEVEL_INFO, UserController.class);
+			this.writeJSON(res, ruturnMessageDto);
+		}else{
+			// 密码错误
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Password mistake.", LOGLEVEL_INFO, UserController.class);
+			String accountIdOrPwdMistake = reqCt.getMessage("login.tip.accountIdOrPwdMistake");
+			ruturnMessageDto.setMsg(accountIdOrPwdMistake);
+		}
+		// 返回
+		this.writeJSON(res, ruturnMessageDto);
+	}
+	
+	//用户注册数据入库
+	public void saveCustomerInfo(Map<String,String[]> map,HttpServletRequest req)throws Exception{
+		String mobile=map.get("mobile").toString();
+		Tb_Customer entity=new Tb_Customer();
+		entity.setAccount_id(mobile);
+		entity.setCertificate_type(1);
+		entity.setMobile(mobile);
+		entity.setUser_status(TWO);
+		entity.setOpen_date(new Timestamp(System.currentTimeMillis()));
+		entity.setPassword(Encypter.getEncryptValue(map.get("password").toString()));
+		entity.setAgent_id("");
+		entity.setReferrals_id(DEFALT_SALELMAN);
+		entity.setCompany_id("1");
+		entity.setReferrals_type(7);
+		entity.setPartner_id(""); 
+		entity.setSalesman_id(DEFALT_SALELMAN);
+		entity.setSalesperson_id("");
+		entity.setSuperior(4);
+		entity.setT_type(ONE);
+		//邀请码
+		Object inviteCodeObj = map.get("inviteCode");
+		String inviteCode = "";
+		if(inviteCodeObj!=null){
+			inviteCode = inviteCodeObj.toString();
+		}
+		writeLog("", "reigster domestic consumer start!  inviteCode:"+inviteCode, LOGLEVEL_INFO, UserController.class);
+		if(inviteCode!=null){
+			if(inviteCode.indexOf("T")>=0||inviteCode.indexOf("C")>=0||inviteCode.length()==11){
+				if(inviteCode.indexOf("T")>=0){//店主推荐
+					Tb_Advertiser adEntity = advertiserService.findById(Integer.parseInt(inviteCode.replace("T", "")));
+					if(adEntity!=null){
+						entity.setReferrals_id(adEntity.getAccount_id()+"");
+						entity.setSalesman_id(adEntity.getSalesman_id());
+						entity.setCompany_id(adEntity.getCompany_id());
+						entity.setAgent_id(adEntity.getAgent_id());
+						entity.setPartner_id(adEntity.getPartner_id());
+						entity.setSalesperson_id(adEntity.getSalesperson_id());
+						entity.setSuperior(adEntity.getSuperior());
+						entity.setReferrals_type(5);
+					}
+				}else if(inviteCode.indexOf("C")>=0){//广告主推荐
+					Tb_Customer custEntity = userService.findById(inviteCode.replace("C", ""));
+					if(custEntity!=null){
+						entity.setReferrals_id(custEntity.getAccount_id()+"");
+						entity.setSalesman_id(custEntity.getSalesman_id());
+						entity.setCompany_id(custEntity.getCompany_id());
+						entity.setAgent_id(custEntity.getAgent_id());
+						entity.setPartner_id(custEntity.getPartner_id());
+						entity.setSalesperson_id(custEntity.getSalesperson_id());
+						entity.setSuperior(custEntity.getSuperior());
+						entity.setReferrals_type(2);
+					}
+				}else{
+					AdvertiserDto adDto = (AdvertiserDto)userService.queryUserObjByAccountIdAndUserType(inviteCode,USERTYPE_CUSTOMER_ADVERTISER);
+					if(adDto==null){//不是店主
+						CustomerDto custDto=(CustomerDto)userService.queryUserObjByAccountIdAndUserType(inviteCode,USERTYPE_CUSTOMER);
+						if(custDto!=null){
+							entity.setReferrals_id(custDto.getId()+"");
+							entity.setSalesman_id(custDto.getSalesman_id());
+							entity.setCompany_id(custDto.getCompany_id());
+							entity.setAgent_id(custDto.getAgent_id());
+							entity.setPartner_id(custDto.getPartner_id());
+							entity.setSalesperson_id(custDto.getSalesperson_id());
+							entity.setSuperior(custDto.getSuperior());
+							entity.setReferrals_type(2);
+						}
+					}else{
+						entity.setReferrals_id(adDto.getId()+"");
+						entity.setSalesman_id(adDto.getSalesman_id());
+						entity.setCompany_id(adDto.getCompany_id());
+						entity.setAgent_id(adDto.getAgent_id());
+						entity.setPartner_id(adDto.getPartner_id());
+						entity.setSalesperson_id(adDto.getSalesperson_id());
+						entity.setSuperior(adDto.getSuperior());
+						entity.setReferrals_type(5);
+					}
+				}
+			}else{
+				if(inviteCode.length()==5){//业务员链接注册
+					SalesmanDto sEntity = salesmanService.findBySalesmanid(inviteCode);
+					if(sEntity!=null){
+						entity.setReferrals_id(sEntity.getSalesman_id());
+						entity.setCompany_id(sEntity.getCompany_id());
+						entity.setSalesman_id(sEntity.getSalesman_id());
+						entity.setSuperior(4);
+						entity.setReferrals_type(7);
+					}
+				}else if(inviteCode.length()==7){//代理链接注册
+					AgentDto aEntity = agentService.findAgentByAgentId(inviteCode);
+					if(aEntity!=null){
+						BranchDto sEntity = salesmanService.findBranchByCmpId(aEntity.getCOMPANY_ID());
+						if(sEntity!=null){
+							entity.setSalesman_id(sEntity.getSalesman_id());
+						}
+						entity.setAgent_id(aEntity.getAGENT_ID());
+						entity.setReferrals_id(aEntity.getAGENT_ID());
+						entity.setCompany_id(aEntity.getCOMPANY_ID());
+						entity.setSuperior(2);
+						entity.setReferrals_type(3);
+					}
+				}else if(inviteCode.length()<=4){//运营中心链接注册
+					BranchDto sEntity = salesmanService.findBranchByCmpId(inviteCode);
+					if(sEntity!=null){
+						entity.setCompany_id(sEntity.getCompany_id());
+						entity.setReferrals_id(sEntity.getCompany_id());
+						entity.setSalesman_id(sEntity.getSalesman_id());
+						entity.setSuperior(1);
+						entity.setReferrals_type(4);
+					}
+				}else if(inviteCode.length()==6){//销售员链接注册
+					SalesPersonDto pEntity = salesmanService.findBySalesPersonid(inviteCode);
+					if(pEntity!=null){
+						entity.setReferrals_id(pEntity.getSalesperson_id());
+						entity.setSalesperson_id(pEntity.getSalesperson_id());
+						entity.setCompany_id(pEntity.getCompany_id());
+						entity.setSalesman_id(pEntity.getSalesman_id());
+						entity.setSuperior(5);
+						entity.setReferrals_type(8);
+					}
+				}else if(inviteCode.length()==8){
+					Tb_Partner pEntity = partnerService.findById(Integer.parseInt(inviteCode));
+					if(pEntity!=null){
+						entity.setReferrals_id(pEntity.getId()+"");
+						entity.setPartner_id(pEntity.getAccount_id());
+						entity.setSalesman_id(pEntity.getSalesman_id());
+						entity.setSuperior(3);
+						entity.setReferrals_type(6);
+					}
+				}
+			}
+		}
+		//没有用到的属性不能为空  给默认值
+		entity.setEmail("");
+		entity.setId_number("");
+		entity.setOpenid("");
+		entity.setUser_name("");
+		writeLog("", "reigster domestic consumer end! entity:"+JSONObject.fromObject(entity), LOGLEVEL_INFO, UserController.class);
+		userService.registerAndInit(entity);
+	}
+}

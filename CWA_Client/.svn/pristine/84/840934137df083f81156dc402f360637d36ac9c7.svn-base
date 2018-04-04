@@ -1,0 +1,98 @@
+package com.cwa.client.service;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.ShoppCartDao;
+import com.cwa.client.dto.CartDto;
+import com.cwa.client.model.Tb_Cart;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.PageVars;
+import com.cwa.client.utils.RegUtil;
+
+@Service
+public class ShoppCartService implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private ShoppCartDao shoppCartDao;
+	
+	public Tb_Cart findById(Integer id){
+		return shoppCartDao.findById(id);
+	}
+	
+	public void save(Tb_Cart entity) throws Exception{
+		shoppCartDao.save(entity);
+	}
+	
+	
+	public void update(Tb_Cart entity) throws Exception {
+		shoppCartDao.update(entity);
+	}
+	
+	public void delete(Tb_Cart entity) throws Exception {
+		shoppCartDao.delete(entity);
+	}
+	
+	public PageModel<CartDto> getPageModel(CartDto dto){
+    	PageVars pvNm=this.getVars(dto,1);
+		PageVars pvlist=this.getVars(dto,0);
+		PageModel<CartDto> pm=shoppCartDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    }
+    
+    
+    private PageVars getVars(CartDto dto,int type){
+    	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+    	 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from tb_cart c,tb_advertiser A,tb_device_vedio_plan p where c.device_id=p.device_id and p.ad_sell_status=1 and c.ADVERTISER_ID=A.id and p.begin_time=c.begin_time and p.end_time=c.end_time and A.AUDIT_STATUS=2");
+    	 } else {
+    		 sbStr.append("select c.ID,c.DEVICE_ID,c.PLAY_BEGIN_TIME,A.MAILING_ADDRESS,c.PLAY_END_TIME,c.SHOP_NAME,c.ADVERTISER_ID,c.TOTAL_PRICE,c.PRICE,c.BEGIN_TIME,c.END_TIME,p.ad_length,p.play_number, "
+    				 +"(SELECT Group_concat(PIC ) FROM tb_advertiser_pic WHERE ADVERTISER_ID=A.ACCOUNT_ID) pics "
+    				+ "from tb_cart c,tb_advertiser A,tb_device_vedio_plan p "
+    		 		+ "where c.device_id=p.device_id and p.begin_time=c.begin_time and p.end_time=c.end_time and c.ADVERTISER_ID=A.id and A.AUDIT_STATUS=2 and p.ad_sell_status=1");
+    	 }
+    	 if(!RegUtil.getUtil().isNull(dto.getAccount_id())){
+    		 sbStr.append(" and c.ACCOUNT_ID=:ACCOUNT_ID");
+    		 params.put("ACCOUNT_ID", dto.getAccount_id());
+    	 }     
+    	  if (type!=1) {
+				sbStr.append(" ORDER BY c.id desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+		  }
+    	  System.out.println("sql:"+sbStr.toString());
+    	  pv.setSbstr(sbStr);
+	      pv.setParams(params);
+		 
+		 return pv;
+    }	
+    
+    public void batchJoinCart(List<Object []> insertObjs,List<Object []> updateObjs) throws Exception{
+    	if(insertObjs.size()>0){
+    		int[] result = shoppCartDao.batchInsertCart(insertObjs);
+        	logWriteUtil.writeLog("", "join cart count:"+result.length, LOGLEVEL_INFO, ShoppCartService.class);
+    	}
+    	if(updateObjs.size()>0){
+    		int[] result1 = shoppCartDao.batchUpdateCart(updateObjs);
+        	logWriteUtil.writeLog("", "update cart count:"+result1.length, LOGLEVEL_INFO, ShoppCartService.class);
+    	}
+    }
+    
+    //查询用户是否已加入改广告
+    public CartDto findCartExistsAdByAccountId(String accountId,Integer adId,String deviceId,String timeInterval){
+    	return shoppCartDao.findShoppCartByAccountId(accountId,adId,deviceId,timeInterval);
+    }
+    
+    //删除购物车广告
+    public void deleteByAccountId(String accountId,String ids){
+    	shoppCartDao.deleteByAccountId(accountId, ids);
+    }
+}

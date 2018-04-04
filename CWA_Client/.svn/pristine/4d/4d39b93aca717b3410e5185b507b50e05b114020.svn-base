@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+<script>
+  function showAndHide(obj,types){
+	  var Layer=window.document.getElementById(obj);
+	    if(Layer){
+	    	switch(types){
+		  	  case "show":
+		  	    Layer.style.display="block";
+		  	  break;
+		  	  case "hide":
+		  	    Layer.style.display="none";
+		  	  break;
+	  		}
+	    }
+  }
+  function getValue(obj,str){
+    var input=window.document.getElementById(obj);
+	input.value=str;
+  }
+</script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+  <ul class="ggtf-sc ggtf-sc3 pad-q10 bor-b4">
+  
+        <li class="cardCodeLi">
+          <span class="pos-a ggtf-sc-bt">银行卡号</span>
+          <input type="text" class="wenb03 width100 cardCode" id="cardCodeValue" placeholder="请输入银行卡号" onfocus="showAndHide('danjia','show');" onblur="showAndHide('danjia','hide');" />
+          <!--<div class="danjia pos-a" id="danjia">
+             <ul>
+              <li onmousedown="getValue('cardCodeValue','12345678912356789');showAndHide('danjia','hide');"><i class="fa fa-caret-right pad-r5" aria-hidden="true"></i>12345678912356789（建设银行）</li>
+              <li onmousedown="getValue('cardCodeValue','98765432198754321');showAndHide('danjia','hide');"><i class="fa fa-caret-right pad-r5" aria-hidden="true"></i>98765432198754321（中国银行）</li>
+            </ul> 
+          </div>-->
+        </li>
+        
+        <li class="phoneMobileLi">
+          <span class="pos-a ggtf-sc-bt">手机号码</span>
+          <input type="text" class="wenb03 width100 phoneMobile" placeholder="请输入银行预留手机号" />
+        </li>
+        
+        <li class="phoneValidCodeLi hide">
+          <span class="pos-a ggtf-sc-bt">手机验证码</span>
+          <input type="text" class="wenb03 width100 phoneValidCode" placeholder="请输入手机验证码" />
+          <input id="getValidCode" onclick="getValidCode()" class="btn btn04 bg-blue pos-a yzm" type="button" value="获取验证码" />
+          <input id="getValidCode1" class="btn btn04 bg-blue pos-a yzm hide" type="button" value="120 s" />
+        </li>
+  </ul>
+  
+  <input name="" id="commit" type="button" value="提交" class="btn btn11 bg-blue width100 pad-q10 font13 mar-t20" />
+</div>
+
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/unionOrderPay.js"></script>
+</body>
+</html>

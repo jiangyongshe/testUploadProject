@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script src="/chinese/mobile/js/commonRel.js"></script><!--通用引用-->
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+<script src="/js/jquery.citys.js"></script><!-- 省市区街道 -->
+<style>
+.mescroll-totop {
+    bottom: 5rem;
+}
+</style>
+</head>
+
+<body>
+<div id="mescroll" class="mescroll">
+
+<header>
+  <p class="logo pos-a"><a href="javascript:;" onclick="javascript:history.back(-1);" title="返回" class="pos-a dis-in fanhui col-fff pad-l5"><i class="fa fa-2x fa-angle-left" aria-hidden="true"></i></a></p>
+  <input name="" type="text" maxlength="20" placeholder="寻找您想要的广告" class="col-fff search">
+  <i class="fa fa-search pos-a col-fff font16" aria-hidden="true"></i>
+  <div class="header-r pos-a">
+    <a href="#" class="dis-b col-fff">搜索</a>
+  </div>
+</header>
+<div class="hei36"></div>
+
+<div class="font12">
+  <div class="ggdp-sea bg-f9 bor-b3">
+    <!-- <ul class="ggdd-tab">
+      <li class="active">综合排名<i class="fa fa-sort-up pad-l5" aria-hidden="true"></i></li>
+      <li>销量优先<i class="fa fa-sort-down pad-l5" aria-hidden="true"></i></li>
+    </ul> -->
+    <a href="javascript:;" onclick="elementDisplay('tc-eject')" class="fr col-999">筛选 <i class="fa fa-filter" aria-hidden="true"></i></a>
+  </div>
+  
+  <div class="hei36"></div>
+
+  <ul id="dataList" class="ggdp-list1 ggdp-list3 bg-ff">
+  </ul>
+  
+  <div class="ggdp-gm bor-t">
+  	<span class="dis-in pad-l5 text-c col-999 hide">
+    	共计<br /><span class="red font13 payCount">0条</span>
+    </span>
+    <span class="dis-in pad-l10 text-c col-999">
+    	费用总计<br /><span class="red font13 totalBal">0元</span>
+    </span>
+    <p class="fr">
+      <input name="" type="button" value="加入购物车" class="btn btn09 bg-blue font13 joinCart" />
+      <input name="" type="button" value="提交订单" class="btn btn09 bg-red font13 mar-l2" onclick="submit()" />
+    </p>
+  </div>
+</div>
+
+<div class="hei44"></div>
+
+</div>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_queryAdvertiseInfo.js"></script>
+<script type="text/javascript" src="/chinese/mobile/js/core/orderCommon.js"></script>
+</body>
+</html>

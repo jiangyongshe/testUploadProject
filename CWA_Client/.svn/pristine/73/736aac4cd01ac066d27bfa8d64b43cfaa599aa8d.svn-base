@@ -1,0 +1,47 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<div class="mar-auto hei580 pos-r">
+	<div class="pos-a h-login">
+		<div class="h-login-bt pad-b10 font18"><spring:message code="login.div.title" /></div>
+
+		<div class="pos-r pad-t20">
+			<i class="fa fa-2x fa-mobile pos-a h-login-tb"></i> 
+			<input type="text" id="accountId" class="wenb01" placeholder="<spring:message code="login.input.accountId.placeholder"/>"/>
+		</div>
+
+		<div class="pos-r pad-t20">
+			<i class="fa fa-2x fa-lock pos-a h-login-tb"></i> 
+			<input type="password" id="password" class="wenb01" placeholder="<spring:message code="login.input.password.placeholder"/>" />
+		</div>
+
+		<div class="pad-t10 font14 text-c red tishi01" id="loginTip"></div>
+
+		<div class="pad-t20 font14">
+			<p class="dis-in">
+				<label class="radio">
+					<input type="radio" name="userType" value="1"><i>✓</i> 
+					<spring:message code="login.radio.userType.domesticConsumer"/>
+				</label>
+			</p>
+			<p class="dis-in pad-l10">
+				<label class="radio">
+					<input type="radio" name="userType" value="2"><i>✓</i> 
+					<spring:message code="login.radio.userType.advertiser"/>
+				</label>
+			</p>
+		</div>
+
+		<div class="pad-t20">
+			<input type="button" value='<spring:message code="login.button.gotoLogin"/>' class="btn btn01 bg-red font14 width" id="loginBtn" />
+		</div>
+		<div class="text-r h-login-b col-999">
+			<a href="/<spring:message code="url.language"/>/user/reg.do"><spring:message code="login.href.register"/></a>|<a href="/<spring:message code="url.language"/>/forward/forgetPwd.do"><spring:message code="login.href.forgetPassword"/></a>
+		</div>
+	</div>
+</div>
+<script>
+	if(getLocalStorage('userType')==='2'){
+		$('[name="userType"][value="2"]').prop('checked',true)
+	}else{
+		$('[name="userType"][value="1"]').prop('checked',true)
+	}
+</script>

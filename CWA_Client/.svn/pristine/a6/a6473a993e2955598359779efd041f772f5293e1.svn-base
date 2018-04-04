@@ -1,0 +1,18 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<div class="right bg-ff">
+	<h2 class="clear font18 pad-b10 bor-b">修改密码</h2>
+
+	<ul class="ggtf-sc pad-t20 font14">
+		<li><span class="pos-a ggtf-sc-bt">原密码</span> <input id="oldPwd"
+			type="password" class="wenb03" placeholder="请输入原密码" /></li>
+
+		<li><span class="pos-a ggtf-sc-bt">新密码</span> <input id="newPwd"
+			type="password" class="wenb03" placeholder="请输入新密码" /></li>
+
+		<li><span class="pos-a ggtf-sc-bt">确认密码</span> <input id="confirmPwd"
+			type="password" class="wenb03" placeholder="请确认新密码" /></li>
+
+		<li><input id="submit" type="button" value="提 交"
+			class="btn btn05 bg-red font16 mar-t10" /></li>
+	</ul>
+</div>

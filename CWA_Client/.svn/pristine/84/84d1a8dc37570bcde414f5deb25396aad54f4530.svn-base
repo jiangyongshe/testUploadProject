@@ -1,0 +1,65 @@
+package com.cwa.client.web;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.model.Tb_Customer;
+import com.cwa.client.redis.UserRedis;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.HttpUtil;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.RegUtil;
+
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/*/exclude/weChat")
+public class WeChatController extends BaseController<GobalRespParameter> implements Constant,WeChatConstant {
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private UserRedis userRedis; 
+	
+	@Resource// 普通用户service层
+	private UserService userService;
+	
+	@RequestMapping("/openIdCallBack.do")
+	public void openIdCallBack(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		// 获取CODE
+		String code = ServletRequestUtils.getStringParameter(req, "code","");
+		/*// 获取需要跳转的URL
+		String url = ServletRequestUtils.getStringParameter(req, "url","");*/
+		// openId获取
+		String openIdUrl = URL2.replace("AppId", APPID).replace("AppSecret", APPSECRET).replace("CODE", code);
+		String resText = HttpUtil.sendGet(openIdUrl);
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Get openId return "+resText, LOGLEVEL_INFO, WeChatController.class);
+		JSONObject jsonTexts = (JSONObject) JSONObject.fromObject(resText);
+		// openId
+		Object obj = jsonTexts.get("openid");
+		if(obj!=null){
+			String openId=obj.toString();
+			if(!RegUtil.getUtil().isNull(openId)){
+				// sessionUser
+				CustomerDto sessionUserCustomerDto = (CustomerDto) req.getSession().getAttribute(SESSION_USER);
+				// continue TODO
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "openId"+openId, LOGLEVEL_INFO, WeChatController.class);
+				sessionUserCustomerDto.setOpenid(openId);
+				userService.updateOpenId(sessionUserCustomerDto.getAccount_id(),openId);
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "customer:"+sessionUserCustomerDto, LOGLEVEL_INFO, WeChatController.class);
+				req.getSession().setAttribute(SESSION_OPENID,openId);
+				req.getSession().setAttribute(SESSION_USER,sessionUserCustomerDto);
+			}
+		}
+		res.sendRedirect("/chinese/mobile/html/index.html");
+	}
+	
+}

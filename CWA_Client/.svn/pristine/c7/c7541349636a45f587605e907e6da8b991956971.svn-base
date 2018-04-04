@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+    <beans xmlns="http://www.springframework.org/schema/beans"   
+           xmlns:aop="http://www.springframework.org/schema/aop"   
+           xmlns:context="http://www.springframework.org/schema/context"  
+           xmlns:mvc="http://www.springframework.org/schema/mvc"   
+           xmlns:tx="http://www.springframework.org/schema/tx"   
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+           xsi:schemaLocation="http://www.springframework.org/schema/aop   
+           classpath:spring-aop-4.3.xsd 
+            http://www.springframework.org/schema/beans   
+             classpath:spring-beans-4.3.xsd  
+            http://www.springframework.org/schema/context   
+             classpath:spring-context-4.3.xsd  
+            http://www.springframework.org/schema/mvc   
+             classpath:spring-mvc-4.3.xsd   
+            http://www.springframework.org/schema/tx   
+             classpath:spring-tx-4.3.xsd">  
+        <mvc:annotation-driven />  
+        
+         <context:component-scan base-package="com.cwa.client.web"/> 
+         
+		<mvc:interceptors>
+			<mvc:interceptor>
+         		<mvc:mapping path="/**" />  
+         		<!-- 以下路径不拦截 -->
+         		<!-- 缺省路径 -->
+     		    <mvc:exclude-mapping path="/"/>
+     		    <!-- 首页 -->
+     		    <mvc:exclude-mapping path="/*/forward/home.do"/>
+     		    <!-- 登录页 -->
+     		    <mvc:exclude-mapping path="/*/forward/login.do"/>
+     		    <!-- 登录 -->
+     		    <mvc:exclude-mapping path="/*/user/login.do"/>
+     		    <!-- 忘记密码页 -->
+     		    <mvc:exclude-mapping path="/*/forward/forgetPwd.do"/>
+     		    <!-- 加载用户信息 -->
+     		    <mvc:exclude-mapping path="/*/user/loadUser.do"/>
+     		    <!-- /updatePwd.do -->
+     		    <mvc:exclude-mapping path="/*/user/updatePwd.do"/>
+     		    <!-- 获取手机验证码(忘记密码时调用的方法) -->
+     		    <mvc:exclude-mapping path="/*/user/getMobileVerification.do"/>
+     		    <!-- 修改密码(忘记密码时调用的方法) -->
+     		    <mvc:exclude-mapping path="/*/user/forgetPwdToUpdate.do"/>
+     		    <!-- 注册 -->
+     		    <mvc:exclude-mapping path="/*/user/registerUser.do"/>
+     		    <!-- 短信验证码(注册) -->
+     		    <mvc:exclude-mapping path="/*/user/phoneVildate.do"/>
+     		    <!-- 进入注册页面 -->
+     		    <mvc:exclude-mapping path="/*/user/reg.do"/>
+     		    <!-- 拦截类 -->
+				<bean class="com.cwa.client.interceptor.GlobalInterceptor"/>
+         	</mvc:interceptor>
+		</mvc:interceptors>
+         
+		<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" >
+	       <property name="defaultEncoding" value="utf-8"/>
+	       <!-- 最大上传的文件限制为1T,由于文件过大异常很难捕获,所以在这里设置相对比较大的值,
+	       		具体要限制多大请在代码里控制,而且这个异常抛出后Tomcat会停止 -by HZK -->
+	       <property name="maxUploadSize" value="1099511627776"/>
+      	 </bean>
+        
+        <!-- <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">  
+            <property name="prefix" value="/client/" />  
+            <property name="suffix" value=".html" />  
+        </bean>  -->
+        
+          <!-- 视图解析器 -->
+	    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	      <!-- 
+	       <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+	       <property name="contentType" value="text/html"/> 
+	       -->       
+	       <property name="prefix" value="/WEB-INF/jsp/"/>
+	       <property name="suffix" value=".jsp"/>
+	    </bean>
+     
+          
+          
+          <!-- 国际化资源配置,资源文件绑定器-->
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <!-- 国际化资源文件配置,指定properties文件存放位置 -->
+        <property name="basename" value="classpath:messages/message" />
+        <!-- 如果在国际化资源文件中找不到对应代码的信息，就用这个代码作为名称  -->               
+        <property name="useCodeAsDefaultMessage" value="true" />
+        
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+      
+   <mvc:interceptors>
+         <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"/>  
+         <bean class="com.cwa.client.interceptor.LanguageCookieInterceptor"></bean>  
+    </mvc:interceptors>
+    
+     
+     
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"> </bean>  
+        
+   
+    </beans>  

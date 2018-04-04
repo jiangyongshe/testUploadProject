@@ -1,0 +1,143 @@
+package com.cwa.client.service;
+
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.ClientInOutMoneyDao;
+import com.cwa.client.dao.CustomerWalletDao;
+import com.cwa.client.dao.CustomerWalletFlowDao;
+import com.cwa.client.dto.CustomerWallet;
+import com.cwa.client.dto.CustomerWalletFlow;
+import com.cwa.client.model.Tb_Customer_Wallet;
+import com.cwa.client.model.Tb_Customer_Wallet_Flow;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.PageVars;
+import com.cwa.client.utils.RegUtil;
+import com.cwa.client.utils.Tools;
+
+import net.sf.json.JSONObject;
+
+@Service
+public class CustomerWalletService implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private CustomerWalletDao customerWalletDao;
+	
+	@Resource
+	private CustomerWalletFlowDao customerWalletFlowDao;
+	
+	@Resource
+	private ClientInOutMoneyDao clientInOutMoneyDao;
+	
+  
+	public Tb_Customer_Wallet findById(Integer id){
+		return customerWalletDao.findById(id);
+	}
+	
+	public void save(Tb_Customer_Wallet entity) throws Exception{
+		customerWalletDao.save(entity);
+	}
+	
+	
+	public void update(Tb_Customer_Wallet entity) throws Exception {
+		customerWalletDao.update(entity);
+	}
+	
+	public void deleteFlow(String accountId,String ids){
+		customerWalletFlowDao.deleteByAccountId(accountId, ids);
+	}
+	
+	public Tb_Customer_Wallet findByAccountId(String accountId){
+		return customerWalletDao.findByAccountId(accountId);
+	}
+	
+	public void walletRechargeOrWithout(CustomerWalletFlow dto) throws Exception{
+		Tb_Customer_Wallet walletDto = customerWalletDao.findByAccountId(dto.getCUSTOMER_ID());
+		if(walletDto==null){
+			return;
+		}else{
+			if(dto.getFLOW_TYPE()==1){
+				walletDto.setAMOUNT(walletDto.getAMOUNT().add(dto.getAMOUNT()));
+			}else{
+				if(walletDto.getAMOUNT().subtract(dto.getAMOUNT()).compareTo(new BigDecimal(0))==-1){
+					return;
+				}
+				walletDto.setAMOUNT(walletDto.getAMOUNT().subtract(dto.getAMOUNT()));
+			}
+			customerWalletDao.update(walletDto);
+		}
+		
+		Tb_Customer_Wallet_Flow entity =new Tb_Customer_Wallet_Flow();//钱包流水
+		entity.setAMOUNT(dto.getAMOUNT());
+		entity.setCUSTOMER_ID(dto.getCUSTOMER_ID());
+		entity.setFLOW_TYPE(dto.getFLOW_TYPE());
+		entity.setOPEN_DATE(new Timestamp(new Date().getTime()));
+		customerWalletFlowDao.save(entity);
+		
+		String payType = "00";// TODO 订单支付方式
+		String accountId=dto.getCUSTOMER_ID();
+		String serialNumber = Tools.createSerialNumber(accountId.substring(accountId.length()-4),SIX+"",payType);
+		Tb_client_in_out_money tb_client_in_out_money = new Tb_client_in_out_money();//出金流水
+		tb_client_in_out_money.setSerial_number(serialNumber);
+		tb_client_in_out_money.setAccount_id(accountId);
+		tb_client_in_out_money.setIn_out_type(IN_OUT_TYPE_WITHDRAW);
+		tb_client_in_out_money.setAmount(dto.getAMOUNT());
+		tb_client_in_out_money.setOpen_date(new Timestamp(new Date().getTime()));
+		tb_client_in_out_money.setCommit_account_id(accountId);
+		tb_client_in_out_money.setRemark(dto.getFLOW_TYPE()==1?"钱包充值":"钱包提现");
+		tb_client_in_out_money.setPay_type(payType);
+		tb_client_in_out_money.setAccount_type(SIX);
+		// 判断是否大于审核阈值
+		tb_client_in_out_money.setStatus(SERIAL_STATUS_APPLY);
+		clientInOutMoneyDao.insert(tb_client_in_out_money);
+	}
+	
+	public PageModel<CustomerWalletFlow> getPageModel(CustomerWalletFlow dto){
+    	PageVars pvNm=this.getVars(dto,1);
+		PageVars pvlist=this.getVars(dto,0);
+		PageModel<CustomerWalletFlow> pm=customerWalletFlowDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    	
+    }
+    
+    
+    private PageVars getVars(CustomerWalletFlow dto,int type){
+    	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+    	 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from Tb_Customer_Wallet_Flow f where 1=1");
+    	 } else {
+    		 sbStr.append("select * from Tb_Customer_Wallet_Flow f where 1=1");
+    	 }
+    	 if(!RegUtil.getUtil().isNull(dto.getCUSTOMER_ID())){
+    		 sbStr.append(" and f.CUSTOMER_ID=:CUSTOMER_ID ");
+    		 params.put("CUSTOMER_ID", dto.getCUSTOMER_ID());
+    	 }
+    	 if(dto.getFLOW_TYPE()!=null){
+    		 sbStr.append(" and f.flow_type=:flow_type ");
+    		 params.put("flow_type", dto.getFLOW_TYPE());
+    	 }
+    	  if (type!=1) {
+				sbStr.append(" ORDER BY f.id desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+		  }
+    	  logWriteUtil.writeLog("", "pageQuery sql:"+sbStr.toString()+"===param:"+JSONObject.fromObject(dto), LOGLEVEL_INFO, CustomerWalletService.class);
+    	  System.out.println("sql:"+sbStr.toString());
+    	  pv.setSbstr(sbStr);
+	      pv.setParams(params);
+		 
+		 return pv;
+    }	
+}

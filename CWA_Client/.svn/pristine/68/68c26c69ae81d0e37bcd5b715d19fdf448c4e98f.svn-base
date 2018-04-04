@@ -1,0 +1,42 @@
+package com.cwa.client.utils;
+
+
+import com.google.gson.Gson;
+
+public class GsonUtil {
+
+	/**
+	 * jsonstr 2 dto
+	 * @param jsonstr
+	 * @return
+	 */
+	 public static Object jsonToDto(String jsonstr,Class<?> entityClass) { 
+		 Object respt=null;
+		 try {
+			   Gson gson = new Gson();
+			   respt=gson.fromJson(jsonstr, entityClass);
+			   gson=null;
+		} catch (Exception e) {
+			respt=null;
+			e.printStackTrace();
+		}
+		  return respt;
+	 }
+	 
+	 /**
+	  * obj to json
+	  * @param obj
+	  * @return
+	  */
+	 public static String dtoToJson(Object obj){
+		 String jsonStr=null;
+		 try {
+			 Gson gson = new Gson();
+			 jsonStr=gson.toJson(obj);
+			 gson=null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		 return jsonStr;
+	 }
+}

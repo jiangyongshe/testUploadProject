@@ -1,0 +1,637 @@
+package com.cwa.client.web.nettytcpsocket;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.cwa.client.dto.BankServerTcpDto;
+import com.cwa.client.dto.UnPayOpenAndConsumeDto;
+import com.cwa.client.dto.WebChatChangeWithDrawDto;
+import com.cwa.client.dto.YsWithdrawDto;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.GsonUtil;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.RegUtil;
+
+public class PayUtil {
+
+	private BankServerTcpDto bankApiServer;
+
+
+	public PayUtil(BankServerTcpDto bankApiServer) {
+		this.bankApiServer = bankApiServer;
+	}
+
+	public PayUtil() {
+
+	}
+
+	/**
+	 * 每次需要调用此方法发送和接收数据
+	 * 
+	 * @param sendMsg
+	 * @return
+	 * @throws Exception
+	 */
+	public String sendToBankServer(String sendMsg) throws Exception {
+		String json = null;
+		try {
+			PayApiTcpClient payClient = new PayApiTcpClient(bankApiServer);
+			json = payClient.send(sendMsg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return json;
+	}
+
+	/**
+	 * 支付宝直连支付
+	 * 
+	 * @param inoutMoneyDto
+	 *            ,aliPayDto
+	 * @return respDto
+	 * @throws Exception
+	 */
+	public RespMsgDto aliPayDir(Tb_client_in_out_money tb_client_in_out_money,
+			AliPayDirDto aliPayDto, String loginType) throws Exception {
+		RespMsgDto respDto = null;
+		LogWriteUtil.getSingleton().writeLog(
+				"",
+				(tb_client_in_out_money == null ? "unknow serial_number"
+						: tb_client_in_out_money.getSerial_number())
+						+ " aliPayDir post begin ", Constant.LOGLEVEL_INFO,
+				PayUtil.class);
+		try {
+			RequestMsgDto request = getBaseRequest(tb_client_in_out_money);
+
+			request.setLoginType(loginType);
+
+			if (!aliPayDto.getNotify_url().startsWith("http")) {
+				aliPayDto.setNotify_url(bankApiServer.getBaseUrl() + "/"
+						+ aliPayDto.getNotify_url());
+			}
+
+			if (!aliPayDto.getReturn_url().startsWith("http")) {
+				aliPayDto.setReturn_url(bankApiServer.getBaseUrl() + "/"
+						+ aliPayDto.getReturn_url());
+			}
+
+			request.setContent(GsonUtil.dtoToJson(aliPayDto));
+
+			String sendMsg = GsonUtil.dtoToJson(request);
+
+			LogWriteUtil.getSingleton().writeLog(
+					"",
+					(tb_client_in_out_money == null ? "unknow serial_number"
+							: tb_client_in_out_money.getSerial_number())
+							+ " sendMsg" + sendMsg, Constant.LOGLEVEL_INFO,
+					PayUtil.class);
+
+			String respMsg = sendToBankServer(sendMsg);
+
+			LogWriteUtil.getSingleton().writeLog(
+					"",
+					(tb_client_in_out_money == null ? "unknow serial_number"
+							: tb_client_in_out_money.getSerial_number())
+							+ " respMsg " + respMsg, Constant.LOGLEVEL_INFO,
+					PayUtil.class);
+
+			if (!RegUtil.getUtil().isNull(respMsg)) {
+				respDto = (RespMsgDto) GsonUtil.jsonToDto(respMsg,
+						RespMsgDto.class);
+			}
+
+		} catch (Exception e) {
+			respDto = null;
+			e.printStackTrace();
+			throw e;
+		}
+		return respDto;
+	}
+
+	 
+
+	/**
+	 * 微信直连支付
+	 * 
+	 * @param inoutMoneyDto
+	 *            ,chatpayDto
+	 * @return respDto
+	 * @throws Exception
+	 */
+	public RespMsgDto chatpayDir(Tb_client_in_out_money tb_client_in_out_money,
+			WebChatDirPayDto chatpayDto, String loginType) throws Exception {
+		RespMsgDto respDto = null;
+		LogWriteUtil.getSingleton().writeLog(
+				"",
+				(tb_client_in_out_money == null ? "unknow serial_number"
+						: tb_client_in_out_money.getSerial_number())
+						+ " chatpayDir post begin ", Constant.LOGLEVEL_INFO,
+				PayUtil.class);
+		try {
+			RequestMsgDto request = getBaseRequest(tb_client_in_out_money);
+
+			request.setLoginType(loginType);
+			if (!chatpayDto.getNotify_url().startsWith("http")) {
+				chatpayDto.setNotify_url(bankApiServer.getBaseUrl()
+						+ chatpayDto.getNotify_url());
+			}
+
+			request.setContent(GsonUtil.dtoToJson(chatpayDto));
+
+			String sendMsg = GsonUtil.dtoToJson(request);
+
+			LogWriteUtil.getSingleton().writeLog(
+					"",
+					(tb_client_in_out_money == null ? "unknow serial_number"
+							: tb_client_in_out_money.getSerial_number())
+							+ " sendMsg" + sendMsg, Constant.LOGLEVEL_INFO,
+					PayUtil.class);
+
+			String respMsg = sendToBankServer(sendMsg);
+
+			LogWriteUtil.getSingleton().writeLog(
+					"",
+					(tb_client_in_out_money == null ? "unknow serial_number"
+							: tb_client_in_out_money.getSerial_number())
+							+ " respMsg " + respMsg, Constant.LOGLEVEL_INFO,
+					PayUtil.class);
+
+			if (!RegUtil.getUtil().isNull(respMsg)) {
+				respDto = (RespMsgDto) GsonUtil.jsonToDto(respMsg,
+						RespMsgDto.class);
+			}
+
+		} catch (Exception e) {
+			respDto = null;
+			e.printStackTrace();
+			throw e;
+		}
+		return respDto;
+	}
+
+	/**
+	 * 异步通知的时候验证签名
+	 * 如果是银联无跳转支付验证签名，需要把signPubKeyCert的值放入chartSet
+	 * @param requestDto
+	 * @return
+	 * @throws Exception
+	 */
+	public RespMsgDto checkSign(RequestMsgDto requestDto) throws Exception {
+		RespMsgDto respDto = null;
+		LogWriteUtil.getSingleton().writeLog(
+				"",
+				(requestDto == null ? "unknow serial_number" : requestDto
+						.getOrderNo()) + " checkSign begin ",
+				Constant.LOGLEVEL_INFO, PayUtil.class);
+
+		try {
+
+			String sendMsg = GsonUtil.dtoToJson(requestDto);
+
+			LogWriteUtil.getSingleton().writeLog(
+					"",
+					(requestDto == null ? "unknow serial_number" : requestDto
+							.getOrderNo()) + " sendMsg" + sendMsg,
+					Constant.LOGLEVEL_INFO, PayUtil.class);
+
+			String respMsg = sendToBankServer(sendMsg);
+
+			LogWriteUtil.getSingleton().writeLog(
+					"",
+					(requestDto == null ? "unknow serial_number" : requestDto
+							.getOrderNo()) + " respMsg " + respMsg,
+					Constant.LOGLEVEL_INFO, PayUtil.class);
+
+			if (!RegUtil.getUtil().isNull(respMsg)) {
+				respDto = (RespMsgDto) GsonUtil.jsonToDto(respMsg,
+						RespMsgDto.class);
+			}
+
+		} catch (Exception e) {
+			respDto = null;
+			e.printStackTrace();
+			throw e;
+		}
+		return respDto;
+	}
+
+	/**
+	    * 银盛出金,只有返回10000=success
+	    * @param Tb_client_in_out_money
+	    * @param Tb_Bank_Card_Info
+	    * @return RespMsgDto
+	    * @throws Exception
+	    */
+		public RespMsgDto ysWithdraw(Tb_client_in_out_money tb_client_in_out_money,YsWithdrawDto widthdrawDto) throws Exception {
+			RespMsgDto respDto = null;
+			try {
+				RequestMsgDto reqMsgDto = getBaseRequest(tb_client_in_out_money);
+				  
+				if(!widthdrawDto.getNoticUrl().startsWith("http")){
+					widthdrawDto.setNoticUrl(bankApiServer.getBaseUrl()+"/"+widthdrawDto.getNoticUrl());
+				}
+				
+				reqMsgDto.setContent(GsonUtil.dtoToJson(widthdrawDto));
+				
+				
+				String sendMsg = GsonUtil.dtoToJson(reqMsgDto);
+				
+				LogWriteUtil.getSingleton().writeLog(
+						"",
+						(tb_client_in_out_money == null ? "unknow serial_number"
+								: tb_client_in_out_money.getSerial_number())
+								+ " ysWithdraw sendMsg" + sendMsg, Constant.LOGLEVEL_INFO,
+						PayUtil.class);
+
+				String respMsg = sendToBankServer(sendMsg);
+				
+				if (!RegUtil.getUtil().isNull(respMsg)) {
+					respDto = (RespMsgDto) GsonUtil.jsonToDto(respMsg,RespMsgDto.class);
+				}
+
+			} catch (Exception e) {
+				respDto=null;
+				e.printStackTrace();
+			}
+			return respDto;
+		}
+		
+		/**
+		    * 微信出金,只有返回10000=success
+		    * @param Tb_client_in_out_money
+		    * @param WecahtXmlMessageDto
+		    * @return RespMsgDto
+		    * @throws Exception
+		    */
+			public RespMsgDto wechatWithdraw(Tb_client_in_out_money tb_client_in_out_money,WebChatChangeWithDrawDto wechatWidthdrawDto) throws Exception {
+				RespMsgDto respDto = null;
+				try {
+					RequestMsgDto reqMsgDto = getBaseRequest(tb_client_in_out_money);
+					  
+					reqMsgDto.setContent(GsonUtil.dtoToJson(wechatWidthdrawDto));
+					
+					
+					String sendMsg = GsonUtil.dtoToJson(reqMsgDto);
+					
+					LogWriteUtil.getSingleton().writeLog(
+							"",
+							(tb_client_in_out_money == null ? "unknow serial_number"
+									: tb_client_in_out_money.getSerial_number())
+									+ " ysWithdraw sendMsg" + sendMsg, Constant.LOGLEVEL_INFO,
+							PayUtil.class);
+
+					String respMsg = sendToBankServer(sendMsg);
+					
+					if (!RegUtil.getUtil().isNull(respMsg)) {
+						respDto = (RespMsgDto) GsonUtil.jsonToDto(respMsg,RespMsgDto.class);
+					}
+
+				} catch (Exception e) {
+					respDto=null;
+					e.printStackTrace();
+				}
+				return respDto;
+			}
+		
+		/**
+		    * 银联无跳转支付，如果是第一次，返回的form表单，需要在跳转到银联页面
+		    * 如果非第一次，首要要获取手机验证码，短信验证码控制：
+		    * 同一个手机号限制一小时发6次，两次间隔必须大于1分钟，成功支付后对这个手机号会重置限制次数，一个短信验证码有效期5分钟，失败3次会失效，短信验证码重发的话三分钟内验证码不变
+		    * 支付的时候的订单号必须跟获取验证码的订单号相同
+		    * 
+		    *  同步返回的代码描述
+		    *  51006=短信验证失败
+		    *  51007=消费请求处理失败
+		    *  51008=银行处理中，有可能成功，有可能失败
+		    *  51009=付款的时候，手机验证码错误，需要重新获取验证码
+		    *  
+		    *  Remark 返回的是银联 respCode,需要写入Tb_client_in_out_money的RETURN_STATUS
+		    * @param Tb_client_in_out_money
+		    * @param UnPayOpenAndConsumeDto
+		    * @return RespMsgDto
+		    * @throws Exception
+		    */
+			public RespMsgDto unPayNoJumpDesposite(Tb_client_in_out_money tb_client_in_out_money,UnPayOpenAndConsumeDto unPayDto,String loginType) throws Exception {
+				RespMsgDto respDto = null;
+				try {
+					RequestMsgDto reqMsgDto = getBaseRequest(tb_client_in_out_money);
+					reqMsgDto.setLoginType(loginType);
+					if(!unPayDto.getBackUrl().startsWith("http")){
+						unPayDto.setBackUrl(bankApiServer.getBaseUrl()+"/"+unPayDto.getBackUrl());
+					}
+					
+					reqMsgDto.setContent(GsonUtil.dtoToJson(unPayDto));
+					
+					
+					String sendMsg = GsonUtil.dtoToJson(reqMsgDto);
+					
+					LogWriteUtil.getSingleton().writeLog(
+							"",
+							(tb_client_in_out_money == null ? "unknow serial_number"
+									: tb_client_in_out_money.getSerial_number())
+									+ " unPayNoJumpDesposite sendMsg" + sendMsg, Constant.LOGLEVEL_INFO,
+							PayUtil.class);
+
+					String respMsg = sendToBankServer(sendMsg);
+					
+					if (!RegUtil.getUtil().isNull(respMsg)) {
+						respDto = (RespMsgDto) GsonUtil.jsonToDto(respMsg,RespMsgDto.class);
+					}
+
+				} catch (Exception e) {
+					respDto=null;
+					e.printStackTrace();
+				}
+				return respDto;
+			}
+		
+		
+	/**
+	 * 获取公共参数
+	 * 
+	 * @param tb_client_in_out_money
+	 * @return
+	 */
+	private RequestMsgDto getBaseRequest(
+			Tb_client_in_out_money tb_client_in_out_money) {
+		RequestMsgDto request = null;
+		try {
+			request = new RequestMsgDto();
+			request.setChartSet(bankApiServer.getCharSet());
+			request.setInOutType(tb_client_in_out_money.getIn_out_type());
+			// request.setLoginType(tb_client_in_out_money.getLoginType());
+			request.setOrderAmount(tb_client_in_out_money.getAmount()
+					.toString());
+			request.setOrderNo(tb_client_in_out_money.getSerial_number());
+			request.setPayType(tb_client_in_out_money.getPay_type());
+			request.setUuid(tb_client_in_out_money.getSerial_number());
+			request.setWebType(bankApiServer.getWebType());
+		} catch (Exception e) {
+			request = null;
+			e.printStackTrace();
+		}
+		return request;
+	}
+
+	/**
+	 * 将map参数封装为key1=value1&key2=value2格式，并且进行参数从a到z排序
+	 * 
+	 * @param map
+	 * @return String
+	 */
+	public String getSignStr(Map<String, String> map,String parmName) {
+		String parstr = null;
+		try {
+			StringBuilder parstrbuild = new StringBuilder();
+			Object[] key_arr = map.keySet().toArray();
+			Arrays.sort(key_arr);
+		 
+			for (Object key : key_arr) {
+				 String tmpKey=key.toString();
+				if(parmName!=null&&!"".equals(parmName)&&parmName.indexOf(tmpKey)>-1){
+					continue;
+				}
+				Object value = map.get(key);
+				if (value != null && !"".equals(value)) {
+					value = value.toString();
+					parstrbuild.append(tmpKey).append("=").append(value)
+							.append("&");
+				}
+			}
+ 
+			parstrbuild.replace(parstrbuild.length() - 1, parstrbuild.length(),
+					"");
+			parstr = parstrbuild.toString().trim();
+			LogWriteUtil.getSingleton().writeLog("", "signStr:" + parstr,
+					Constant.LOGLEVEL_INFO, PayUtil.class);
+			parstrbuild = null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return parstr;
+	}
+	
+	
+
+	/**
+	 * 获取请求参数中所有的信息
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public Map<String, String> getAllRequestParam(
+			final HttpServletRequest request, String encoding) {
+		Map<String, String> res = null;
+		try {
+			Enumeration<?> temp = request.getParameterNames();
+			if (null != temp) {
+				res = new HashMap<String, String>();
+				while (temp.hasMoreElements()) {
+					String key = (String) temp.nextElement();
+					String value = request.getParameter(key);
+					// 在报文上送时，如果字段的值为空，则不上送<下面的处理为在获取所有参数数据时，判断若值为空，则删除这个字段>
+					if (value != null && !"".equals(value)) {
+						value = new String(value.getBytes(encoding), encoding);
+						res.put(key, value);
+					}
+					// 打印请求报文
+					LogWriteUtil.getSingleton().writeLog(
+							"",
+							"getAllRequestParam key:" + key + "====value:"
+									+ value, Constant.LOGLEVEL_INFO,
+							PayUtil.class);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	/**
+	 * 读取文件流
+	 * @param request
+	 * @return
+	 */
+	public String getDataFromInputStream(HttpServletRequest request) {
+		String noticexml = null;
+		ServletInputStream inputSteam = null;
+		InputStreamReader inputSteamReader = null;
+		try {
+			inputSteam = request.getInputStream();
+			if (inputSteam == null) {
+				LogWriteUtil.getSingleton().writeLog(
+						"",
+						" inputSteam is null", Constant.LOGLEVEL_INFO,
+						PayUtil.class);
+				noticexml=null;
+				return noticexml;
+			}
+			inputSteamReader = new InputStreamReader(inputSteam);
+
+			BufferedReader in = new BufferedReader(inputSteamReader);
+
+			if (in != null) {
+				StringBuilder sb = new StringBuilder();
+
+				String line = null;
+				while ((line = in.readLine()) != null) {
+					sb.append(line);
+				}
+				noticexml = sb.toString();
+				sb = null;
+			}
+			
+			LogWriteUtil.getSingleton().writeLog(
+					"",
+					" web chat notice xml "+noticexml, Constant.LOGLEVEL_INFO,
+					PayUtil.class);
+
+		} catch (Exception e) {
+			noticexml = null;
+			e.printStackTrace();
+		}finally{
+		
+				try {
+					if(inputSteam!=null){
+					inputSteam.close();
+					inputSteam=null;
+					}
+					if(inputSteamReader!=null){
+						inputSteamReader.close();
+						inputSteamReader=null;
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+			
+		}
+		return noticexml;
+	}
+
+	/**
+	 * 返回的xml转换为map
+	 * 
+	 * @param xmlString
+	 * @return
+	 * @throws ParserConfigurationException
+	 * @throws IOException
+	 * @throws SAXException
+	 */
+	public Map<String, String> getMapFromXML(String xmlString)
+			throws ParserConfigurationException, IOException, SAXException {
+		Map<String, String> map = new HashMap<String, String>();
+		try {
+			LogWriteUtil.getSingleton().writeLog(Constant.LOGTYPE_CONTROLLER, "#####====%%%%% getMapFromXML get request map begin",
+					Constant.LOGLEVEL_INFO, PayUtil.class);
+			// 这里用Dom的方式解析回包的最主要目的是防止API新增回包字段
+			DocumentBuilderFactory factory = DocumentBuilderFactory
+					.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			InputStream is = getStringStream(xmlString);
+			Document document = builder.parse(is);
+
+			// 获取到document里面的全部结点
+			NodeList allNodes = document.getFirstChild().getChildNodes();
+			Node node;
+
+			int i = 0;
+			while (i < allNodes.getLength()) {
+				node = allNodes.item(i);
+				if (node instanceof Element) {
+					map.put(node.getNodeName(), node.getTextContent().toString());
+				}
+				i++;
+			}
+			LogWriteUtil.getSingleton().writeLog(Constant.LOGTYPE_CONTROLLER, "#####====%%%%% getMapFromXML get request map end",
+					Constant.LOGLEVEL_INFO, PayUtil.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return map;
+
+	}
+
+	public InputStream getStringStream(String sInputString) {
+		ByteArrayInputStream tInputStringStream = null;
+		try {
+			if (sInputString != null && !sInputString.trim().equals("")) {
+				tInputStringStream = new ByteArrayInputStream(
+						sInputString.getBytes());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return tInputStringStream;
+	}
+	
+	public   String getWeChatPostXml(Map<String,Object> map) {
+		String postXml=null;
+		try {
+			StringBuilder parstrbuild=new StringBuilder("<xml>");
+			Object[] key_arr = map.keySet().toArray();     
+			for  (Object key : key_arr) {     
+			    String value = map.get(key).toString(); 
+			    if (value != null && !"".equals(value)) {
+			    	 parstrbuild.append("<").append(key).append(">");
+			    	 parstrbuild.append(value);
+			    	 parstrbuild.append("</").append(key).append(">");
+                }
+			   	
+			}
+			parstrbuild.append("</xml>");
+			postXml=parstrbuild.toString();
+			parstrbuild=null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		 
+		return postXml;
+	}
+
+	public String getShar1Str(String str)throws Exception{
+		String shar1=null;
+		try {
+			if(str!=null&&!"".equals( str)){
+				
+				  MessageDigest digest = MessageDigest.getInstance("SHA-1");
+				  digest.reset();
+				  digest.update(str.getBytes("UTF-8"));
+				  Formatter formatter = new Formatter();
+			        for (byte b : digest.digest())
+			        {
+			            formatter.format("%02x", b);
+			        }
+			        shar1= formatter.toString();
+			        formatter.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return shar1;
+	}
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+<script src="js/adddate.js"></script><!--日期时间选择-->
+<script>
+$(document).ready(function(){
+  $(".dian-close").click(function(){
+  $(".dian-xq").hide(1000);
+  });
+  
+  $('.dian-bt').on("click", function () {
+		$(this).next().slideToggle(100);
+		$('.dian-xq').not($(this).next()).slideUp('fast');
+	});
+});
+
+//点击关闭层
+  function turnoff(obj){
+   document.getElementById(obj).style.display="none";
+    }
+//点击显示层
+  function elementDisplay(objid){
+   var obj=document.getElementById(objid);{
+    obj.style.display='inline-block';
+    }
+   }
+</script>
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <h2 class="clear font18 pad-b10 bor-b">广告播出历史查询</h2>
+      
+      <div class="pad-t20 rmgg-ss">
+             <b class="dis-in pad-r20 font14">日期选择</b>
+             <input type="text" value="" id="" class="dis-in wenb05" placeholder="请输入开始日期" onclick="SelectDate(this,'yyyy-MM-dd hh:mm:ss')"/>
+             <span class="dis-in">至</span>
+             <input type="text" value="" id="" class="dis-in wenb05" placeholder="请输入结束日期" onclick="SelectDate(this,'yyyy-MM-dd hh:mm:ss')"/>
+             <input name="" type="button" value="搜 索" class="dis-in btn btn03 bg-orange font16 mar-l10" />
+          </div>
+          
+          <div class="rmgg-table rmgg-table2 font13">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th>序号</th>
+    <th>设备编号</th>
+    <th>视频名称</th>
+    <th>播放开始时间</th>
+    <th>播放结束时间</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>GGKZQ0001</td>
+    <td>天虹商场</td>
+    <td>2017-09-20 12:12:15</td>
+    <td>2017-09-21 12:12:15</td>
+  </tr>
+</table>
+          </div>
+          
+          <div class="fenye font14 text-c">
+           <a href="#" class="btn-fy"><i class="fa fa-chevron-left"></i></a>
+           <a href="#" class="btn-fy active">1</a>
+           <a href="#" class="btn-fy">2</a>
+           <a href="#" class="btn-fy">3</a>
+           <a href="#" class="btn-fy">...</a>
+           <a href="#" class="btn-fy">9</a>
+           <a href="#" class="btn-fy">10</a>
+           <a href="#" class="btn-fy"><i class="fa fa-chevron-right"></i></a>
+          </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

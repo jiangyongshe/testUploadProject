@@ -1,0 +1,20 @@
+package com.cwa.client.web;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+/**
+ * 重定向
+ */
+@Controller
+@RequestMapping("/*/redirect/")
+public class RedirectController {
+
+	@RequestMapping("/home.do")
+	public void gotoHome(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		res.sendRedirect("/chinese/forward/home.do");
+	}
+}

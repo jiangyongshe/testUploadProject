@@ -1,0 +1,131 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+$(function(){
+	$("#headerTitle").text("下单支付");
+	$(".filterBtn").hide();
+	currError=currErrorArray(chineseError,englishError,twError);
+})
+
+/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+function upCallback(page){
+	//联网加载数据
+	console.log("page.num="+page.num);
+	loadBuyConfirmInfo();
+}
+//加载广告商品
+function loadBuyConfirmInfo(){
+	fileType=getURLParam("fileType"),checkTimes=getURLParam("checkTimes"),checkAdvertiseId=getURLParam("checkAdvertiseId"),deviceIds=getURLParam("deviceId"),timeInterval=getURLParam("timeInterval"),isInterCut=getURLParam("isInterCut");
+	pay=getURLParam("pay");
+	jsonAjax("/"+language+"/customer/queryConfimBuyAdvertiseInfo.do",{checkAdvertiseId:checkAdvertiseId,deviceId:deviceIds,timeInterval:timeInterval,checkTimes:checkTimes,isInterCut:isInterCut,fileType:fileType},function(res){
+		mescroll.endSuccess(0);
+		if(res.data!=null&&res.data!=[]&&res.success){
+			var data=res.data,pageMenu='',html="";
+			disCount=res.msg;
+			var listDom=document.getElementById("dataList");
+			for (var i = 0; i < data.length; i++) {
+				var dto=data[i],price=dto.ad_price,imgs="",length=dto.ad_length;
+				//价格
+				if(dto.file_type=="2"){
+					if(isInterCut!="2"){
+						price=dto.html_price;
+						length=dto.html_length;
+					}else{
+						price=dto.inter_cut_html_price;
+						length=dto.inter_cut_html_length;
+					}
+				}else if(dto.file_type=="3"){
+					if(isInterCut!="2"){
+						price=dto.pic_price;
+						length=dto.pic_length;
+					}else{
+						price=dto.inter_cut_pic_price
+						length=dto.inter_cut_pic_length;
+					}	
+				}
+				if(dto.pics!=null&&dto.pics!=""){
+					imgs=dto.pics.split(",");
+				}
+				/*if(addr!=null&&addr!=""){,addr=data[i].mailing_address
+					var addrList=dto.mailing_address.split("*");
+					if(addrList[0]==addrList[1]){
+						addr=dto.mailing_address.replace(addrList[0],"");
+					}
+				}*/
+				var str='<span class="ggdp-list1-xz pos-a"><label class="checkbox"><input type="checkbox" data-advertiserId="'+dto.advertiser_id+'" data-id="'+dto.id+'" name="checkbox" class="checkAd" checked><i>✓</i></label></span>';
+				str+='<div class="ggdp-list1-tp pos-a" onclick="showShopDetail(\''+dto.shop_name+'\',\''+dto.mailing_address+'\',\''+dto.pics+'\')">';
+				str+='<span><img src="'+imagePath+imgs[0]+'" /></span>';
+				str+='<p class="sbmc">'+dto.shop_name+'</p>';
+				str+='</div>';
+				str+='<div class="ggdp-list1-nr">';
+				str+='<p class="col-999 dis-in pad-t2">设备编号：<span class="col-666 deviceId hide">'+dto.device_id+'</span><span class="col-666=">'+dto.device_code+'</span></p>';
+				str+='<p class="col-999 dw-bflx">';
+				str+='<span class="dis-in">播放类型：</span>';
+				if(isInterCut!="2"){
+					str+='<select name="" class="dis-in xlb03 fileType" data-htmlPrice="'+dto.html_price+'" data-htmlLength="'+dto.html_length+'" data-picPrice="'+dto.pic_price+'" data-picLength="'+dto.pic_length+'" data-videoPrice="'+dto.ad_price+'" data-videoLength="'+dto.ad_length+'">';
+				}else{
+					str+='<select name="" class="dis-in xlb03 fileType" data-htmlPrice="'+dto.inter_cut_html_price+'" data-htmlLength="'+dto.inter_cut_html_length+'" data-picPrice="'+dto.inter_cut_pic_price+'" data-picLength="'+dto.inter_cut_pic_length+'" data-videoPrice="'+dto.ad_price+'" data-videoLength="'+dto.ad_length+'">';
+				}
+				str+='<option value="1" '+(dto.file_type=="1"?'selected = "selected"':'')+'>视频</option>';
+				str+='<option value="3" '+(dto.file_type=="3"?'selected = "selected"':'')+'>图片</option>';
+				str+='<option value="2" '+(dto.file_type=="2"?'selected = "selected"':'')+'>图文模板</option>';
+				str+='</select></p>';
+				if(isInterCut!="2"){
+					str+='<p class="col-999">设备播放时段：<span class="col-666" id="timeInterval">'+dto.idle_time+'</span></p>';
+				}
+				str+='<p class="col-999 dis-in">最低循环次数：<span class="col-666">'+dto.play_number+'次</span></p>';
+				str+='<p class="col-999 dis-in pad-l10">广告时长：<span class="col-666 adLength">'+length+'</span>秒</p>';
+				str+='<p class="col-999 dis-in">价格：<em class="red"><span class="adPrice">'+price+'</span>元/天</em></p>';
+				str+='<p class="col-999 dis-in pad-l10">费用：<em class="red"><span class="sumPrice">';
+				if(dto.sumPrice==null){
+					str+='--';
+				}else{
+					str+=eval(dto.sumPrice*(dto.disCount==null?1:dto.disCount/10));
+				}
+				str+='</span>元</em></p>';
+				str+='</div>';
+				str+='<p class="col-999 pad-t5 gwc-dw">';
+				var d=new Date(),showBgTm="",showEdTm="",disable="dt";
+				str+='<span class="dis-in">播放日期：</span>';
+				if(pay=="1"||isInterCut=="2"){
+					if(isInterCut!="2"){
+						showBgTm=checkTimes.split("@")[0];
+						showEdTm=checkTimes.split("@")[1];
+						disable="disabled";
+					}else{
+						showBgTm=d.format(DATE_FORMAT_YTD);
+						showEdTm=d.format(DATE_FORMAT_YTD);
+						disable="disabled";
+					}
+				}else{
+					showBgTm=dto.startDate;
+					showEdTm=dto.endDate.substring(0,10);
+				}
+				str+='<input type="text" data-playNumber='+dto.play_number+' readonly value="'+showBgTm+'" placeholder="请选择开始时间" class="dis-in wenb02 '+disable+' bgDate" />';
+				str+='<span class="dis-in pad-l5 pad-r5">至</span>';
+				str+='<input type="text" value="'+showEdTm+'" placeholder="请选择结束时间" readonly class="dis-in wenb02 '+disable+' edDate">';
+				str+='</p>';
+				
+				var liDom=document.createElement("li");
+				liDom.innerHTML=str;
+				listDom.appendChild(liDom);//加在列表的后面,上拉加载
+				
+			}
+			
+			if(pay!=undefined&&pay!=""&&pay==1){//订单支付
+				$("#payWay").show();
+				$("#commit").hide();
+				$("#payOrder").show();
+				//禁用可修改订单项
+				$("input").not("input[type='button']").attr("disabled",true);
+				$(".fileType").attr("disabled",true);
+			}
+			checkSum();
+			createDateControl();//绑定时间控件
+		}
+	},function(){
+		//联网失败的回调,隐藏上拉加载的状态
+		mescroll.endErr();
+		},"get");
+}

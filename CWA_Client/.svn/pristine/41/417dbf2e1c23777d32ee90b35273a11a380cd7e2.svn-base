@@ -1,0 +1,83 @@
+var page=1,beginTime,endTime,count=9;
+
+$(function(){
+	initDate();
+	loadHistoryAdvertise({pageNo:page,pageSize:count});//加载广告商品
+	})
+	
+//初始化时间控件
+function initDate(){
+	var currYear = (new Date()).getFullYear();
+	var opt = {};
+	opt.date = {
+		preset : 'date'
+	};
+	opt.datetime = {
+		preset : 'datetime'
+	};
+	opt.time = {
+		preset : 'time'
+	};
+	opt.def = {
+		theme : 'android-ics light', //皮肤样式
+		display : 'modal', //显示方式 
+		mode : 'scroller', //日期选择模式
+		dateFormat : 'yyyy-mm-dd',
+		lang : 'zh',
+		showNow : true,
+		nowText : "今天",
+		startYear : currYear - 50, //开始年份
+		endYear : currYear + 10
+	//结束年份
+	};
+
+	$(".beginTime").mobiscroll(
+			$.extend(opt['date'], opt['def']));
+	$(".endTime").mobiscroll(
+			$.extend(opt['date'], opt['def']));
+}
+//加载用户视频播放历史记录
+function loadHistoryAdvertise(obj){
+	obj.beginTime = beginTime;
+	obj.endTime = endTime;
+	// 清空数据和页码
+	$('#cPageTurn').empty();
+	$("#tableInfo tr").not("#tableHeader").remove();
+	jsonAjax("/"+language+"/customer/queryVedioPlayHistory.do",obj,function(res){
+		if(res.data.list.length>0){
+			var data=res.data,html="";
+			for (var i = 0; i < data.list.length; i++) {
+				var dto=data.list[i];
+				html+='<tr>';
+				html+='  <td>'+((Number(obj.pageNo)-1)*Number(count)+i+1)+'</td>';
+				html+='  <td>'+dto.device_id+'</td>';
+				html+='  <td>'+dto.shopName+'</td>';
+				html+='  <td>'+dto.vedio_name+'</td>';
+				html+='  <td>'+new Date(dto.beginTime).format(DATE_FORMAT_YTDHMS)+'</td>';
+				html+='  <td>'+new Date(dto.endTime).format(DATE_FORMAT_YTDHMS)+'</td>';
+				html+='</tr>';
+			}
+			$("#tableHeader").after(html);//展示列表数据
+			pageNumber(data.totalRecords,obj,loadHistoryAdvertise,count,'c',true);
+		}else{
+			if(obj.pageNo==1){
+				$(".searchWhere").hide();
+				showEmplyDiv("无历史播放记录,请到<a href='/"+language+"/forward/customerAdvertise.do' class='red'>我要投放广告</a>去下单",".orderAll");
+			}
+		}
+	},function(){},"get");
+}
+
+function search(){
+	beginTime=$(".beginTime").val(),endTime=$(".endTime").val();
+	loadHistoryAdvertise({
+		pageNo:page,
+		pageSize:count
+	});
+}
+//清空时间
+function clearDate(){
+	$(".beginTime").val("");
+	$(".endTime").val("");
+}
+

@@ -1,0 +1,64 @@
+/*var html="<div class=\"hei60\"></div>\n";
+    html+="<div class=\"footer-nav font12\"><ul id=\"menuFooter\">\n";
+	html+="<li class=\"indexhtml\"><a href=\"index.html\"><i class=\"fa fa-home\" aria-hidden=\"true\"></i><br />首页</a></li>\n";
+	html+="<li class=\"ggddhtml\"><a href=\"ggdd.html\"><i class=\"fa fa-building-o\" aria-hidden=\"true\"></i><br />广告订单</a></li>\n";
+	html+="<li class=\"tfgghtml active\"><a href=\"tfgg.html\"><i class=\"fa fa-plus\"' aria-hidden=\"true\"></i><br />投放广告</p></a></li>\n";
+	html+="<li class=\"gwchtml\"><a href=\"gwc.html\"><i class=\"fa fa-shopping-cart\" aria-hidden=\"true\"></i><br />购物车<em id=\"buyCarCount\">0</em></a></li>\n";
+	html+="<li class=\"wodehtml\"><a href=\"wode.html\"><i class=\"fa fa-user-circle-o\" aria-hidden=\"true\"></i><br />我的翔云</a></li>\n";
+	html+="</ul></div>\n";
+	html+="<script src=\""+languageMobile+"/js/top.js\"></script>\n";
+	html+="<div id=\"top\"></div>\n";
+document.writeln(html);*/
+
+var html="<div class=\"hei60\"></div>\n";
+html+="<div class=\"footer-nav font12\"><ul id=\"menuFooter\">\n";
+html+="<li class=\"indexhtml\"><a href=\"index.html\"><span><i class=\"fa fa-home\" aria-hidden=\"true\"></i></span><p>首页</p></a></li>\n";
+html+="<li class=\"tfgghtml active\"><a href=\"tfgg.html\"><span><i class=\"fa fa-plus2\" aria-hidden=\"true\"></i></span><p>批量投放</p></a></li>\n";
+html+="<li class=\"ggddhtml\"><a href=\"ggdd.html\"><span><i class=\"fa fa-building-o2\" aria-hidden=\"true\"></i></span><p>我的订单</p></a></li>\n";
+html+="<li class=\"gwchtml\"><a href=\"gwc.html\"><span><i class=\"fa fa-shopping-cart\" aria-hidden=\"true\"></i></span><p>购物车</p><em id=\"buyCarCount\">0</em></a></li>\n";
+html+="<li class=\"wodehtml\"><a href=\"wode.html\"><span><i class=\"fa fa-user-circle-o\" aria-hidden=\"true\"></i></span><p>我的翔云</p></a></li>\n";
+html+="</ul></div>\n";
+html+="<script src=\""+languageMobile+"/js/top.js\"></script>\n";
+html+="<div id=\"top\"></div>\n";
+document.writeln(html);
+
+$(function(){
+	if(getLocalStorage('accountId')!=null&&getLocalStorage('accountId')!=''){
+		queryShoppCartCount();
+	}
+	activeMenu();
+})
+
+//查询购物车数量
+function queryShoppCartCount(){
+	jsonAjax('/'+language+'/user/loadUser.do',{},
+		function(res){
+			var data = res.data;
+			if(data){
+				var userId = data.id;
+				var userType = res.msg;
+				setLocalStorage('userId',userId);
+				setLocalStorage('userType',userType);
+				// 加载购物车数量 TODO
+				var shoppCount=data.shoppCount;
+				$("#buyCarCount").text(shoppCount);
+			}
+			
+	},function(){},null,null,false);
+}
+//激活菜单样式
+function activeMenu(){
+	var str=window.location.href.substring(window.location.href.lastIndexOf("/")+1).replace(".","");
+	$("#menuFooter li").removeClass("active");
+	if(str.indexOf("wdzl")>=0||str.indexOf("qianbao")>=0||str.indexOf("xgmm")>=0||str.indexOf("ggyj")>=0||str.indexOf("chuj")>=0||str.indexOf("kefu")>=0||str.indexOf("ggcx")>=0||str.indexOf("sbjk")>=0||str.indexOf("sbxq")>=0){
+		$(".wodehtml").addClass("active");
+		return;
+	}else if(str.indexOf("tfgg01")>=0||str.indexOf("detail")>=0){
+		$(".tfgghtml").addClass("active");
+		return;
+	}else if(str.indexOf("shangchuanshipin")>=0||str.indexOf("chakanshipin")>=0){
+		$(".ggddhtml").addClass("active");
+		return;
+	}
+	$("."+str.split("#")[0]).addClass("active");
+}

@@ -1,0 +1,42 @@
+/*var html="<div class=\"left\">\n";
+	html+="<div class=\"menu-ggz\">\n";
+	html+="<span class=\"menu01\"><i class=\"fa fa-cubes pad-r5\" aria-hidden=\"true\"></i>广告管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"customerAdvertise\"><a href=\"/"+language+"/forward/customerAdvertise.do\">我要投放广告<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"customerOrder\"><a href=\"/"+language+"/forward/customerOrder.do\">我的广告订单<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"shoppCart\"><a href=\"/"+language+"/forward/shoppCart.do\">购物车<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"adHistoryQuery\"><a href=\"/"+language+"/forward/adHistoryQuery.do\">广告播出历史查询<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="</div>\n";
+	html+="<div class=\"menu-ggz hide shopManager\">\n";
+	html+="<span class=\"menu01\"><i class=\"fa fa-ticket pad-r5\" aria-hidden=\"true\"></i>店主管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"queryAD\"><a href=\"/"+language+"/forward/AD/queryAD.do\">广告查询<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"deviceMonitoring\"><a href=\"/"+language+"/forward/AD/deviceMonitoring.do\">设备监控<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"deviceDetail\"><a href=\"/"+language+"/forward/AD/deviceDetail.do\">设备详情<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="</div>\n";
+	html+="<div class=\"menu-ggz\">\n";
+	html+="<span class=\"menu01\"><i class=\"fa fa-money pad-r5\" aria-hidden=\"true\"></i>资金管理</span>\n";
+	html+="<ul class=\"menu02\">\n";
+	html+="<li name=\"commission\" class=\"hide\"><a href=\"/"+language+"/forward/user/commission.do\">广告收益<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"withdraw\" class=\"hide\"><a href=\"/"+language+"/forward/user/withdraw.do\">提现<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="<li name=\"customerWallet\"><a href=\"/"+language+"/forward/customerWallet.do\">翔云余额<i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i></a></li>\n";
+	html+="</ul>\n";
+	html+="</div>\n";
+	html+="</div>\n";
+document.writeln(html);*/
+
+var html  = "<div class=\"left\">\n";
+	html += "<a href=\"/"+language+"/forward/index/cm.do\" class=\"menu01 index\"><i class=\"fa fa-home\" aria-hidden=\"true\"></i><span class=\"dis-in\">首页</span></a>\n";
+	html += "<a href=\"/"+language+"/forward/customerAdvertise.do\" class=\"menu01 customerAdvertise\"><i class=\"fa fa-caret-square-o-right\" aria-hidden=\"true\"></i><span class=\"dis-in\">投放广告</span></a>\n";
+	html += "<a href=\"/"+language+"/forward/shoppCart.do\" class=\"menu01 shoppCart\"><i class=\"fa fa-shopping-cart\" aria-hidden=\"true\"></i><span class=\"dis-in\">购物车</span></a>\n";
+	html += "<a href=\"/"+language+"/forward/customerOrder.do\" class=\"menu01 customerOrder\"><i class=\"fa fa-sliders\" aria-hidden=\"true\"></i><span class=\"dis-in\">我的订单</span></a>\n";
+	html += "<a href=\"/"+language+"/forward/user/commission.do\" class=\"menu01 commission\"><i class=\"fa fa-gg\" aria-hidden=\"true\"></i><span class=\"dis-in\">收益管理</span></a>\n";
+	html += "</div>\n";
+document.writeln(html);
+
+// 根据页面URL修改选中状态
+var urlStr = window.location.href.split("/");
+var menuName = urlStr[urlStr.length-1].split(".")[0];
+$('.'+menuName).addClass('active');

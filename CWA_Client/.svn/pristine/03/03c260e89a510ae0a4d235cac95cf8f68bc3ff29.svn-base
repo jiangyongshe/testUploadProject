@@ -1,0 +1,141 @@
+package com.cwa.client.service;
+
+import java.util.HashMap;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.ClientInOutMoneyDao;
+import com.cwa.client.dao.CommissionDetailDao;
+import com.cwa.client.dto.ADCommissionDetailDto;
+import com.cwa.client.dto.ClientInOutMoneyDto;
+import com.cwa.client.dto.CommissionDetailDto;
+import com.cwa.client.dto.InOutMoneyParamDto;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.PageVars;
+
+@Service
+public class CustomerCapitalService  implements Constant {
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private CommissionDetailDao commissionDetailDao;
+	
+	@Resource
+	private ClientInOutMoneyDao clientInOutMoneyDao;
+	
+	public PageModel<ClientInOutMoneyDto> getPageModelWithdraw(InOutMoneyParamDto dto){
+    	PageVars pvNm=this.getVarsWithdraw(dto,1);
+		PageVars pvlist=this.getVarsWithdraw(dto,0);
+		PageModel<ClientInOutMoneyDto> pm=clientInOutMoneyDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    	
+    }
+	
+	public PageModel<CommissionDetailDto> getPageModelCommission(ADCommissionDetailDto dto){
+    	PageVars pvNm=this.getVarsCommission(dto,1);
+		PageVars pvlist=this.getVarsCommission(dto,0);
+		PageModel<CommissionDetailDto> pm=commissionDetailDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    	
+    }
+    
+    
+    private PageVars getVarsWithdraw(InOutMoneyParamDto dto,int type){
+    	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+		 params.put("accountId", dto.getAccount_id());
+    	 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from tb_client_in_out_money A "
+    	 			   +"WHERE A.ACCOUNT_TYPE=6 AND A.IN_OUT_TYPE='1' AND A.ACCOUNT_ID = :accountId ");
+    	 } else {
+    		 sbStr.append("SELECT A.AMOUNT,A.STATUS,A.OPEN_DATE,2 account_type FROM tb_client_in_out_money A "
+    	 			   +"WHERE A.ACCOUNT_TYPE=6 AND A.IN_OUT_TYPE='1' AND A.ACCOUNT_ID = :accountId " );
+    	 }
+ 		// 判断是否根据开始时间查询
+ 		if(dto.getStartTime()!=null&&!"".equals(dto.getStartTime())){
+ 			sbStr.append(" AND DATE_FORMAT(A.OPEN_DATE,'"+MYSQL_DATE_FORMAT_YMD+"')>=DATE_FORMAT(:startDate,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+ 			params.put("startDate",dto.getStartTime());
+ 		}
+ 		// 判断是否根据结束时间查询
+ 		if(dto.getEndTime()!=null&&!"".equals(dto.getEndTime())){
+ 			sbStr.append(" AND DATE_FORMAT(A.OPEN_DATE,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(:endDate,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+ 			params.put("endDate",dto.getEndTime());
+ 		}
+    	 
+    	  if (type!=1) {
+				sbStr.append(" ORDER BY DATE_FORMAT(A.OPEN_DATE,'"+MYSQL_DATE_FORMAT_YCDHMS+"') desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+		  }
+    	  logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sbStr.toString()+";"+"params:"+params, LOGLEVEL_INFO, CustomerCapitalService.class);
+    	  pv.setSbstr(sbStr);
+	      pv.setParams(params);
+		 
+		 return pv;
+    }	
+    
+    private PageVars getVarsCommission(ADCommissionDetailDto dto,int type){
+   	 	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+		 params.put("refId", dto.getAccount_id());//用户id
+		 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from ( ");
+    	 } else {
+    		 sbStr.append("SELECT a.REFERRALS_COMM,a.BALANCE_DATETIME,a.type FROM (");
+    	 }
+		 
+		 sbStr.append(" select adComm REFERRALS_COMM,SETTLEMENT_DATE BALANCE_DATETIME,'广告收益' type from tb_comm_flow where adUserId=:refId union all");
+		 sbStr.append("	 select mComm REFERRALS_COMM,SETTLEMENT_DATE BALANCE_DATETIME,profitType type from tb_comm_flow where mUserId=:refId ");
+		 sbStr.append(") a where 1=1 and a.REFERRALS_COMM>0");
+		 // 判断是否根据开始时间查询
+ 		if(dto.getStartTime()!=null&&!"".equals(dto.getStartTime())){
+ 			sbStr.append(" AND DATE_FORMAT(a.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"')>=DATE_FORMAT(:startDate,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+ 			params.put("startDate",dto.getStartTime());
+ 		}
+ 		// 判断是否根据结束时间查询
+ 		if(dto.getEndTime()!=null&&!"".equals(dto.getEndTime())){
+ 			sbStr.append(" AND DATE_FORMAT(a.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(:endDate,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+ 			params.put("endDate",dto.getEndTime());
+ 		}
+ 		if(dto.getType()!=null&&!"".equals(dto.getType())){
+ 			if("5".equals(dto.getType())){
+ 				sbStr.append(" and (a.type='推荐收益' or a.type='屏主收益') ");
+ 			}else if("6".equals(dto.getType())){
+ 				sbStr.append(" and a.type='广告收益' ");
+ 			}
+ 		}
+ 		
+ 		if (type!=1) {
+   		  	sbStr.append(" ORDER BY date_format(a.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"') desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+   	  	}
+ 		
+ 		String strSql=sbStr.toString();
+ 		if(dto.getUserType()==TWO){
+ 			strSql=strSql.replace("adComm", "ADVERTISER_COMM").replace("adUserId", "ADVERTISER_ID")
+ 					.replace("mComm", "REFERRALS_COMM").replace("profitType", "'推荐收益'").replace("mUserId", "REFERRALS_ID");
+ 		}else if(dto.getUserType()==THREE){
+ 			strSql=strSql.replace("adComm", "PARTNER_COMM").replace("adUserId", "PARTNER_ID")
+ 					.replace("mComm", "MANAGER_COMM").replace("profitType", "'屏主收益'").replace("mUserId", "MANAGER_ID");
+ 		}else if(dto.getUserType()==FOUR){
+ 			strSql=strSql.replace("adComm", "AGENT_COMM").replace("adUserId", "AGENT_ID")
+ 					.replace("mComm", "MANAGER_COMM").replace("profitType", "'屏主收益'").replace("mUserId", "MANAGER_ID");
+ 		}else if(dto.getUserType()==FIVE){
+ 			strSql=strSql.replace("adComm", "SALESMAN_COMM").replace("adUserId", "SALESMAN_ID")
+ 					.replace("mComm", "MANAGER_COMM").replace("profitType", "'屏主收益'").replace("mUserId", "MANAGER_ID");
+ 		}else if(dto.getUserType()==SIX){
+ 			strSql=strSql.replace("adComm", "SALESPERSON_COMM").replace("adUserId", "SALESPERSON_ID")
+ 					.replace("mComm", "MANAGER_COMM").replace("profitType", "'屏主收益'").replace("mUserId", "MANAGER_ID");
+ 		}
+ 		sbStr=new StringBuffer(strSql);
+   	  	logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sbStr.toString()+";"+"params:"+params, LOGLEVEL_INFO, CustomerCapitalService.class);
+   	  	pv.setSbstr(sbStr);
+   	  	pv.setParams(params);
+		return pv;
+   }
+  
+}

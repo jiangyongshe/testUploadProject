@@ -1,0 +1,45 @@
+package com.cwa.client.service.app;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.redis.RegPhoneRandomNumDto;
+import com.cwa.client.redis.UserRedis;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.UniqId;
+import com.cwa.client.web.BaseController;
+import com.cwa.client.web.GobalRespParameter;
+
+@Service
+public class AccountService extends BaseController<GobalRespParameter>{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private UserRedis userRedis;
+	
+	/**
+	 * 发送验证码
+	 * @param mobile 手机号
+	 * @param type 类型 0-注册时获取的验证码 1-忘记密码时获取的验证码
+	 * @param redisTime 缓存到REDIS的时间
+	 * @return 是否发送成功
+	 */
+	public boolean sendVerificationCode(String mobile,int type,int redisTime){
+		RegPhoneRandomNumDto regdto = new RegPhoneRandomNumDto();
+		regdto.setVaildCode(UniqId.getRandomPwd(6));//生成验证码
+		regdto.setTimeStamp(System.currentTimeMillis());
+		logWriteUtil.writeLog(LOGTYPE_SERVICE, "Verification code is "+regdto.getVaildCode(), LOGLEVEL_INFO, AccountService.class);
+		regdto.setMovePhone(mobile);
+		if(sendMessage(type, regdto)){
+			// 短信发送成功，缓存数据
+			String redisKey = type+mobile;
+			userRedis.set(redisKey,regdto,redisTime);
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+}

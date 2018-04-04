@@ -1,0 +1,108 @@
+package com.cwa.client.web.nettytcpsocket;
+
+public class RequestMsgDto {
+
+	private String uuid;//唯一标识
+	private String webType;//网站类型，根据域名区分，以此来区分序列号
+	private int inOutType;//支付类型 1=出金，2=入金,3=验证签名
+	private int payType;//支付方式：1=微信，2=易支付，3=银联 ,4=银盛，5=支付宝，6=钱宝，7=兴业,8=qq钱包
+	private int secPayType;//二级支付方式：譬如：如果payType=1，secPayType=2代表 微信支付2，默认=1
+	private String msgStr;//如果是验证签名，此致请传递参入签名的参数的规则
+	private String orderNo;//订单号
+	private String orderAmount;//订单金额,两位小数，以元为单位
+	private String orderTime;//订单请求时间 yyyy-MM-dd HH:mm:ss
+	
+	private String accountId;//交易账号
+	private String fundId;//资金账号
+	private String remark;//备注
+	private String notifyUrl;//异步通知url
+
+	
+	private String chartSet;//编码方式，如果为null或者传递， 默认用utf-8
+	 
+	public String getMsgStr() {
+		return msgStr;
+	}
+	public void setMsgStr(String msgStr) {
+		this.msgStr = msgStr;
+	}
+	public String getChartSet() {
+		return chartSet;
+	}
+	public void setChartSet(String chartSet) {
+		this.chartSet = chartSet;
+	}
+	public String getUuid() {
+		return uuid;
+	}
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+	public int getInOutType() {
+		return inOutType;
+	}
+	public void setInOutType(int inOutType) {
+		this.inOutType = inOutType;
+	}
+	public int getPayType() {
+		return payType;
+	}
+	public void setPayType(int payType) {
+		this.payType = payType;
+	}
+	public int getSecPayType() {
+		return secPayType;
+	}
+	public void setSecPayType(int secPayType) {
+		this.secPayType = secPayType;
+	}
+	public String getWebType() {
+		return webType;
+	}
+	public void setWebType(String webType) {
+		this.webType = webType;
+	}
+	public String getOrderNo() {
+		return orderNo;
+	}
+	public void setOrderNo(String orderNo) {
+		this.orderNo = orderNo;
+	}
+	public String getOrderAmount() {
+		return orderAmount;
+	}
+	public void setOrderAmount(String orderAmount) {
+		this.orderAmount = orderAmount;
+	}
+	public String getOrderTime() {
+		return orderTime;
+	}
+	public void setOrderTime(String orderTime) {
+		this.orderTime = orderTime;
+	}
+	public String getAccountId() {
+		return accountId;
+	}
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
+	public String getFundId() {
+		return fundId;
+	}
+	public void setFundId(String fundId) {
+		this.fundId = fundId;
+	}
+	public String getRemark() {
+		return remark;
+	}
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+	public String getNotifyUrl() {
+		return notifyUrl;
+	}
+	public void setNotifyUrl(String notifyUrl) {
+		this.notifyUrl = notifyUrl;
+	}
+	
+}

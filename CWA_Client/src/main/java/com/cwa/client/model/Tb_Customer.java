@@ -1,0 +1,160 @@
+package com.cwa.client.model;
+
+import java.sql.Timestamp;
+
+public class Tb_Customer{
+	
+	private Integer id;
+	private String user_name;
+	private String mobile;
+	private Integer user_status;
+	private Timestamp open_date;
+	private String openid;
+	private String email;
+	private String referrals_id;
+	private String password;
+	private String account_id;
+	private Integer certificate_type;
+	private String id_number;
+	private String agent_id;
+	private String company_id;
+	private String partner_id;
+	private String salesman_id;
+	private String salesperson_id;
+	private Integer referrals_type;//3.代理推荐、4.运营中心、6.合伙人、7.业务员、8.销售员
+	private Integer superior;//1.运营中心 、2.代理、3.合伙人、4.业务员、5.销售员
+	private Integer t_type;//免单用户
+	
+	
+	
+	public Integer getT_type() {
+		return t_type;
+	}
+	public void setT_type(Integer t_type) {
+		this.t_type = t_type;
+	}
+	public Integer getSuperior() {
+		return superior;
+	}
+	public void setSuperior(Integer superior) {
+		this.superior = superior;
+	}
+	public String getSalesperson_id() {
+		return salesperson_id;
+	}
+	public void setSalesperson_id(String salesperson_id) {
+		this.salesperson_id = salesperson_id;
+	}
+	public String getSalesman_id() {
+		return salesman_id;
+	}
+	public void setSalesman_id(String salesman_id) {
+		this.salesman_id = salesman_id;
+	}
+	public String getPartner_id() {
+		return partner_id;
+	}
+	public void setPartner_id(String partner_id) {
+		this.partner_id = partner_id;
+	}
+	public String getCompany_id() {
+		return company_id;
+	}
+	public void setCompany_id(String company_id) {
+		this.company_id = company_id;
+	}
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getUser_name() {
+		return user_name;
+	}
+	public void setUser_name(String user_name) {
+		this.user_name = user_name;
+	}
+	public String getMobile() {
+		return mobile;
+	}
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	public Integer getUser_status() {
+		return user_status;
+	}
+	public void setUser_status(Integer user_status) {
+		this.user_status = user_status;
+	}
+	public Timestamp getOpen_date() {
+		return open_date;
+	}
+	public void setOpen_date(Timestamp open_date) {
+		this.open_date = open_date;
+	}
+	public String getOpenid() {
+		return openid;
+	}
+	public void setOpenid(String openid) {
+		this.openid = openid;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getReferrals_id() {
+		return referrals_id;
+	}
+	public void setReferrals_id(String referrals_id) {
+		this.referrals_id = referrals_id;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getAccount_id() {
+		return account_id;
+	}
+	public void setAccount_id(String account_id) {
+		this.account_id = account_id;
+	}
+	public Integer getCertificate_type() {
+		return certificate_type;
+	}
+	public void setCertificate_type(Integer certificate_type) {
+		this.certificate_type = certificate_type;
+	}
+	public String getId_number() {
+		return id_number;
+	}
+	public void setId_number(String id_number) {
+		this.id_number = id_number;
+	}
+	public String getAgent_id() {
+		return agent_id;
+	}
+	public void setAgent_id(String agent_id) {
+		this.agent_id = agent_id;
+	}
+	public Integer getReferrals_type() {
+		return referrals_type;
+	}
+	public void setReferrals_type(Integer referrals_type) {
+		this.referrals_type = referrals_type;
+	}
+	@Override
+	public String toString() {
+		return "Tb_Customer [id=" + id + ", user_name=" + user_name + ", mobile=" + mobile + ", user_status="
+				+ user_status + ", open_date=" + open_date + ", openid=" + openid + ", email=" + email
+				+ ", referrals_id=" + referrals_id + ", password=" + password + ", account_id=" + account_id
+				+ ", certificate_type=" + certificate_type + ", id_number=" + id_number + ", agent_id=" + agent_id
+				+ ", company_id=" + company_id + ", referrals_type=" + referrals_type + "]";
+	}
+	
+	
+}

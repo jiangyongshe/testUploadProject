@@ -1,0 +1,188 @@
+$(function(){
+	
+		// 订单号
+	var orderNo,
+		// 订单金额
+		amount,
+		// 流水号
+		tranNo;
+	
+	// 页面初始化
+	pageInit();
+	
+	// 查询是否存在卡号
+	cardInfo();
+	
+	// 发送验证码按钮
+	sendVerificationCode();
+	
+	// 提交按钮
+	submit();
+	
+	/**
+	 * 页面初始化
+	 */
+	function pageInit(){
+		orderNo = getURLParam('orderNo'),
+		amount = getURLParam('amount');
+		$('#money').val(amount);
+	}
+	
+	/**
+	 * 发送验证码按钮
+	 */
+	function sendVerificationCode(){
+		$('#getVerificationCode').on('click',function(){
+			// 发送的参数
+			var ajaxParam = {
+				sendMsg : 1,
+				payWay : '0301',
+				orderNo : orderNo
+			};
+			// 判断银行卡号是否曾经充值过
+			var hasExist = false;
+			for(var i=0;i<cardData.length;++i){
+				var cardNo = $('#cardNo').val().trim();
+				if(cardData[i]['bank_card_code'] === cardNo){
+					hasExist = true;
+					ajaxParam.cardCode = cardNo;
+					ajaxParam.mobile = cardData[i]['mobile'];
+					judgeCardNo();
+					break;
+				}
+			}
+			if(!hasExist){
+				tipInfo({status:'normal',content:'卡号不存在'});
+				return;
+			}
+			// 发送请求
+			$.ajaxEp({
+				url:'/'+language+'/order/payOrder.do',
+				param:ajaxParam,
+				success : function(res) {
+					var data = res.data,
+						code = res.msg;
+					if(code === '10000'){
+						tipInfo({status:'success',content:'发送验证码成功'});
+						// 交易单号
+						tranNo = data;
+						// 禁用输入框
+						$('#money,#cardNo,#mobile').addClass('disabled');
+						// 倒计时
+						verificationCodeInterval({
+							btnEle:document.getElementById('getVerificationCode'),
+							time:120,
+							endFn:function(){
+								$('#money,#cardNo,#mobile').removeClass('disabled');
+							}
+						});
+					}else{
+						tipInfo({status:'normal',content:data});
+					}
+				}
+			});
+		});
+	}
+	
+	/**
+	 * 提交按钮
+	 */
+	function submit(){
+		$('#submit').on('click',function(){
+			// 传递的参数
+			var ajaxParam = {
+					payWay : '0301',
+					orderNo : orderNo
+			};
+			// 判断银行卡号是否曾经充值过
+			var hasExist = false;
+			for(var i=0;i<cardData.length;++i){
+				if(cardData[i]['bank_card_code'] === $('#cardNo').val().trim()){
+					hasExist = true;
+					ajaxParam.cardCode = $('#cardNo').val().trim();
+					ajaxParam.mobile = cardData[i]['mobile'];
+					judgeCardNo();
+					break;
+				}
+			}
+			if(hasExist){
+				// 判断是否发送了验证码
+				if(!tranNo){
+					tipInfo({status:'fail',content:'请先获取验证码'});
+					return;
+				}
+				ajaxParam.tranNo = tranNo;
+				// 手机号验证码
+				var verificationCode = $('#verificationCode').val().trim();
+				if(verificationCode === ''){
+					tipInfo({status:'fail',content:'请输入验证码'});
+					return;
+				}
+				ajaxParam.smsCode = verificationCode;
+			}else{
+				// 验证卡号格式是否正确
+				var cardNo = $('#cardNo').val().trim();
+				if(cardNo === ''){
+					tipInfo({
+						status:'fail',
+						content:'请输入银行卡号'
+					})
+					return;
+				}
+				if(!checkCard(cardNo)){
+					tipInfo({
+						status:'fail',
+						content:'银行卡号格式不正确'
+					})
+					return;
+				}
+				ajaxParam.cardCode = cardNo;
+				// 判断手机号格式是否正确
+				var mobile = $('#mobile').val().trim();
+				if(mobile === ''){
+					tipInfo({
+						status:'fail',
+						content:'请输入手机号'
+					})
+					return;
+				}
+				if(!REG_MOBILE.test(mobile)){
+					tipInfo({
+						status:'fail',
+						content:'手机号格式不正确'
+					})
+					return;
+				}
+				ajaxParam.mobile = mobile;
+			}
+			// 提交数据
+			$.ajaxEp({
+				url:'/'+language+'/customerWallet/walletRecharge.do',
+				param:ajaxParam,
+				success:function(res){
+					var success = res.success,
+						data = res.data;
+					if(success){
+						// 判断是否新卡
+						var isNewCard = false;
+						for(var i=0;i<cardData.length;++i){
+							if(cardData[i]['bank_card_code'] === ajaxParam.cardCode){
+								isNewCard = true
+								break;
+							}
+						}
+						if(isNewCard){
+							// 绑定新卡 ，跳转到银联页
+							$("body").html(data);
+						}else{
+							// 使用已绑定的卡，跳转到充值成功页
+							window.location.href = '/'+language+'/html/successTrip.html?i=recharge';
+						}
+					}else{
+						tipInfo({status:'fail',content:data});
+					}
+				}
+			});
+		});
+	}
+})

@@ -1,0 +1,77 @@
+$(function(){
+	// 登录按钮
+	loginBtn();
+	// 判断是否购买过来的
+	judegIsBuy();
+})
+
+/**
+ * 登录页的提示
+ */
+function loginPageTip(str){
+	$('#loginTip').html(str).show();
+}
+
+/**
+ * 判断是否购买过来的
+ * @returns
+ */
+function judegIsBuy(){
+	checkAdvertiseId = getURLParam('checkAdvertiseId').trim();
+	deviceId = getURLParam('deviceId').trim();
+	if(checkAdvertiseId && deviceId){
+		$('[name="userType"]').parent().find('[value="1"]').attr('checked','true');
+	}
+}
+
+/**
+ * 登录逻辑
+ */
+function loginBtn(){
+	$('#loginBtn').on('click',function(){
+		// 获取手机号
+		var accountId = $('#accountId').val().trim();
+		// 获取密码
+		var pwd = $('#password').val().trim();
+		// 获取角色类型
+		var userType = $('[name="userType"]:checked').val();
+		// 发送请求
+		jsonAjax('/'+language+'/user/login.do',
+				{accountId:accountId,pwd:pwd,userType:userType},
+				function(res) {
+					var msg = res.msg;
+					if(msg!='10000'){
+						loginPageTip(msg);
+						return;
+					}
+					// 清空提示
+					$('#loginTip').hide();
+					// 获取用户名
+					var userName = res.data.user_name;
+					if(!userName) userName = res.data.shop_name;
+					// 记录用户名
+					setLocalStorage('username',userName);
+					// 记录用户类型
+					setLocalStorage('userType',userType);
+					// 记录用户ID
+					setLocalStorage('userId',res.data.id);
+					// 加载用户信息
+					loadUserMsg();
+					// 页面跳转
+					if(Number(userType)===1){
+						// 普通用户
+						location.href = '/'+language+'/forward/customerAdvertise.do';
+						// 获取页面参数，判断是否购买
+						if(checkAdvertiseId && deviceId){
+							location.href = '/'+language+'/customer/queryConfimBuyAdvertiseInfo.do?checkAdvertiseId='+checkAdvertiseId+'&deviceId='+deviceId;
+						}
+					}else{
+						// 广告商
+						location.href = '/'+language+'/forward/AD/gotoChangeToAd.do';
+					}
+					// 清空用户名密码
+					$('#accountId').val('');
+					$('#password').val('');
+				},function(){});
+	});
+}

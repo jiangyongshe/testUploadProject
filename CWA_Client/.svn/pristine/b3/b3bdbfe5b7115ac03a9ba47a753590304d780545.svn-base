@@ -1,0 +1,99 @@
+// 文件路径
+var filePath = [];
+
+$(function(){
+	//加载省市区
+	initAddr();
+	// 上传图片按钮
+	uploadPicBtn();
+});
+
+/**
+ * 上传图片按钮
+ * @returns
+ */
+function uploadPicBtn() {
+	// 上传图片按钮
+	$('#fileInput').on('change', function() {
+		var file = document.getElementById('fileInput').files[0];
+		if (!file) return;
+		var formdata = new FormData();
+		formdata.append('file', file);
+		openWaitAnimation();
+		$.ajax({
+			url : '/'+language+'/AD/uploadADPic.do',
+			type : 'post',
+			data : formdata,
+			dataType : 'json',
+			cache : false,
+			contentType : false,
+			processData : false,
+			success : function(res) {
+				isLogin(res, function(res){
+					var status = res.success;
+					var data = res.data;
+					var msg = res.msg;
+					if(status){
+						$('#fileInput').val('');
+						// 记录路径
+						filePath.push(data);
+						if(filePath.length>=5){
+							// 隐藏上传按钮
+							$('.uploader').hide();
+						}
+						// 加载图片
+						$('#picLi').append(
+							'<div id="'+data.substring(data.indexOf('/')+1).split('.')[0]+'" class="uploader-sp" style="display:block;">'+
+								'<img style="width:35%;height:35%;" src="/'+language+'/AD/loadADPic.do?filePath='+data+'"/>'+
+								'<p>'+
+									'<a>'+
+										'<i class="fa fa-trash-o" aria-hidden="true"></i>'+
+										'<span onclick="javascript:deletePic(\''+data.substring(data.indexOf('/')+1).split('.')[0]+'\');">删除</span>'+
+									'</a>'+
+								'</p>'+
+							'</div>');
+					}else{
+						showJudegTip('fail','',msg);
+					}
+				});
+			},
+			complete : function(XHR, TR) {
+				// 关闭等待动画
+				closeWaitAnimation();
+				if (TR == 'timeout') {// 超时
+					showJudegTip('fail','','Time out,please refresh.');
+				} else if (XHR.status == '500' || TR == 'error') {// 异常
+					showJudegTip('fail','','Server error.');
+				}
+			}
+		});
+
+	});
+}
+
+/**
+ * 删除图片
+ * @returns
+ */
+function deletePic(id){
+	$('#'+id).remove();
+	for(var i=0;i<filePath.length;++i){
+		if(filePath[i].indexOf(id)!=-1){
+			filePath.splice(i,1);
+			if(filePath.length<5){
+				// 显示上传按钮
+				$('.uploader').show();
+			}
+			return;
+		}
+	}
+}
+
+/**
+ * 同意并继续按钮
+ * @returns
+ */
+function agreeBtn(){
+	$('#venturediv').hide();
+	$('#agreeDeal').prop('checked',true);
+}

@@ -1,0 +1,79 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	loadUserInfo();//加载用户信息
+	$("#updateInfo").bind("click",function(){//修改按钮
+		//真实姓名
+		if(!$(".userName").hasClass('disabled')){
+			$(".userName").addClass("disabled");
+		}else{
+			$(".userName").removeClass("disabled");
+		}
+		//电子邮箱
+		if(!$(".email").hasClass('disabled')){
+			$(".email").addClass("disabled");
+		}else{
+			$(".email").removeClass("disabled");
+		}
+		// 提交按钮
+		if(!$("#commitUpdate").hasClass('disabled')){
+			$("#commitUpdate").addClass("disabled");
+		}else{
+			$("#commitUpdate").removeClass("disabled");
+		}
+	})
+	$("#commitUpdate").bind("click",function(){//提交修改
+		commitUpdate();
+	})
+})
+
+function loadUserInfo(){//加载用户信息
+	jsonAjax("/"+language+"/user/loadUser.do",{},function(res){
+		if(res.data!=null&&res.data!=[]){
+			$(".accountId").val(res.data.account_id);//用户名
+			if(res.data.real_name!=undefined){
+				$(".userName").val(res.data.real_name);//广告商真实姓名
+			}else{
+				$(".userName").val(res.data.user_name);//用户真实姓名
+			}
+			$(".email").val(res.data.email);//电子邮箱
+		}
+	},function(){},"get");
+}
+
+function commitUpdate(){
+	disabledBtn("commitUpdate");//禁用提交按钮
+	var accountId=$(".accountId").val();//用户名
+	var userName=$(".userName").val();//真实姓名
+	var email=$(".email").val();//电子邮箱
+	$(".error").show();
+	if(userName==""||email==""){
+		$(".error").html(currError[1]);
+		startBtn("commitUpdate");
+		return;
+	}
+	if(!REG_EMAIL.test(email)){
+		$(".error").html(currError[2]);
+		startBtn("commitUpdate");
+		return;
+	}
+	var url;
+	
+	if(getLocalStorage('userType')=='2'){
+		url = "/"+language+"/AD/updUserInfo.do";
+	}else{
+		url = "/"+language+"/customer/updUserInfo.do";
+	}
+	jsonAjax(url,{accountId:accountId,userName:userName,email:email},function(res){
+		if(res.data!=null&&res.data!=[]){
+			$(".error").html(currError[0]);
+			startBtn("commitUpdate");
+		}else{
+			$(".error").html(res.respMessge);//注册回调显示
+			startBtn("commitUpdate");
+		}
+	},function(){});
+}

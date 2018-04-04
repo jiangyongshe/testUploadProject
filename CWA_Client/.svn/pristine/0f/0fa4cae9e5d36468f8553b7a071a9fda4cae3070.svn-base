@@ -1,0 +1,19 @@
+package com.cwa.client.constant;
+
+/**
+ * APP常量
+ * @author HZK
+ */
+public interface AppConatnt {
+
+	/**
+	 * IOS登录类型
+	 */
+	int LOGIN_TYPE_IOS = 105;
+	
+	/**
+	 * Android登录类型
+	 */
+	int LOGIN_TYPE_ANDROID = 706;
+	
+}

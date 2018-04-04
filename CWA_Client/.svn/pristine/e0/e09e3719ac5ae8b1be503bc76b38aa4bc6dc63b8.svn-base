@@ -1,0 +1,47 @@
+package com.cwa.client.dto;
+
+public class DeviceMonitorDto {
+
+	private String device_id;// 设备编号
+	private String begin_time;// 播放开始时段
+	private String end_time;// 播放结束时段
+	private Integer selled_number;// 已卖条数
+	private Integer play_number;// 可卖条数
+	private Integer status;// 设备状态
+	public String getDevice_id() {
+		return device_id;
+	}
+	public void setDevice_id(String device_id) {
+		this.device_id = device_id;
+	}
+	public String getBegin_time() {
+		return begin_time;
+	}
+	public void setBegin_time(String begin_time) {
+		this.begin_time = begin_time;
+	}
+	public String getEnd_time() {
+		return end_time;
+	}
+	public void setEnd_time(String end_time) {
+		this.end_time = end_time;
+	}
+	public Integer getSelled_number() {
+		return selled_number;
+	}
+	public void setSelled_number(Integer selled_number) {
+		this.selled_number = selled_number;
+	}
+	public Integer getPlay_number() {
+		return play_number;
+	}
+	public void setPlay_number(Integer play_number) {
+		this.play_number = play_number;
+	}
+	public Integer getStatus() {
+		return status;
+	}
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+}

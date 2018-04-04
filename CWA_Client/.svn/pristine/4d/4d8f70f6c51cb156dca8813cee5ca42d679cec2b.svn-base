@@ -1,0 +1,291 @@
+package com.cwa.client.utils;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+
+import com.cwa.client.dto.RuturnMessageDto;
+
+
+public class Tools implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	private static byte[] base64DecodeChars = new byte[] { -1, -1, -1, -1, -1,  
+	        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  
+	        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  
+	        -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59,  
+	        60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,  
+	        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1,  
+	        -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,  
+	        38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1,  
+	        -1, -1 
+	}; 
+	
+	/** 
+	 * B64解密 前台数据
+	 * @param str 
+	 * @return 
+	 */  
+	public static String b64Decode(String str) {  
+	    byte[] data = str.getBytes();  
+	    int len = data.length;  
+	    ByteArrayOutputStream buf = new ByteArrayOutputStream(len);  
+	    int i = 0;  
+	    int b1, b2, b3, b4;  
+	  
+	    while (i < len) {  
+	        do {  
+	            b1 = base64DecodeChars[data[i++]];  
+	        } while (i < len && b1 == -1);  
+	        if (b1 == -1) {  
+	            break;  
+	        }  
+	  
+	        do {  
+	            b2 = base64DecodeChars[data[i++]];  
+	        } while (i < len && b2 == -1);  
+	        if (b2 == -1) {  
+	            break;  
+	        }  
+	        buf.write((int) ((b1 << 2) | ((b2 & 0x30) >>> 4)));  
+	  
+	        do {  
+	            b3 = data[i++];  
+	            if (b3 == 61) {  
+	                return new String(buf.toByteArray());  
+	            }  
+	            b3 = base64DecodeChars[b3];  
+	        } while (i < len && b3 == -1);  
+	        if (b3 == -1) {  
+	            break;  
+	        }  
+	        buf.write((int) (((b2 & 0x0f) << 4) | ((b3 & 0x3c) >>> 2)));  
+	  
+	        do {  
+	            b4 = data[i++];  
+	            if (b4 == 61) {  
+	                return new String(buf.toByteArray());  
+	            }  
+	            b4 = base64DecodeChars[b4];  
+	        } while (i < len && b4 == -1);  
+	        if (b4 == -1) {  
+	            break;  
+	        }  
+	        buf.write((int) (((b3 & 0x03) << 6) | b4));  
+	    }  
+	    return new String(buf.toByteArray());  
+	}  
+	
+	/**
+	 * 生成订单号
+	 * @param fourEndMobile 登录账号后四位
+	 * @param userType 用户类型
+	 * @param payType 支付方式
+	 * @return
+	 */
+	public static synchronized String createSerialNumber(String fourEndMobile,String userType,String payType){
+		// 时间(14位)
+		StringBuffer sb = new StringBuffer(SERIAL_YMDHMS.format(new Date()));
+		// 支付方式(2位)
+		sb.append(payType);
+		// 手机号后四位(4位)
+		sb.append(fourEndMobile);
+		// 用户类型(1位)
+		sb.append(userType);
+		// 随机数(8位)
+		sb.append((int)(Math.random()*Math.pow(10, 8)));
+		return sb.toString();
+	}
+	
+	/**
+	 * 根据当前用户类型切换为订单状态的类型
+	 * @param userType
+	 * @return
+	 */
+	public static String changeUserType(String userType){
+		if(userType.equals(USERTYPE_CUSTOMER)){
+			userType = SERIAL_ACCOUNT_TYPE_CUSTOMER+"";
+		}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			userType = SERIAL_ACCOUNT_TYPE_ADVERTISER+"";
+		}
+		return userType;
+	}
+	
+	/**
+	 * 判断字节数组是否是图片
+	 * @param byte
+	 * @return
+	 */
+	public static Map<String,Object> judgeImage(byte[] bytes){
+		Map<String,Object> map = new HashMap<String,Object>();
+		boolean isImage = false;
+		String type = "";
+		if(bytes == null || bytes.length<=0){
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		
+		// 获取该文件的十六进制
+		for(int i=0;i<bytes.length;++i){
+			int v = bytes[i] & 0XFF;
+			String hv = Integer.toHexString(v);
+			if(hv.length()<2){
+				sb.append(0);
+			}
+			sb.append(hv);
+		}
+		
+		String fileHex = sb.toString();
+		
+		// JPG,JPEG,PNG,BMP,GIF的头部信息
+		String[] allImageSignature = new String[]{
+		    "FFD8FFE2",//JPEG
+		    "FFD8FFE3",//JPEG
+		    "FFD8FFE0",//JPEG,JPG
+		    "FFD8FFE1",//JPG
+		    "FFD8FFE8",//JPG
+		    "89504E47",//PNG
+		    "47494638",//GIF
+		    "424D"//BMP
+		};
+		
+		// 根据文件头判断是否是图片,如果判断不是图片则返回结果,如果是,则继续往下判断
+		boolean judgeImageBySignature = false;
+		for(int i=0;i<allImageSignature.length;++i){
+			if(fileHex.toUpperCase().startsWith(allImageSignature[i])){
+				judgeImageBySignature = true;
+				// 记录文件类型
+				switch(i){
+				case 0:
+				case 1:
+					type = "jpeg";
+					break;
+				case 2:
+				case 3:
+				case 4:
+					type = "jpg";
+					break;
+				case 5:
+					type = "png";
+					break;
+				case 6:
+					type = "gif";
+					break;
+				case 7:
+					type = "bmp";
+					break;
+				}
+				break;
+			}
+		}
+		
+		if(judgeImageBySignature==false){
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		
+		//通过缩放来判断，可以缩放的为图片，不可以的则不是
+		BufferedImage bi = null;
+		try {
+			bi = ImageIO.read(new ByteArrayInputStream(bytes));
+			if(bi == null){
+				isImage = false;
+				map.put("isImage",isImage);
+				map.put("type",type);
+				return map;
+			}
+			int width = bi.getWidth();  
+	        int height = bi.getHeight();  
+	        if(width==0 || height==0){  
+	        	isImage = false;  
+            }else {  
+            	isImage = true;  
+            }  
+		} catch (Exception e) {
+			e.printStackTrace();
+			isImage = false;
+			map.put("isImage",isImage);
+			map.put("type",type);
+			return map;
+		}
+		map.put("isImage",isImage);
+		map.put("type",type);
+		return map;
+	}
+	 // \b 是单词边界(连着的两个(字母字符 与 非字母字符) 之间的逻辑上的间隔),    
+    // 字符串在编译时会被转码一次,所以是 "\\b"    
+    // \B 是单词内部逻辑间隔(连着的两个字母字符之间的逻辑上的间隔)    
+    static String phoneReg = "\\b(ip(hone|od)|android|opera m(ob|in)i"    
+            +"|windows (phone|ce)|blackberry"    
+            +"|s(ymbian|eries60|amsung)|p(laybook|alm|rofile/midp"    
+            +"|laystation portable)|nokia|fennec|htc[-_]"    
+            +"|mobile|up.browser|[1-4][0-9]{2}x[1-4][0-9]{2})\\b";    
+    static String tableReg = "\\b(ipad|tablet|(Nexus 7)|up.browser"    
+            +"|[1-4][0-9]{2}x[1-4][0-9]{2})\\b";    
+      
+    //移动设备正则匹配：手机端、平板  
+    static Pattern phonePat = Pattern.compile(phoneReg, Pattern.CASE_INSENSITIVE);    
+    static Pattern tablePat = Pattern.compile(tableReg, Pattern.CASE_INSENSITIVE);    
+        
+    /** 
+     * 检测是否是移动设备访问 
+     *  
+     * @Title: check 
+     * @Date : 2014-7-7 下午01:29:07 
+     * @param userAgent 浏览器标识 
+     * @return true:移动设备接入，false:pc端接入 
+     */  
+    //loginType 1:pc 2:adr 3:ios
+    public static String checkLoginType(HttpServletRequest req,String loginType){  
+    	logWriteUtil.writeLog("", "begin loginType:"+loginType, LOGLEVEL_INFO, Tools.class);
+    	String userAgent=req.getHeader( "USER-AGENT" ).toLowerCase();
+		if(!RegUtil.getUtil().isNull(loginType)){
+			return loginType;
+		}
+        // 匹配    
+        Matcher matcherPhone = phonePat.matcher(userAgent);    
+        Matcher matcherTable = tablePat.matcher(userAgent);    
+        if(matcherPhone.find() || matcherTable.find()){  
+        	if(userAgent.indexOf("android")>0){
+        		loginType="2";
+        	}else{
+        		loginType="3";
+        	}
+        } else {    
+        	loginType="1";
+        }
+        if (userAgent.indexOf("micromessenger") > 0) {// 是微信浏览器  
+        	loginType="4";
+		}
+        logWriteUtil.writeLog("", "end loginType:"+loginType, LOGLEVEL_INFO, Tools.class);
+        return loginType;
+    }
+    
+    /**
+     * 返回对象
+     * @param code
+     * @param info
+     * @return
+     */
+    public static RuturnMessageDto returnObj(String code,String info){
+    	RuturnMessageDto rmd = new RuturnMessageDto();
+    	rmd.setMsg(code);
+    	rmd.setData(info);
+    	return rmd;
+    }
+}

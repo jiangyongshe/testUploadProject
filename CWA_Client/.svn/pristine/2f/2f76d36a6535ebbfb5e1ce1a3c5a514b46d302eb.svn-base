@@ -1,0 +1,87 @@
+package com.cwa.client.dao;
+
+import java.util.List;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+
+import com.cwa.client.dto.OrderDto;
+import com.cwa.client.model.Tb_Order;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+/**
+ * 查询广告信息数据层
+ */
+public class AdvertiseOrderDao extends BaseDao<Tb_Order, OrderDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 批量生成订单
+	 * @param batchInsertOrder 生成订单数据
+	 * @return
+	 */
+	public int[] batchInsertOrder(List<Object[]> batchInsertOrder)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"INSERT INTO tb_order(SERIAL_NUMBER,DEVICE_ID,ORDER_STATUS,vedio_id,ACCOUNT_ID,ACCOUNT_IP,COMMIT_TIME,PAY_TYPE,PLAY_BEGIN_TIME,PLAY_END_TIME,SHOP_NAME,TOTAL_PRICE,PRICE,RESULT,ADVERTISER_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	 				batchInsertOrder);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	/**
+	 * 批量删除订单
+	 * @param batchInsertOrder 批量删除订单
+	 * @return
+	 */
+	public int[] batchDeleteOrder(List<Object[]> batchDeleteOrder)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"delete from tb_order where id=?",
+	 				batchDeleteOrder);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	public void updateOrderVedio(String orderNo,Integer vedioId){
+		String sql="update tb_order set vedio_id=?,order_status=3 where SERIAL_NUMBER=?";
+		this.jdbcTemplate.update(sql,vedioId,orderNo);
+		logWriteUtil.writeLog("", "update order vedio_id success!", LOGLEVEL_INFO, AdvertiseOrderDao.class);
+	}
+	
+	public List<OrderDto> queryTimeoutOrder(){
+		String sql="select distinct o.id,o.serial_number,o.device_id,o.order_status,o.account_id,o.commit_time,o.play_begin_time,o.play_end_time,o.shop_name,o.advertiser_id,d.begin_time,d.end_time from tb_order o,tb_order_detail d where o.SERIAL_NUMBER=d.SERIAL_NUMBER and order_status=1 and unix_timestamp(now())-unix_timestamp(o.COMMIT_TIME)>300";
+		RowMapper<OrderDto> rowmapper= BeanPropertyRowMapper.newInstance(OrderDto.class);
+		List<OrderDto> list = this.jdbcTemplate.query(sql, rowmapper);
+		logWriteUtil.writeLog("", "queryTimeoutOrder success! listSize:"+list.size(), LOGLEVEL_INFO, AdvertiseOrderDao.class);
+		return list;
+	}
+	
+	public List<Tb_Order> queryOrderByOrderNo(String orderNo){
+		String sql="select * from tb_order where 1=1 and order_status=1 ";
+		String[] strArr = orderNo.split(",");
+		logWriteUtil.writeLog("", "orderNo:"+orderNo+"==strArr:"+strArr.length, LOGLEVEL_INFO, AdvertiseOrderDao.class);
+		for (int i = 0; i < strArr.length; i++) {
+			if(i==0){
+				sql+="and serial_number in(?";
+			}else{
+				sql+=",?";
+			}
+			if(i==strArr.length-1){
+				sql+=")";
+			}
+		}
+		RowMapper<Tb_Order> rowmapper= BeanPropertyRowMapper.newInstance(Tb_Order.class);
+		List<Tb_Order> list = this.jdbcTemplate.query(sql, rowmapper,strArr);
+		logWriteUtil.writeLog("", "queryTimeoutOrder success! listSize:"+list.size(), LOGLEVEL_INFO, AdvertiseOrderDao.class);
+		return list;
+	}
+}

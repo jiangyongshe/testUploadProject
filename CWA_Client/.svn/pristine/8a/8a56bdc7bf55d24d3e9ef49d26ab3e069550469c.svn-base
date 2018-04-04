@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+     <div class="right right1 bg-ff">
+       <div class="kfzx"><img src="images/kfzx.jpg" /></div>
+       
+       <h2 class="clear font16 pad-b10 pad-t15 bor-b2">服务方式</h2>
+       
+       <ul class="kfzx-fs pad-t20">
+          <li>
+             <span class="dis-in kfzx-fs-a bg-red"><i class="fa fa-2x fa-volume-control-phone" aria-hidden="true"></i></span>
+             <span class="dis-in kfzx-fs-b">0755-82337353</span>
+          </li>
+          
+          <li>
+             <span class="dis-in kfzx-fs-a bg-orange"><i class="fa fa-2x fa-mobile" aria-hidden="true"></i></span>
+             <span class="dis-in kfzx-fs-b">189 2651 5685</span>
+          </li>
+          
+          <li>
+             <span class="dis-in kfzx-fs-a bg-blue"><i class="fa fa-2x fa-qq" aria-hidden="true"></i></span>
+             <span class="dis-in kfzx-fs-b">997423177</span>
+          </li>
+          
+          <li>
+             <span class="dis-in kfzx-fs-a bg-green"><i class="fa fa-2x fa-envelope-o" aria-hidden="true"></i></span>
+             <span class="dis-in kfzx-fs-b">997423177@qq.com</span>
+          </li>
+       </ul>
+       
+       <p class="pad-t20 kfzx-ts"><span class="red">温馨提示：</span>为保证您的申诉能第一时间得到处理，请您在邮件中写明您的联系方式及投诉涉及的订单号或用户名，非常感谢。</p>
+     </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

@@ -1,0 +1,44 @@
+package com.cwa.client.web;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cwa.client.dao.CustomerCommissionDao;
+import com.cwa.client.dto.CustomerCommissionDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+/**
+ * 用户资金相关
+ * @author HZK
+ */
+@Controller
+@RequestMapping("/*/customer/")
+public class CustomerCapitalController extends BaseController<GobalRespParameter> implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private CustomerCommissionDao customerCommissionDao;
+	
+	/**
+	 * 佣金查询
+	 */
+	@RequestMapping("/query/commission.do")
+	public void commissionQuery(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" query commission .", LOGLEVEL_INFO, CustomerCapitalController.class);
+		CustomerDto sessionUser = (CustomerDto)req.getSession().getAttribute(SESSION_USER);
+		RuturnMessageDto rt = new RuturnMessageDto();
+		CustomerCommissionDto data = customerCommissionDao.queryCustomerCommission(sessionUser.getAccount_id());
+		rt.setData(data);
+		writeJSON(res, rt);
+	}
+	
+}

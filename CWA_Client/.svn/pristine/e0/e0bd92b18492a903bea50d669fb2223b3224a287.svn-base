@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播——共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+<style>
+.mescroll-totop {
+    bottom: 5rem;
+}
+</style>
+</head>
+
+<body>
+<div id="mescroll" class="mescroll">
+
+<header>
+  <p class="logo pos-a"><a href="javascript:;" onclick="javascript:history.back(-1);" title="返回" class="pos-a dis-in fanhui col-fff pad-l5"><i class="fa fa-2x fa-angle-left" aria-hidden="true"></i></a></p>
+  <input name="" id="inputSearch" type="text" maxlength="20" placeholder="请输入广告屏编号或店铺名称" class="col-fff search">
+  <i class="fa fa-search pos-a col-fff font16" aria-hidden="true"></i>
+  <div class="header-r pos-a">
+    <a href="#" onclick="searchAdvertise()" class="dis-b col-fff">搜索</a>
+  </div>
+</header>
+
+<div class="font12">
+  <div class="ggdp-sea bg-f9 bor-b3">
+    <!-- <ul class="ggdd-tab">
+      <li class="active">综合排名<i class="fa fa-sort-up pad-l5" aria-hidden="true"></i></li>
+      <li>销量优先<i class="fa fa-sort-down pad-l5" aria-hidden="true"></i></li>
+    </ul> -->
+    <div class="ggdd-tab"><label class="checkbox"><input type="checkbox" name="checkbox" id="moreOrder" ><i>✓</i> 多设备下单</label></div>
+    <a href="javascript:;" onclick="elementDisplay('tc-eject')" class="fr col-999">筛选 <i class="fa fa-filter" aria-hidden="true"></i></a>
+  </div>
+  
+  <div class="hei36"></div>
+
+
+<div class="font12">
+  <div class="ggdp-sea bg-f9 bor-b3">
+    <div class="ggdd-tab buyType">
+      <label class="radio"><input type="radio" name="radio" id="" value="1" checked ><i>✓</i> 普通投放</label>
+      <label class="radio pad-l10"><input type="radio" name="radio" id="" value="2"><i>✓</i> 批量投放</label>
+    </div>
+    <a href="javascript:;" onclick="elementDisplay('tc-eject')" class="fr col-999">筛选 <i class="fa fa-filter" aria-hidden="true"></i></a>
+  </div>
+  
+  <div class="hei36"></div>
+
+  <ul id="dataList" class="ggdp-list1 ggdp-list5 bg-ff">
+  </ul>
+  
+  <div class="ggdp-gm bor-t">
+    <span class="dis-in pad-l10 text-c col-999">已选广告屏<br /><span class="red font13 payCount">0</span></span>
+    
+    <span class="dis-in pad-l10 text-c col-999">费用总计<br /><span class="red font13 totalBal">0元</span></span>
+    
+    <p class="fr">
+      <input name="" type="button" value="加入购物车" class="btn btn09 bg-yellow font13 joinCart" />
+      <input name="" type="button" value="立即购买" class="btn btn09 bg-red font13" onclick="submit()" />
+    </p>
+  </div>
+</div>
+</div>
+
+<div class="hei44"></div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+<script src="/js/jquery.citys.js"></script><!-- 省市区街道 -->
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script src="/chinese/mobile/js/banner.js"></script><!--焦点图-->
+</div>
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_queryAdvertiseInfo.js"></script>
+<script type="text/javascript" src="/chinese/mobile/js/core/orderCommon.js"></script>
+
+<!--批量投放弹出框-->
+<div class="shade" id="batchDiv" style="display: ;">
+  <div class="tanchu tanchu6">
+    <a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('batchDiv')"><i class="fa fa-close" aria-hidden="true"></i></a>
+    <div class="tanchu-bt font15">确认下单</div>
+    
+    <div class="touflx touflx2">
+      <p>
+        <span class="dis-in">投放类型：</span>
+        <span class="dis-in tfsl fileType"><em onclick="" class="active" value="3">图片</em><em onclick="" value="1">视频</em></span>
+      </p>
+    </div>
+    
+    <div class="touflx">
+    	<p>
+	      <span class="dis-in">投放数量：</span>
+	      <span class="dis-in tfsl buyCount">
+	        <em onclick="" class="active">1</em><em onclick="">2</em><em onclick="">3</em><em onclick="">4</em><em onclick="">其他</em>
+	        <input type="text" name="" id="" class="dis-in wenb08 hide buyCountVal" placeholder="" />
+	      </span>
+      	</p>
+    </div>
+    
+    <div class="touflx batchSelectDate">
+      
+    </div>
+    
+    <p class="col-999 text-c pad-t10">
+      共 <span class="red payCount">0</span> 个广告屏，合计 <span class="red totalBal">0</span> 元。
+    </p>
+    
+    <div class="text-c pad-t20 pad-b15">
+      <input name="confirm" type="button" onclick="bacthSubmit()" value="确定" class="btn btn02 bor-rad font13 mar-l10 bg-red">
+      <input name="" type="button" onclick="javascript:turnoff('batchDiv')" value="取消" class="btn btn02 bor-rad font13 mar-l10 bg-999">
+    </div>
+  </div>
+</div>
+</body>
+</html>

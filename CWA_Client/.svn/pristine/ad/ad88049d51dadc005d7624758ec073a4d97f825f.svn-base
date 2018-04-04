@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="../images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="../css/font-awesome.min.css">
+<link rel="stylesheet" href="../css/public.css">
+<link rel="stylesheet" href="../css/neiye.css">
+<script src="../../js/jquery.min.js"></script>
+<!--返回顶部-->
+<script src="../../js/top.js"></script>
+</head>
+<body>
+<!--公用头部JS-->
+<script src="../js/header.js"></script>
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <div class="left left-gywm">
+       <span class="menu01"><i class="fa fa-globe" aria-hidden="true"></i> 关于我们</span>
+       <ul class="menu02">
+          <li class=""><a href="gywm.html">企业介绍<i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+          <li class=""><a href="lxwm.html">联系我们<i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+          <li class="active"><a href="fwtk.html">服务条款<i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+          <li class=""><a href="cjwt.html">常见问题<i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+	   </ul>
+    </div>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <h2 class="clear font18 pad-b10 bor-b">服务条款</h2>
+      
+      <div class="text-c pad-t40">
+        <p class="col-999"><i class="fa fa-3x fa-hourglass-half" aria-hidden="true"></i></p>
+        <p class="red font16 pad-t15">资料整理中...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/footer.js"></script><!--公用底部JS-->
+
+</body>
+</html>

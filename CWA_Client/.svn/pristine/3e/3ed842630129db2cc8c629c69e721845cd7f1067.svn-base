@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script src="/chinese/mobile/js/commonRel.js"></script><!--通用引用-->
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+</head>
+
+<body>
+<div id="mescroll" class="mescroll">
+
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="hei36"></div>
+<div class="header-nav font12">
+  <ul>
+    <li class="active" onclick="changeStatus('',this)">全部</li>
+    <li onclick="changeStatus('withoutPayment',this)">未支付</li>
+    <li onclick="changeStatus('application',this)">申请中</li>
+    <li onclick="changeStatus('watingPlay',this)">等待播放</li>
+    <li onclick="changeStatus('playing',this)">播放中</li>
+    <li onclick="changeStatus('played',this)">已停播</li>
+    <li onclick="changeStatus('auditNotPass',this)">审核不通过</li>
+    <li onclick="changeStatus('canceled',this)">已取消</li>
+    <li onclick="changeStatus('closed',this)">已关闭</li>
+  </ul>
+</div>
+
+<div class="font12">
+  <ul id="dataList" class="ggdp-list1 ggdp-list4">
+  
+  </ul>
+</div>
+
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_queryOrder.js"></script>
+</div>
+
+
+<!--弹出有效时段提示框-->
+<div class="shade" id="shiduandiv" style="display: ;">
+  <div class="tanchu-xy">
+    <div class="tanchu-bt">有效时段<a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('shiduandiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu4-nr">
+       <p class="dis-b pad-q10 sousuo">
+              <input type="text" name="user_age" id="user_age1" readonly class="dis-in wenb05" placeholder="请输入开始日期">
+              <span class="dis-in">至</span>
+              <input type="text" name="user_age" id="user_age2" readonly class="dis-in wenb05" placeholder="请输入结束日期">
+              <button name="" onclick="seachEffectualTimeBtn()" type="button" class="dis-in btn btn03 bg-blue bor-rad mar-l5">搜索</button>
+              <button name="" onclick="clearDate()" type="button" class="dis-in btn btn03 bg-red bor-rad mar-l5">清空</button>
+       </p>
+       
+       <div class="rmgg-table rmgg-table2 tanchu4-list pos-a">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" id="timeTable">
+</table>
+       </div>
+    </div>
+  </div>
+</div>
+
+<!--弹出有效日期-->
+<div class="shade" id="" style="display: ;">
+  <div class="tanchu-html">
+    <div class="tanchu-bt">
+      <span>有效时段</span><a href="#0" class="tanchu-close text-c" title="关闭"><i class="fa fa-close" aria-hidden="true"></i></a>
+    </div>
+    
+    <div class="tanchu5-nr">
+       <div class="bor-b tanchu5-nr-b pad-b5 pad-t5">
+         <span class="dis-b red font13"><em class="col-999 font12">店铺：</em>王者归来</span>
+         <span class="dis-b"><em class="col-999">设备编号：</em>123654</span>
+         <span class="dis-b"><em class="col-999">设备播放时段：</em>03:00:00-04:00:00</span>
+         <span class="dis-b"><em class="col-999">播放周期：</em>2017-11-08至2018-04-06</span>
+       </div>
+       
+       <div class="tanchu5-list bor-b3 pad-b5 pad-t5">
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+       </div>
+       
+       <div class="bor-b tanchu5-nr-b pad-b5 pad-t5">
+         <span class="dis-b red font13"><em class="col-999 font12">店铺：</em>王者归来</span>
+         <span class="dis-b"><em class="col-999">设备编号：</em>123654</span>
+         <span class="dis-b"><em class="col-999">设备播放时段：</em>03:00:00-04:00:00</span>
+         <span class="dis-b"><em class="col-999">播放周期：</em>2017-11-08至2018-04-06</span>
+       </div>
+       
+       <div class="tanchu5-list bor-b3 pad-b5 pad-t5">
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+       </div>
+       
+       <div class="bor-b tanchu5-nr-b pad-b5 pad-t5">
+         <span class="dis-b red font13"><em class="col-999 font12">店铺：</em>王者归来</span>
+         <span class="dis-b"><em class="col-999">设备编号：</em>123654</span>
+         <span class="dis-b"><em class="col-999">设备播放时段：</em>03:00:00-04:00:00</span>
+         <span class="dis-b"><em class="col-999">播放周期：</em>2017-11-08至2018-04-06</span>
+       </div>
+       
+       <div class="tanchu5-list bor-b3 pad-b5 pad-t5">
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+         <span class="dis-b">2017-11-08可购买: <em class="red">0</em> 条</span>
+       </div>
+    </div>
+    
+    <div class="tis01 text-c" style="display:block;"><span class="red">下单成功</span></div>
+    
+    <div class="tanchu-xyan text-c">
+      <input name="confirm" type="button" value="确定" class="btn btn02 bor-rad font13 mar-l10 bg-red">
+      <input name="" type="button" value="取消" class="btn btn02 bor-rad font13 mar-l10">
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

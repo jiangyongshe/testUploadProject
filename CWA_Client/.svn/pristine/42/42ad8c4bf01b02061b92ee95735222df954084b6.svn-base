@@ -1,0 +1,80 @@
+var loginStatus=false;
+$(function(){
+	var accountId = getLocalStorage('accountId');
+	if(accountId!=null){// 已经登录
+		loginStatus=true;
+		// 显示用户名
+		$('#userName').text(accountId);
+		$('#loginedDiv').show();
+		$('#userName').attr('href','/'+language+'/forward/customerAdvertise.do');
+		// 隐藏登录注册按钮
+		$('#loginRegP').hide();
+	}else{// 未登录
+		// 隐藏退出按钮
+		$('#loginedDiv').hide();
+		// 显示登录注册按钮
+		$('#loginRegP').show();
+	}
+})
+/**
+ * 激活为店主提示框
+ * @returns
+ */
+function activeShopkeeperDIV(){
+	if(!loginStatus){
+		// 跳去注册页
+		location.href = '/'+language+'/forward/register/cm.do?registerType=1';
+		return;
+	}
+	jsonAjax('/'+language+'/exclude/AD/activeAD.do',{},
+		function(res){
+			var msg = res.msg;
+			var success = res.success;
+			if(msg=='999'){
+				// 跳去注册页
+				location.href = '/'+language+'/exclude/forward/login.do';
+				return;
+			}
+			if(success){// 激活成功
+				showJudegTip('success','',msg);
+				location.href='/'+language+'/forward/AD/gotoChangeToAd.do';
+			}else{// 激活失败
+				showJudegTip('fail','',msg);
+			}
+		},
+	function(){});
+}
+
+//退出登录
+function exitLogin(){
+	if(loginStatus){
+		jsonAjax('/'+language+'/user/exit.do',{},
+			function(res){
+				if(res.respCode=='10000'){
+					clearLocalStorage();
+					// 跳去注册页
+					location.href = '/'+language+'/html/index1.html';
+					return;
+				}
+			},
+		function(){});
+	}
+}
+/*$(window).bind('beforeunload',function(){
+	if(event.clientX>document.body.clientWidth&&event.clientY<0||event.altKey)
+    {   
+		exitLogin();
+    }
+	$(window).unbind('beforeunload');
+});*/
+	//解除绑定，一般放在提交触发事件中
+	
+window.onbeforeunload = function(event) { 
+	var x=event.currentTarget.screenX,y=event.currentTarget.screenY;
+	
+	var b=x+y;
+	if(window.event.clientX>document.body.clientWidth&&window.event.clientY<0||window.event.altKey)
+    {   
+		exitLogin();
+    }
+}

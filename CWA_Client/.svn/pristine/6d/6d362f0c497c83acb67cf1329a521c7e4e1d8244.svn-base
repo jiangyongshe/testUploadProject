@@ -1,0 +1,84 @@
+package com.cwa.client.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.AdvertiseOrderDao;
+import com.cwa.client.dao.AdvertiseOrderDetailDao;
+import com.cwa.client.dao.DeviceVedioCountDao;
+import com.cwa.client.dto.OrderDto;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.web.quartzJob.CanceOrderlTaskTimer;
+
+/**
+ * 文件管理
+ * @author HZK
+ */
+@Service
+public class CancelTimeoutOrderService implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private DeviceVedioCountDao deviceVedioCountDao;
+	
+	@Resource
+	private AdvertiseOrderDetailDao advertiseOrderDetailDao;
+	
+	@Resource
+	private AdvertiseOrderDao advertiseOrderDao;
+	
+
+	public void cancelTimeoutOrder() throws Exception{
+		List<OrderDto> list = advertiseOrderDao.queryTimeoutOrder();
+		List<Object[]> batchOrder = new ArrayList<Object[]>();
+		List<Object[]> batchPlayCount = new ArrayList<Object[]>();
+		List<Object[]> batchInterPlayCount = new ArrayList<Object[]>();
+		for (OrderDto dto : list) {
+			boolean bl=true;
+			Object [] obj=new Object[]{
+					dto.getSerial_number()
+			};
+			for (Object[] object : batchOrder) {
+				if(object[0].toString().equals(dto.getSerial_number())){
+					bl=false;
+				}
+			}
+			if(bl){
+				batchOrder.add(obj);
+			}
+			
+			if(dto.getOrder_type()==2){
+				Object [] obj2=new Object[]{
+						dto.getDevice_id(),
+						dto.getBegin_time(),
+						dto.getEnd_time(),
+						dto.getPlay_begin_time()
+				};
+				batchInterPlayCount.add(obj2);
+			}else{
+				Object [] obj2=new Object[]{
+						dto.getDevice_id(),
+						dto.getBegin_time(),
+						dto.getEnd_time(),
+						dto.getPlay_begin_time()
+				};
+				
+				batchPlayCount.add(obj2);
+			}
+		}
+		logWriteUtil.writeLog(LOGTYPE_TIMER, "batchOrderSize:"+batchOrder.size()+"--batchPlayCountSize:"+batchPlayCount.size(), LOGLEVEL_INFO, CanceOrderlTaskTimer.class);
+		int[] batchDeleteOrder = advertiseOrderDao.batchUpdateOrder(batchOrder);
+		int[] batchDeleteOrderDetail = advertiseOrderDetailDao.batchDeleteOrderDetail(batchOrder);
+		int[] batchUpdateSubstractCount = deviceVedioCountDao.batchUpdateSubstractCount(batchPlayCount,null);
+		int[] batchUpdateSubstractCount1 = deviceVedioCountDao.batchUpdateSubstractCount(batchInterPlayCount,"1");//插播订单取消
+		logWriteUtil.writeLog(LOGTYPE_TIMER, "batchOrderLength:"+batchDeleteOrder.length+"--batchDeleteOrderDetailLength:"+batchUpdateSubstractCount1.length+"--batchUpdateSubstractCountLength:"+batchUpdateSubstractCount.length, LOGLEVEL_INFO, CanceOrderlTaskTimer.class);
+		batchOrder.removeAll(batchOrder);
+		batchPlayCount.removeAll(batchPlayCount);
+	}
+}

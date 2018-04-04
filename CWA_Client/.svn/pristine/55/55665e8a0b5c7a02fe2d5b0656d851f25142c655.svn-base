@@ -1,0 +1,261 @@
+package com.cwa.client.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+/**
+ * 转发
+ */
+@Controller
+@RequestMapping("/*/forward/")
+public class ForwardController {
+
+	/**
+	 * 转发到登录页
+	 * @return
+	 */
+	@RequestMapping("/login.do")
+	public String gotoLogin(){
+		return "login";
+	}
+	
+	/**
+	 * 转发到首页
+	 * @return
+	 */
+	@RequestMapping("/home.do")
+	public String gotoHome(){
+		return "index";
+	}
+	
+	/**
+	 * 转发到广告店铺
+	 * @return
+	 */
+	@RequestMapping("/adStore.do")
+	public String adStore(){
+		return "adStore";
+	}
+	
+	/**
+	 * 转发到求购信息
+	 * @return
+	 */
+	@RequestMapping("/askToBuy.do")
+	public String askToBuy(){
+		return "askToBuy";
+	}
+	
+	/**
+	 * 转发到忘记密码
+	 * @return
+	 */
+	@RequestMapping("/forgetPwd.do")
+	public String gotoForgetPassword(){
+		return "forgetPassword";
+	}
+	
+	/**
+	 * 转发到成为广告商
+	 * @return
+	 */
+	@RequestMapping("/AD/gotoChangeToAd.do")
+	public String gotoChangeToAd(){
+		return "ad_changeToAD";
+	}
+	
+	/**
+	 * 转发到广告商-修改密码
+	 * @return
+	 */
+	@RequestMapping("/AD/adUpdatePwd.do")
+	public String adUpdatePwd(){
+		return "ad_updatePwd";
+	}
+	
+	/**
+	 * 转发到广告商-我的资料
+	 * @return
+	 */
+	@RequestMapping("/AD/adProfile.do")
+	public String adProfile(){
+		return "ad_myProfile";
+	}
+	
+	/**
+	 * 转发到广告商-查询广告
+	 * @return
+	 */
+	@RequestMapping("/AD/queryAD.do")
+	public String queryAD(){
+		return "ad_queryAD";
+	}
+	
+	/**
+	 * 转发到广告商-推荐好友
+	 * @return
+	 */
+	@RequestMapping("/AD/recommendFriend.do")
+	public String ad_recommendFriend(){
+		return "ad_recommendFriend";
+	}
+	
+	/**
+	 * 转发到广告商-佣金
+	 * @return
+	 */
+	@RequestMapping("/AD/commission.do")
+	public String ad_commission(){
+		return "ad_commission";
+	}
+	
+	/**
+	 * 转发到广告商-出金
+	 * @return
+	 */
+	@RequestMapping("/AD/withdraw.do")
+	public String ad_withdraw(){
+		return "ad_withdraw";
+	}
+	
+	/**
+	 * 转发到广告商-设备监控
+	 * @return
+	 */
+	@RequestMapping("/AD/deviceMonitoring.do")
+	public String ad_deviceMonitoring(){
+		return "ad_deviceMonitoring";
+	}
+	
+	/**
+	 * 转发到广告商-设备详情
+	 * @return
+	 */
+	@RequestMapping("/AD/deviceDetail.do")
+	public String ad_deviceDetail(){
+		return "ad_deviceDetail";
+	}
+	
+	/**
+	 * 转发到用户-修改密码
+	 * @return
+	 */
+	@RequestMapping("/customerUpdatePwd.do")
+	public String customerUpdatePwd(){
+		return "customer_updatePwd";
+	}
+	
+	/**
+	 * 转发到用户-我的资料
+	 * @return
+	 */
+	@RequestMapping("/myProfile.do")
+	public String myProfile(RedirectAttributes attr){
+		return "customer_myProfile"; 
+	}
+	
+	/**
+	 * 转发到用户-投放广告
+	 * @return
+	 */
+	@RequestMapping("/customerAdvertise.do")
+	public String customerAdvertise(RedirectAttributes attr){
+		return "customer_advertise"; 
+	}
+	
+	/**
+	 * 转发到用户-广告订单
+	 * @return
+	 */
+	@RequestMapping("/customerOrder.do")
+	public String customerOrder(RedirectAttributes attr){
+		return "customer_orderCenter"; 
+	}
+	
+	/**
+	 * 转发到用户-推荐好友
+	 * @return
+	 */
+	@RequestMapping("/customer/recommendFriend.do")
+	public String customer_recommendFriend(){
+		return "customer_recommendFriend"; 
+	}
+	
+	/**
+	 * 转发到用户-视频上传查看
+	 * @return
+	 */
+	@RequestMapping("/lookVideo.do")
+	public String lookVideo(RedirectAttributes attr){
+		return "customer_lookAdVedio"; 
+	}
+	
+	/**
+	 * 转发到用户-视频上传或修改
+	 * @return
+	 */
+	@RequestMapping("/updateOrUploadVideo.do")
+	public String updateOrUploadVideo(RedirectAttributes attr){
+		return "customer_uploadOrUpdateAdVedio"; 
+	}
+	
+	/**
+	 * 转发到用户-购物车
+	 * @return
+	 */
+	@RequestMapping("/shoppCart.do")
+	public String shoppCart(RedirectAttributes attr){
+		return "customer_shoppCart"; 
+	}
+	
+	/**
+	 * 转发到用户-佣金管理
+	 * @return
+	 */
+	@RequestMapping("/agencyCommission.do")
+	public String agencyCommission(RedirectAttributes attr){
+		return "customer_agencyCommission"; 
+	}
+	
+	/**
+	 * 转发到用户-出金
+	 * @return
+	 */
+	@RequestMapping("/customer/withdraw.do")
+	public String withdraw(RedirectAttributes attr){
+		return "customer_withdraw"; 
+	}
+	/**
+	 * 转发到用户-广告播放历史查询
+	 * @return
+	 */
+	@RequestMapping("/adHistoryQuery.do")
+	public String adHistoryQuery(RedirectAttributes attr){
+		return "customer_adHistoryQuery"; 
+	}
+	/**
+	 * 转发到用户-翔云宝
+	 * @return
+	 */
+	@RequestMapping("/customerWallet.do")
+	public String customerWallet(RedirectAttributes attr){
+		return "customer_wallet"; 
+	}
+	/**
+	 * 转发到用户-翔云宝提现
+	 * @return
+	 */
+	@RequestMapping("/customerWalletWithdraw.do")
+	public String customerWalletWithdraw(RedirectAttributes attr){
+		return "customer_walletWithdraw"; 
+	}
+	/**
+	 * 转发到用户-翔云宝充值
+	 * @return
+	 */
+	@RequestMapping("/customerWalletRecharge.do")
+	public String customerWalletRecharge(RedirectAttributes attr){
+		return "customer_walletRecharge"; 
+	}
+}

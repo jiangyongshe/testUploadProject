@@ -1,0 +1,141 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%-- 引入spring标签  --%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="/<spring:message code="url.language"/>/images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/font-awesome.min.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/public.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/index.css">
+<script src="/js/jquery.min.js"></script>
+<!--焦点图-->
+<script src="/js/banner.js"></script>
+<!--文字向上滚动-->
+<script src="/js/scroll.js"></script>
+<!--返回顶部-->
+<script src="/js/top.js"></script>
+<!-- 登录逻辑 -->
+<script src="/js/core/login.js"></script>
+<!-- 其它逻辑 -->
+<script src="/js/core/index.js"></script>
+<script>
+	$(document).ready(function() {
+		$(".dian-close").click(function() {
+			$(".dian-xq").hide(1000);
+		});
+
+		$('.dian-bt').on("click", function() {
+			$(this).next().slideToggle(100);
+			$('.dian-xq').not($(this).next()).slideUp('fast');
+		});
+	});
+</script>
+</head>
+
+<body>
+	<!-- 公用头部JS-->
+	<script type="text/javascript" src="/<spring:message code="url.language"/>/js/head.js"></script>
+
+	<div class="banner">
+		<%-- 会员登录开始--%>
+		<%@ include file="/commonJSP/loginInput.jsp" %>
+		
+		<!--图片轮播开始-->
+		<div class="slide-main" id="touchMain">
+			<a class="prev" stat="prev1001">
+			<img src="/<spring:message code="url.language"/>/images/l-btn.png" /></a>
+			<div class="slide-box text-s" id="slideContent">
+				<div class="slide" id="bgstylec">
+					<a stat="sslink-3">
+						<div class="obj-e">一站式户外全媒体覆盖</div>
+						<div class="obj-f">资源覆盖全国近300个城市</div>
+					</a>
+				</div>
+				<div class="slide" id="bgstylea">
+					<a stat="sslink-1">
+						<div class="obj-a">高品质 创新 节能 安全 美观</div>
+						<div class="obj-b">通过专业化、标准化、规模化的市场运作，改善了店招现场制作的落后模式</div>
+					</a>
+				</div>
+				<div class="slide" id="bgstyleb">
+					<a stat="sslink-2">
+						<div class="obj-c">集研发 设计 制作 安装于一体</div>
+						<div class="obj-d">具有先进的生产设备、精湛的制作工艺和完善的施工管理体制和售后服务体系</div>
+					</a>
+				</div>
+			</div>
+			<a class="next" stat="next1002">
+				<img src="/<spring:message code="url.language"/>/images/r-btn.png" />
+			</a>
+			<div class="item">
+				<a class="cur suspendPointer" stat="item1001"></a>
+				<a class="suspendPointer" stat="item1002"></a>
+				<a class="suspendPointer" stat="item1003"></a>
+			</div>
+		</div>
+		<!--图片轮播结束-->
+	</div>
+
+	<div class="wid120 font14 pad-t10 pad-b10 pos-r bg-f9">
+  <div class="mar-auto">
+   <div class="box">
+      <b class="news-bt"><i class="fa fa-volume-up red"></i><spring:message code="home.b.recentNews"/></b>
+      <div class="t_news">
+           <ul class="news_li">
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>不数字无未来 户外广告即，不数字无未来</a></li>
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>户外广告即，不数字无未来</a></li>
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>不数字无未来，不数字无未来</a></li>
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>户外广告即，不数字无未来</a></li>
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>不数字无未来 户外广告即，不数字无未来</a></li>
+		   </ul>
+	       <ul class="swap"></ul>
+       </div>
+   </div>
+  </div>
+</div>
+
+<div class="wid120 pad-b50">
+  <div class="mar-auto">
+    <h2 class="font28 text-c rmgg-bt"><spring:message code="home.h2.hotAdvertisingPutInTimeFrame"/></h2>
+  
+    <div class="rmgg">
+    	<ul>
+    		<!-- 热门推荐广告 -->
+    		<%@include file="/chinese/templeteHTML/hotAD.html" %>
+    	</ul>
+	</div>
+		<script type="text/javascript">
+		$('.rmgg li').mouseenter(function(){
+			$(this).find('.rmgg-xx').stop().animate({bottom:'-66px'});
+			$(this).find('.a2').css({left:'0'})
+			$(this).children('.a2').find('.p4').css({left:'0'})
+			$(this).children('.a2').find('.p5').css({left:'0'})
+			$(this).children('.a2').find('.p6').css({transform:'scale(1)'})
+			$(this).children('.a2').find('.p7').css({bottom:'0'})
+		})
+		$('.rmgg li').mouseleave(function(){
+			$(this).find('.rmgg-xx').stop().animate({bottom:'0px'});
+			$(this).find('.a2').css({left:-$(this).width()})
+			$(this).children('.a2').find('.p4').css({left:-$(this).width()})
+			$(this).children('.a2').find('.p5').css({left:-$(this).width()})
+			$(this).children('.a2').find('.p6').css({transform:'scale(1.3)'})
+			$(this).children('.a2').find('.p7').css({bottom:'-74px'})
+		})
+		</script>
+      
+      <div class="text-r pad-t15 font16" style="visibility:hidden;"><a class="red"><spring:message code="home.href.morePutInTimeFrame"/>&gt;&gt;</a></div>
+  </div>
+</div>
+
+	<!-- 公用底部JS-->
+	<script type="text/javascript" src="/<spring:message code="url.language"/>/js/footer.js"></script>
+</body>
+</html>

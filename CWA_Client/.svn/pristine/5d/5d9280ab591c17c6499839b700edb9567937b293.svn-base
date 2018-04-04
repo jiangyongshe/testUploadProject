@@ -1,0 +1,108 @@
+package com.cwa.client.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
+import com.cwa.client.dto.ADCommissionDetailDto;
+import com.cwa.client.dto.CommissionDetailDto;
+import com.cwa.client.model.Tb_commission_detail;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+public class ADCommissionDetailDao extends BaseDao<Tb_commission_detail, CommissionDetailDto> implements Constant {
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 查询佣金明细
+	 * @param param
+	 * @return
+	 */
+	public List<ADCommissionDetailDto> queryCommissionDetail(ADCommissionDetailDto param){
+		String startTime = param.getStartTime();
+		String endTime = param.getEndTime();
+		Integer pageNo = param.getPageNo();
+		Integer pageSize = param.getPageSize();
+		List<Object> params = new ArrayList<Object>();
+		params.add(param.getAdvertiser_id());
+		params.add(param.getAdvertiser_id());
+		StringBuffer sql = new StringBuffer(
+				 "SELECT A.ADVERTISER_COMM,A.TYPE,A.BALANCE_DATETIME FROM "
+				+"(SELECT ADVERTISER_COMM,'ad' TYPE,BALANCE_DATETIME FROM tb_commission_detail where ADVERTISER_ID=? "
+				+"UNION ALL "
+				+"SELECT REFERRALS_COMM,'ref' TYPE,BALANCE_DATETIME FROM tb_commission_detail where REFERRALS_TYPE='2' AND REFERRALS_ID = ?) A ");
+		boolean existWhere = false;
+		// 判断是否根据开始时间查询
+		if(startTime!=null&&!"".equals(startTime)){
+			sql.append("WHERE DATE_FORMAT(A.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"')>=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+			params.add(startTime);
+			existWhere = true;
+		}
+		// 判断是否根据结束时间查询
+		if(endTime!=null&&!"".equals(endTime)){
+			if(existWhere){
+				sql.append("AND DATE_FORMAT(A.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+				params.add(endTime);
+			}else{
+				sql.append("WHERE DATE_FORMAT(A.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+				params.add(endTime);
+				existWhere = true;
+			}
+		}
+		// 排序
+		sql.append("ORDER BY date_format(A.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"') DESC ");
+		// 判断是否分页
+		if(pageNo!=null&&pageNo!=0&&pageSize!=null&&pageSize!=0){
+			sql.append("LIMIT ?,? ");
+			params.add((pageNo-1)*pageSize);
+			params.add(pageSize);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+params, LOGLEVEL_INFO, ADCommissionDetailDao.class);
+		List<ADCommissionDetailDto> list = null;
+		list = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(ADCommissionDetailDto.class),params.toArray());
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, ADCommissionDetailDao.class);
+		return list;
+	}
+	
+	/**
+	 * 查询佣金明细数量
+	 * @param param
+	 * @return
+	 */
+	public int queryCommissionDetailCount(ADCommissionDetailDto param){
+		String startTime = param.getStartTime();
+		String endTime = param.getEndTime();
+		List<Object> params = new ArrayList<Object>();
+		params.add(param.getAdvertiser_id());
+		params.add(param.getAdvertiser_id());
+		StringBuffer sql = new StringBuffer(
+				 "SELECT COUNT(1) FROM "
+				+"(SELECT ADVERTISER_COMM,'ad' TYPE,BALANCE_DATETIME FROM tb_commission_detail where ADVERTISER_ID=? "
+				+"UNION ALL "
+				+"SELECT REFERRALS_COMM,'ref' TYPE,BALANCE_DATETIME FROM tb_commission_detail where REFERRALS_TYPE='2' AND REFERRALS_ID = ?) A ");
+		boolean existWhere = false;
+		// 判断是否根据开始时间查询
+		if(startTime!=null&&!"".equals(startTime)){
+			sql.append("WHERE DATE_FORMAT(A.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"')>=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+			params.add(startTime);
+			existWhere = true;
+		}
+		// 判断是否根据结束时间查询
+		if(endTime!=null&&!"".equals(endTime)){
+			if(existWhere){
+				sql.append("AND DATE_FORMAT(A.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+				params.add(endTime);
+			}else{
+				sql.append("WHERE DATE_FORMAT(A.BALANCE_DATETIME,'"+MYSQL_DATE_FORMAT_YMD+"')<=DATE_FORMAT(?,'"+MYSQL_DATE_FORMAT_YMD+"') ");
+				params.add(endTime);
+				existWhere = true;
+			}
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";"+"params:"+params, LOGLEVEL_INFO, ADCommissionDetailDao.class);
+		int count = this.jdbcTemplate.queryForObject(sql.toString(), Integer.class,params.toArray());
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "count:"+count, LOGLEVEL_INFO, ADCommissionDetailDao.class);
+		return count;
+	}
+}

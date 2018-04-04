@@ -1,0 +1,90 @@
+var chineseError=["密码不为空","两次输入密码不一致","密码为6-12个字符"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var ty="";
+$(function(){
+	$("#headerTitle").text("修改密码");
+	currError=currErrorArray(chineseError,englishError,twError);
+	if(Number(getLocalStorage('userType'))==2||Number(getLocalStorage('userType'))==5){
+		$("input[type='radio']").parents("ul").show();
+	}
+	$("input[type='radio']").bind("change",function(){
+		var val=$(this).val();
+		if(val=="1"){
+			$('#oldPwd').show();
+			$(".resetWPWD").hide();
+		}else{
+			$(".resetWPWD").show();
+			if(haveWPWD){
+				$('#oldPwd').show();
+			}else{
+				$('#oldPwd').hide();
+			}
+		}
+	})
+	if($("input[type='radio']:checked").val()=="2"){
+		$(".resetWPWD").show();
+	}
+	// 提交按钮
+	submit();
+})
+
+/**
+ * 提交按钮
+ */
+function submit(){
+	$('#submit').on('click',function(){
+		// 获取原密码
+		var oldPwd = $('#oldPwd').val();
+		// 获取新密码
+		var newPwd = $('#newPwd').val();
+		//修改类型
+		var typeUpd=$("input[type='radio']:checked").val();
+		// 获取二次输入的密码
+		var confirmPwd = $('#confirmPwd').val();
+		if(newPwd==null||newPwd==""||confirmPwd==null||confirmPwd==""){
+			showJudegTip('fail',currError[0]);
+			return;
+		}
+		if(newPwd.length>12||newPwd.length<6||confirmPwd.length>12||confirmPwd.length<6){
+			showJudegTip('fail',currError[2]);
+			return;
+		}
+		if(newPwd!=confirmPwd){
+			showJudegTip('fail',currError[1]);
+			return;
+		}
+		var obj={newPwd:newPwd,confirmPwd:confirmPwd};
+		if(haveWPWD||typeUpd=="1"){//原密码校验
+			if(oldPwd==null||oldPwd==""){
+				showJudegTip('fail',currError[0]);
+				return;
+			}
+			if(oldPwd.length>12||oldPwd.length<6){
+				showJudegTip('fail',currError[2]);
+				return;
+			}
+			obj.oldPwd=oldPwd;
+		}
+		var url='/'+language+'/customer/updatePwd.do';
+		if(typeUpd=="2"){
+			url='/'+language+'/customer/updateWithDrawPwd.do';
+		}
+		// 发送请求
+		jsonAjax(url,obj,
+		function(res){
+			var msg = res.msg;
+			if(msg!='10000'){
+				showJudegTip('fail',res.data);
+			}else{
+				// 清空输入框
+				$('#oldPwd').val('');
+				$('#newPwd').val('');
+				$('#confirmPwd').val('');
+				window.location.href="wode.html";
+			}
+		},function(){});
+	});
+	
+}

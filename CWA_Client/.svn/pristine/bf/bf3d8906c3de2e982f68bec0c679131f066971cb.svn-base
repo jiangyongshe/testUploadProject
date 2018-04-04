@@ -1,0 +1,44 @@
+package com.cwa.client.dto;
+
+public class BankServerTcpDto {
+
+	private String serverIp;
+	private int serverPort;
+	private String charSet;
+	private String webType;
+	private String baseUrl;
+	
+	public String getServerIp() {
+		return serverIp;
+	}
+	public void setServerIp(String serverIp) {
+		this.serverIp = serverIp;
+	}
+	public int getServerPort() {
+		return serverPort;
+	}
+	public void setServerPort(int serverPort) {
+		this.serverPort = serverPort;
+	}
+	public String getCharSet() {
+		return charSet;
+	}
+	public void setCharSet(String charSet) {
+		this.charSet = charSet;
+	}
+	public String getWebType() {
+		return webType;
+	}
+	public void setWebType(String webType) {
+		this.webType = webType;
+	}
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
+	}
+	
+	
+	
+}

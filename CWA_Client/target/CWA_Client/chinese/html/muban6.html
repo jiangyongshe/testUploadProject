@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>翔云播</title>
+<style>
+* {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+html, body {
+	margin:0;
+	padding:0;
+	height: 100%;
+}
+fieldset,img { 
+	border:0;
+}
+ol,ul {
+	list-style:none;
+}
+body{
+	font-family: Constantia, Palatino, "Palatino Linotype", "Palatino LT STD", Georgia, serif;
+	background: #000;
+	font-size: 15px;
+	color: #aa3e03;
+	overflow-x: hidden;
+}
+.ie7 body{
+	overflow:hidden;
+}
+.cb-slideshow,
+.cb-slideshow:after { 
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+	right: 0;
+	bottom: 0;
+    z-index: 0; 
+}
+.cb-slideshow li { 
+    width: 100%;
+    height: 100%;
+}
+.cb-slideshow li span { 
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+	right: 0;
+	bottom: 0;
+    color: transparent;
+    background-position: center center;
+    background-repeat: no-repeat;
+	background-size: contain;
+    opacity: 0;
+    z-index: 0;
+	-webkit-backface-visibility: hidden;
+	-webkit-animation-name: imageAnimation;
+    -moz-animation-name: imageAnimation;
+    -o-animation-name: imageAnimation;
+    -ms-animation-name: imageAnimation;
+    animation-name: imageAnimation; 
+	-webkit-animation-duration: 30s; /*图片播放总时间*/
+    -moz-animation-duration: 30s; /*图片播放总时间*/
+    -o-animation-duration: 30s; /*图片播放总时间*/
+    -ms-animation-duration: 30s; /*图片播放总时间*/
+    animation-duration: 30s;  /*图片播放总时间*/
+	-webkit-animation-timing-function: linear;
+    -moz-animation-timing-function: linear;
+    -o-animation-timing-function: linear;
+    -ms-animation-timing-function: linear;
+    animation-timing-function: linear; 
+	-webkit-animation-iteration-count: infinite;
+    -moz-animation-iteration-count: infinite;
+    -o-animation-iteration-count: infinite;
+    -ms-animation-iteration-count: infinite;
+    animation-iteration-count: infinite; 
+	-webkit-animation-delay: 0s;
+    -moz-animation-delay: 0s;
+    -o-animation-delay: 0s;
+    -ms-animation-delay: 0s;
+    animation-delay: 0s; 
+}
+.cb-slideshow li:nth-child(1) span { 
+    background-image: url(http://pic.97uimg.com///app_pic/00/00/01/12/ab9b8c0c8a75776231f2bdfc8f80cf97.jpg)   /*第一张图片*/
+}
+.cb-slideshow li:nth-child(2) span { 
+    background-image: url(http://pic.97uimg.com/back_pic/00/04/20/33/c7a33a12e74a169895733166bd1c7827.jpg);   /*第二张图片*/
+    -webkit-animation-delay: 6s;
+    -moz-animation-delay: 6s;
+    -o-animation-delay: 6s;
+    -ms-animation-delay: 6s;
+    animation-delay: 6s; 
+}
+.cb-slideshow li:nth-child(3) span { 
+    background-image: url(http://pic.97uimg.com/yangji/12/07/14/KRtY81.jpg!w1200);   /*第三张图片*/
+    -webkit-animation-delay: 12s;
+    -moz-animation-delay: 12s;
+    -o-animation-delay: 12s;
+    -ms-animation-delay: 12s;
+    animation-delay: 12s; 
+}
+.cb-slideshow li:nth-child(4) span { 
+    background-image: url(http://pic.97uimg.com///app_pic/00/00/00/01/9c043ac6675d23884e4ac364d32bca07.jpg);   /*第四张图片*/
+    -webkit-animation-delay: 18s;
+    -moz-animation-delay: 18s;
+    -o-animation-delay: 18s;
+    -ms-animation-delay: 18s;
+    animation-delay: 18s; 
+}
+.cb-slideshow li:nth-child(5) span { 
+    background-image: url(http://pic.97uimg.com/back_pic/20/15/11/03/84959b11dcb9d3163e89cce342a8f15d.jpg!w1200);   /*第五张图片*/
+    -webkit-animation-delay: 24s;
+    -moz-animation-delay: 24s;
+    -o-animation-delay: 24s;
+    -ms-animation-delay: 24s;
+    animation-delay: 24s; 
+}
+/* 图片谈入谈出动画 */
+@-webkit-keyframes imageAnimation { 
+    0% { opacity: 0;
+    -webkit-animation-timing-function: ease-in; }
+    8% { opacity: 1;
+         -webkit-animation-timing-function: ease-out; }
+    17% { opacity: 1 }
+    25% { opacity: 0 }
+    100% { opacity: 0 }
+}
+@-moz-keyframes imageAnimation { 
+    0% { opacity: 0;
+    -moz-animation-timing-function: ease-in; }
+    8% { opacity: 1;
+         -moz-animation-timing-function: ease-out; }
+    17% { opacity: 1 }
+    25% { opacity: 0 }
+    100% { opacity: 0 }
+}
+@-o-keyframes imageAnimation { 
+    0% { opacity: 0;
+    -o-animation-timing-function: ease-in; }
+    8% { opacity: 1;
+         -o-animation-timing-function: ease-out; }
+    17% { opacity: 1 }
+    25% { opacity: 0 }
+    100% { opacity: 0 }
+}
+@-ms-keyframes imageAnimation { 
+    0% { opacity: 0;
+    -ms-animation-timing-function: ease-in; }
+    8% { opacity: 1;
+         -ms-animation-timing-function: ease-out; }
+    17% { opacity: 1 }
+    25% { opacity: 0 }
+    100% { opacity: 0 }
+}
+@keyframes imageAnimation { 
+    0% { opacity: 0;
+    animation-timing-function: ease-in; }
+    8% { opacity: 1;
+         animation-timing-function: ease-out; }
+    17% { opacity: 1 }
+    25% { opacity: 0 }
+    100% { opacity: 0 }
+}
+.no-cssanimations .cb-slideshow li span{
+	opacity: 1;
+}
+</style>
+</head>
+
+<body>
+<ul class="cb-slideshow">
+	<li><span>Image 01</span></li>
+	<li><span>Image 02</span></li>
+	<li><span>Image 03</span></li>
+	<li><span>Image 04</span></li>
+	<li><span>Image 05</span></li>
+</ul>
+</body>
+</html>

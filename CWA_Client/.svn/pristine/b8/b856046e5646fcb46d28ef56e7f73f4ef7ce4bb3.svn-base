@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<a href="chuj-mx.html" class="font12 col-fff header-r2">明细</a>
+
+<div class="font12">
+  <ul class="ggtf-sc ggtf-sc3 pad-q10 bor-b4">
+        <li>
+          <span class="pos-a ggtf-sc-bt">可提现金额</span>
+          <input type="text" class="wenb03 width100 disabled" id="allowWithdrawMoney" placeholder="0.00元" />
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">提现金额</span>
+          <input type="text" class="wenb03 width100" id="withdrawMoney" placeholder="请输入提现金额" />
+        </li>
+  </ul>
+  
+  <input name="" id="submit" type="button" value="提交" class="btn btn11 bg-blue width100 pad-q10 font13 mar-t20" />
+</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/withDraw.js"></script>
+</body>
+</html>

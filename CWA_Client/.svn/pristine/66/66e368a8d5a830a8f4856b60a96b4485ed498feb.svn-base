@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<link rel="stylesheet" href="/chinese/mobile/css/mescroll.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="body1">
+
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<a href="javascript:;" onclick="elementDisplay('tc-eject')" class="font12 col-fff header-r2">筛选<i class="fa fa-filter pad-l5" aria-hidden="true"></i></a>
+<div id="wrapper" class="mescroll mescroll5">
+		<div id="scroller">
+		
+		<div class="font12 col-fff">
+		  <ul id="dataList" class="yjmx-list2 pos-r">
+		  </ul>
+		</div>
+		
+<!-- <div class="font12 col-fff">
+  <ul class="yjmx-list">
+    <li>
+      <p class="yjmx-list01">序号</p>
+      <p class="yjmx-list02">日期</p>
+      <p class="yjmx-list03">类型</p>
+      <p class="yjmx-list04">提现金额（元）</p>
+    </li>
+  </ul>
+  
+  <ul id="dataList" class="yjmx-list">
+  </ul>
+</div> -->
+<div id="pullUp" class="hide clear width">
+				<div class="pullUpIcon"></div> 
+				<div class="pullUpLabel"></div>
+			</div>
+		</div>
+	</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/withDraw-mx.js"></script>
+
+<!--弹出筛选-->
+<div class="shade" id="tc-eject" style="display: ;">
+  <span class="cd-close2 text-c pad-l5" onclick="javascript:turnoff('tc-eject')" title="关闭"></span>
+  
+  <ul class="screen-list">
+	    <li>
+          <span class="pos-a screen-list-bt">开始时间</span>
+          <input type="text" name="user_age" id="user_age1" class="wenb03 width100" placeholder="请输入开始时间" />
+        </li>
+
+        <li>
+          <span class="pos-a screen-list-bt">结束时间</span>
+          <input type="text" name="user_age" id="user_age2" class="wenb03 width100" placeholder="请输入结束时间" />
+        </li>
+        
+        <li>
+          <button name="" type="button" class="btn btn07 bg-blue bor-rad font13 width100 mar-t10 query">搜索</button>
+        </li>
+  </ul>
+</div>
+</body>
+</html>

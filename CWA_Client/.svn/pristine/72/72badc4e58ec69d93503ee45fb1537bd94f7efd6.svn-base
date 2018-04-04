@@ -1,0 +1,303 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.goldwin.trade.client</groupId>
+  <artifactId>CWA_Client</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <name>CWA_Client</name>
+  <description/>
+  <properties>
+    <webVersion>3.1</webVersion>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+  
+    <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-api</artifactId>
+      <version>7.0</version>
+      <scope>provided</scope>
+    </dependency>
+    
+      <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-core</artifactId>
+    <version>4.3.0.RELEASE</version>
+</dependency>
+
+<dependency>
+    	<groupId>org.springframework</groupId>
+    	<artifactId>spring-web</artifactId>
+    	<version>4.3.0.RELEASE</version>
+    </dependency>
+   
+    
+     <dependency>
+    	<groupId>org.springframework</groupId>
+    	<artifactId>spring-webmvc</artifactId>
+    	<version>4.3.0.RELEASE</version>
+    </dependency>
+    
+    <dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-jdbc</artifactId>
+	<version>4.3.0.RELEASE</version>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-test</artifactId>
+    <version>4.3.0.RELEASE</version>
+</dependency>
+
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.8.9</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-dbcp2</artifactId>
+    <version>2.1.1</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+    <version>3.4</version>
+</dependency>
+
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.38</version>
+</dependency>
+
+<dependency>  
+    <groupId>net.sf.json-lib</groupId>  
+    <artifactId>json-lib</artifactId>  
+    <version>2.4</version>  
+    <classifier>jdk15</classifier>  
+</dependency>
+<dependency>
+    <groupId>com.google.guava</groupId>
+    <artifactId>guava</artifactId>
+    <version>18.0</version>
+</dependency>
+
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.12</version>
+</dependency>
+  
+
+<dependency>
+    <groupId>org.codehaus.jackson</groupId>
+    <artifactId>jackson-mapper-asl</artifactId>
+    <version>1.9.13</version>
+</dependency>
+
+<dependency>
+    <groupId>org.codehaus.jackson</groupId>
+    <artifactId>jackson-core-asl</artifactId>
+    <version>1.9.13</version>
+</dependency>
+
+<dependency>
+    <groupId>org.jasypt</groupId>
+    <artifactId>jasypt</artifactId>
+    <version>1.9.2</version>
+</dependency>
+
+<dependency>
+    <groupId>org.jasypt</groupId>
+    <artifactId>jasypt-spring3</artifactId>
+    <version>1.9.2</version>
+</dependency>
+
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>2.8.1</version>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-redis</artifactId>
+    <version>1.7.2.RELEASE</version>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.session</groupId>
+    <artifactId>spring-session</artifactId>
+    <version>1.2.1.RELEASE</version>
+</dependency>
+
+<dependency>
+    <groupId>commons-fileupload</groupId>
+    <artifactId>commons-fileupload</artifactId>
+    <version>1.3.2</version>
+</dependency>
+
+<dependency>
+    <groupId>commons-io</groupId>
+    <artifactId>commons-io</artifactId>
+    <version>2.5</version>
+</dependency>
+<!-- freemarker模板依赖包导入 -->
+<dependency>
+    <groupId>org.freemarker</groupId>
+    <artifactId>freemarker</artifactId>
+    <version>2.3.26-incubating</version>
+</dependency>
+
+   <!--  引入计划任务的依赖包 start  -->
+  <dependency>
+      <groupId>org.quartz-scheduler</groupId>
+      <artifactId>quartz</artifactId>
+      <version>2.1.3</version>
+  </dependency>
+   
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+      <version>4.3.4.RELEASE</version>
+   </dependency>
+     <!--  引入计划任务的依赖包 end  -->
+ 
+<dependency>
+    <groupId>commons-net</groupId>
+    <artifactId>commons-net</artifactId>
+    <version>3.5</version>
+</dependency>
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-nop</artifactId>
+    <version>1.7.21</version>
+</dependency>
+
+     <!--  引入计划任务的依赖包 start  -->
+  <dependency>
+      <groupId>org.quartz-scheduler</groupId>
+      <artifactId>quartz</artifactId>
+      <version>2.1.3</version>
+  </dependency>
+   
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+      <version>4.3.4.RELEASE</version>
+   </dependency>
+     <!--  引入计划任务的依赖包 end  -->
+    
+    <!-- http client begin -->
+    <dependency>
+         <groupId>org.apache.httpcomponents</groupId>
+         <artifactId>httpcore</artifactId>
+         <version>4.3.2</version>
+     </dependency>
+     <dependency>
+         <groupId>org.apache.httpcomponents</groupId>
+         <artifactId>httpclient-cache</artifactId>
+         <version>4.3.4</version>
+     </dependency>
+     <dependency>
+         <groupId>org.apache.httpcomponents</groupId>
+         <artifactId>httpmime</artifactId>
+         <version>4.3.4</version>
+     </dependency>
+     <dependency>
+         <groupId>commons-httpclient</groupId>
+         <artifactId>commons-httpclient</artifactId>
+         <version>3.0.1</version>
+     </dependency>
+      <!-- http client end -->
+      
+      <dependency>
+    <groupId>com.google.code.gson</groupId>
+    <artifactId>gson</artifactId>
+    <version>2.7</version>
+</dependency>
+
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>jstl</artifactId>
+    <version>1.2</version>
+</dependency>
+<dependency>  
+            <groupId>ch.qos.logback</groupId>  
+            <artifactId>logback-classic</artifactId>  
+            <version>1.2.3</version>  
+            <scope>compile</scope>  
+            <exclusions>  
+                <exclusion>  
+                    <artifactId>slf4j-api</artifactId>  
+                    <groupId>org.slf4j</groupId>  
+                </exclusion>  
+            </exclusions>  
+        </dependency>  
+  
+        <dependency>  
+            <groupId>ch.qos.logback</groupId>  
+            <artifactId>logback-core</artifactId>  
+            <version>1.2.3</version>  
+            <exclusions>  
+                <exclusion>  
+                    <groupId>org.slf4j</groupId>  
+                    <artifactId>slf4j-api</artifactId>  
+                </exclusion>  
+            </exclusions>  
+            <scope>compile</scope>  
+        </dependency>  
+  
+        <dependency>  
+            <groupId>ch.qos.logback</groupId>  
+            <artifactId>logback-access</artifactId>  
+            <version>1.2.3</version>  
+            <exclusions>  
+                <exclusion>  
+                    <groupId>org.slf4j</groupId>  
+                    <artifactId>slf4j-api</artifactId>  
+                </exclusion>  
+            </exclusions>  
+            <scope>compile</scope>  
+        </dependency>
+        <!-- 生成二维码 -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+        <dependency>
+		    <groupId>com.google.zxing</groupId>
+		    <artifactId>javase</artifactId>
+		    <version>2.0</version>
+		</dependency>
+
+  </dependencies>
+
+  <build>
+   <finalName>CWA_Client</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+        <warSourceDirectory>${basedir}/src/main/webapp</warSourceDirectory>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
+</project>

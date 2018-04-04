@@ -1,0 +1,98 @@
+var chineseError=["提现成功","请输入提现金额","金额格式错误","金额大于可提现额","两次输入密码不一致","银盛出金未办卡，<a href='/chinese/mobile/html/banka.html' class='red'>去绑卡</a>!"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var page=1,pageSize=8,type="";
+$(function(){
+	$("#headerTitle").text("提现");
+	currError=currErrorArray(chineseError,englishError,twError);
+	// 设置佣金类型
+	/*if(Number(getLocalStorage('userType'))==2){
+		$('.commissionType').html('<option value=1>广告主佣金</option><option value=2>店主佣金</option>');
+	}else{
+		$('.commissionType').html('<option value=1>广告主佣金</option>');
+	}*/
+	queryAllowWithdrawMoney(1);//广告佣金查询
+	bindWithdrawBtn();// 绑定出金按钮
+	//commissionTypeDrop();
+})
+
+/**
+ * 佣金类型下拉框change事件
+ * @returns
+ */
+function commissionTypeDrop(){
+	$('.commissionType').on('change',function(){
+		// 获取用户类型
+		var userType = $(this).find('option:selected').val();
+		// 查询可出金额
+		queryAllowWithdrawMoney(userType);
+	});
+}
+
+/**
+ * 查询可出金额
+ * @returns
+ */
+function queryAllowWithdrawMoney(userType){
+	var	uri = '/customer/query/commission.do';
+	jsonAjax('/'+language+uri,{},
+	function(res){
+		var data = res.data; 
+		if(data){
+			$('#allowWithdrawMoney').attr('placeholder',formatNumber(data.available_comm,2,1));
+		}else{
+			$('#allowWithdrawMoney').attr('placeholder',formatNumber(0,2,1));
+		}
+	},
+	function(){});
+}
+
+/**
+ * 绑定出金按钮
+ * @returns
+ */
+function bindWithdrawBtn(){
+	$('#submit').bind('click',function(){
+		disabledBtn("submit");
+		var userType = $('.commissionType').find('option:selected').val();
+		var payType = $('.payType').find('option:selected').val();
+		var uri = '/customer/withdraw.do';
+		var withdrawMoney=$('#withdrawMoney').val();
+		var canWithdrawMoney=$('#allowWithdrawMoney').attr('placeholder');
+		if(withdrawMoney==""||Number(withdrawMoney)==0){
+			showJudegTip('fail',currError[1]);
+			startBtn("submit");
+			return;
+		}
+		if(isNaN(withdrawMoney)){
+			showJudegTip('fail',currError[2]);
+			startBtn("submit");
+			return;
+		}
+		if(parseFloat(withdrawMoney)>parseFloat(canWithdrawMoney)){
+			showJudegTip('fail',currError[3]);
+			startBtn("submit");
+			return;
+		}
+		jsonAjax('/'+language+uri,{withdrawMoney:withdrawMoney,payType:payType},
+		function(res){
+			startBtn("submit");
+			var status = res.success;
+			var msg = res.msg;
+			if(status){
+				showJudegTip('success',msg);
+				$('#withdrawMoney').val('');
+				// 重新查询可出佣金
+				queryAllowWithdrawMoney(userType);
+			}else{
+				if(msg=="50006"){
+					showJudegTip('normal',currError[5]);
+				}else{
+					showJudegTip('fail',msg);
+				}
+			}
+		},
+		function(){startBtn("submit");});
+	});
+}

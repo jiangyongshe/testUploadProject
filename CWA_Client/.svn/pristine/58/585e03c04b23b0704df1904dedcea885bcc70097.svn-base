@@ -1,0 +1,8 @@
+var html="<footer>\n";
+	html+="<p><a href=\"gywm.html\">关于我们</a>|<a href=\"lxwm.html\">联系我们</a>|<a href=\"fwtk.html\">服务条款</a>|<a href=\"cjwt.html\">常见问题</a></p>\n";
+	html+="<p>Copyright © 2017. All Rights Reserved. 版权所有</p>\n";
+	html+="</footer>\n";
+	
+	html+="<script src=\"js/top.js\"></script>\n";
+	html+="<div id=\"top\"></div>\n";
+document.writeln(html);

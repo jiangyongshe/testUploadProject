@@ -1,0 +1,394 @@
+package com.cwa.client.web;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dao.ClientInOutMoneyDao;
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.CustomerWalletFlow;
+import com.cwa.client.dto.DeviceVedioCountDto;
+import com.cwa.client.dto.OrderDetailDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.model.Tb_Order;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.service.AdvertiseInfoService;
+import com.cwa.client.service.OrderDetailService;
+import com.cwa.client.service.OrderService;
+import com.cwa.client.thread.PushVedioThread;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.GsonUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.RespCodeEnum;
+
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/*/order")
+public class AdOrderController extends BaseController<GobalRespParameter> implements Constant{
+
+	@Resource// 订单详情service层
+	private OrderDetailService orderDetailService;
+	
+	@Resource// 订单service层
+	private OrderService orderService;
+	
+	@Resource// 普通用户service层
+	private AdvertiseInfoService advertiseInfoService;
+	
+	@Resource
+	private ClientInOutMoneyDao clientInOutMoneyDao;
+	//下单
+	@RequestMapping("/placeAnOrder.do")
+	public void placeAnOrder(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		//获取请求参数并判断是否为空getPageModel
+		Map<String,String[]> map = getAllParameter(req,"placeAnOrder.do","checkAdvertiseId","deviceId","timeInterval","fileType","checkTimes");
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				Long bgTime=System.currentTimeMillis();//下单执行开始时间
+				String shoppIds=getParameter(req, "shoppIds");//购物车广告id
+				String isInterCut=getParameter(req, "isInterCut");
+				/*if(isInterCut!=null){
+					map.put("isInterCut", new String[] {isInterCut});//是否插播
+				}*/
+				List<AdvertiseInfoDto> list = getOrderList(req,map,shoppIds,true);
+				if(list.size()>0){
+					/*if(list.size()>3&&!"2".equals(getParameter(req, "isSub"))){
+						parameter.setData(reqCt.getMessage("pay.common.order.threeAdvertise"));
+						parameter.setMsg(RespCodeEnum.order_orderlarge_error.getCode());
+						writeJSON(res, parameter);
+						return;
+					}*/
+ 					writeLog("", "query advertise info success! time consuming:"+(System.currentTimeMillis()-bgTime)+"====list:"+GsonUtil.dtoToJson(list), LOGLEVEL_INFO, AdOrderController.class);
+					Map<String, String> notOrderMap=new HashMap<>();
+					if(!"1".equals(getParameter(req, "isCheckOrder"))){//如果订单存在不能下单天数则获取你能下单天数
+						notOrderMap= isPlayTimeInterval(list,map.get("isInterCut")==null?null:map.get("isInterCut")[0]);
+					}else{
+						if("2".equals(getParameter(req, "isCheckOrder"))){
+							notOrderMap.put("ifBuyToDay", "true");
+						}
+					}
+					if(isInterCut!=null){//插播无折扣
+						notOrderMap.put("isInterCut",isInterCut);//是否插播
+					}/*else{
+						Map<String, String> allDisMap=queryUserYMWDiscount();//获取所有折扣
+						notOrderMap.putAll(allDisMap);
+					}*/
+					if(getParameter(req, "isSub")!=null){
+						notOrderMap.put("isSub",getParameter(req, "isSub"));//是否分单
+					}
+					Double disCount = queryUserDiscount(req,list.size());
+					writeLog("", "query no order time success! time consuming:"+(System.currentTimeMillis()-bgTime)+"====disCount:"+disCount+" =====map:"+GsonUtil.dtoToJson(notOrderMap), LOGLEVEL_INFO, AdOrderController.class);
+					CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+					writeLog("", "customer T_TYPE:"+customerDto.getT_type(), LOGLEVEL_INFO, AdOrderController.class);
+					if(customerDto.getT_type()==9){
+						writeLog("", "customer is Free single accountId:"+customerDto.getAccount_id(), LOGLEVEL_INFO, AdOrderController.class);
+						disCount=0.0;
+					}
+					String strResult = orderService.createOrder(list,notOrderMap,shoppIds,disCount);//生成订单
+					writeLog("", "placeAnOrder success end! time consuming:"+(System.currentTimeMillis()-bgTime), LOGLEVEL_INFO, AdOrderController.class);
+					if(strResult.equals(RespCodeEnum.order_create_notTimeInterval.getCode())){
+						parameter.setData(reqCt.getMessage("pay.common.order.playTimeNoEnough"));
+					}else if(strResult.equals(RespCodeEnum.order_playCycle_error.getCode())){
+						parameter.setData(reqCt.getMessage("pay.common.order.playCycleError"));
+					}else if(strResult.split("-")[0].equals(RespCodeEnum.order_device_error.getCode())){
+						parameter.setData(reqCt.getMessage("pay.common.order.deviceError"));
+					}else{
+						if(isInterCut==null||!"2".equals(isInterCut)){
+							removeNoOrderMapToDay(notOrderMap);
+						}
+						parameter.setData(notOrderMap);
+					}
+					parameter.setMsg(strResult);
+				}else{
+					parameter.setMsg(RespCodeEnum.order_adexpire_error.getCode());
+					parameter.setData(reqCt.getMessage("pay.common.order.advertiseTimeOut"));
+				}
+				
+			}else{//请求参数无效
+				parameter.setMsg(RespCodeEnum.global_parameter_isnull.getCode());
+				parameter.setData(reqCt.getMessage("common.exception.parameter"));
+			}
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	//查询不可以下单时段
+	@RequestMapping("/queryNoOrderTime.do")
+	public void queryNoOrderTime(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		Map<String,String[]> map = getAllParameter(req,"queryNoOrderTime.do","checkAdvertiseId","deviceId","timeInterval","checkTimes");
+		//RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				/*String isInterCut=getParameter(req, "isInterCut");
+				if(isInterCut!=null){
+					map.put("isInterCut", new String[] {isInterCut});//是否插播
+				}*/
+				List<AdvertiseInfoDto> list = getOrderList(req,map,null,true);
+				writeLog("", "query advertise info success! data:"+GsonUtil.dtoToJson(list), LOGLEVEL_INFO, AdOrderController.class);
+				Map<String, String> notOrderMap = isPlayTimeInterval(list,map.get("isInterCut")==null?null:map.get("isInterCut")[0]);
+				writeLog("", "query NoOrderTime success! notOrderMap:"+GsonUtil.dtoToJson(notOrderMap), LOGLEVEL_INFO, AdOrderController.class);
+				if(map.get("isInterCut")==null||!"2".equals(map.get("isInterCut")[0])){
+					String result = removeNoOrderMapToDay(notOrderMap);
+					if("0".equals(result)){
+						parameter.setMsg("2");
+					}
+				}
+				parameter.setData(notOrderMap);
+				parameter.setSuccess(true);
+			}else{//请求参数无效
+				parameter.setMsg(RespCodeEnum.global_parameter_isnull.getCode());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	//查询不可以下单时段
+	@RequestMapping("/queryAdvertiseDateForSellOut.do")
+	public void queryAdvertiseDateForSellOut(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		Map<String,String[]> map = getAllParameter(req,"queryAdvertiseDateForSellOut.do","deviceId","idleTime","playNum");
+		//RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				List<DeviceVedioCountDto> list = findAdvertiseDateForSellOut(map);
+				writeLog("", "query SellOut date success!", LOGLEVEL_INFO, AdOrderController.class);
+				parameter.setData(list);
+				parameter.setSuccess(true);
+			}else{//请求参数无效
+				parameter.setMsg(RespCodeEnum.global_parameter_isnull.getCode());
+			}
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	//查询订单
+	@RequestMapping("/queryOrderByOrderNo.do")
+	public void queryOrderByOrderNo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		Map<String,String[]> map = getAllParameter(req,"queryOrderByOrderNo.do","orderNo");
+		//RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+				List<AdvertiseInfoDto> list = orderDetailService.queryOrderDetailAndOrderBySerialNum(map.get("orderNo")[0],customerDto.getAccount_id());
+				Map<String,String> resultMap=new HashMap<>();
+				if(list!=null){
+					String fileType="",checkTimes="",checkAdvertiseId="",deviceIds="",timeInterval="",buyCount="";
+					for (AdvertiseInfoDto dto : list) {
+						fileType+=dto.getFile_type()+",";
+						checkTimes+=dto.getStartDate()+"@"+dto.getEndDate()+",";
+						checkAdvertiseId+=dto.getId()+",";
+						deviceIds+=dto.getDevice_id()+",";
+						timeInterval+=dto.getIdle_time()+",";
+						buyCount+="1"+",";
+					}
+					resultMap.put("fileType", fileType.substring(0, fileType.length()>0?fileType.length()-1:0));
+					resultMap.put("buyCount", buyCount.substring(0, buyCount.length()>0?buyCount.length()-1:0));
+					resultMap.put("checkTimes", checkTimes.substring(0, checkTimes.length()>0?checkTimes.length()-1:0));
+					resultMap.put("checkAdvertiseId", checkAdvertiseId.substring(0, checkAdvertiseId.length()>0?checkAdvertiseId.length()-1:0));
+					resultMap.put("deviceIds", deviceIds.substring(0, deviceIds.length()>0?deviceIds.length()-1:0));
+					resultMap.put("timeInterval", timeInterval.substring(0, timeInterval.length()>0?timeInterval.length()-1:0));
+					if(list.get(0).getIf_sub()==1){
+						resultMap.put("amount", list.get(0).getAd_price()+"-"+list.get(0).getSumPrice());
+					}
+					writeLog("", "query data success! resultMap："+JSONObject.fromObject(resultMap), LOGLEVEL_INFO, AdOrderController.class);
+				}
+				parameter.setData(resultMap);
+				parameter.setSuccess(true);
+			}else{//请求参数无效
+				parameter.setMsg(RespCodeEnum.global_parameter_isnull.getCode());
+			}
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	//查询订单
+	@RequestMapping("/queryOrder.do")
+	public void queryOrder(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		//获取请求参数并判断是否为空getPageModel
+		String pageSize= getParameter(req, "pageSize");
+		String pageNo= getParameter(req, "pageNo");
+		try {
+			if(pageSize==null){//每页大写为空则默认5条
+				pageSize=NINE+"";
+			}
+			if(pageNo==null){//当前页为空则默认首页
+				pageNo=ONE+"";
+			}
+			if(util.isNumber(pageSize)&&util.isNumber(pageNo)){//判断参数是否正确
+				CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+				AdvertiseInfoDto dto=new AdvertiseInfoDto();
+				dto.setPageNo(Integer.parseInt(pageNo));
+				dto.setPageSize(Integer.parseInt(pageSize));
+				dto.setAccount_id(customerDto.getAccount_id());//查询用户
+				dto.setAdName(getParameter(req, "adName"));
+				dto.setIdle_time(getParameter(req, "playIdle"));
+				dto.setShoppId(getParameter(req, "orderStatus"));
+				writeLog("", "==== accountId:"+JSONObject.fromObject(dto), LOGLEVEL_INFO, AdQueryController.class);
+				PageModel<AdvertiseInfoDto> pageModel = orderService.getPageModel(dto);
+				parameter.setData(pageModel);
+				parameter.setSuccess(true);
+				writeLog("", "query advertise info success! data:"+pageModel, LOGLEVEL_INFO, AdQueryController.class);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	//支付订单
+	@RequestMapping("/payOrder.do")
+	public void payOrder(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		Map<String,String[]> map = getAllParameter(req,"payOrder.do","orderNo","payWay");
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				List<Tb_Order> orderList = orderService.findOrderByOrderNo(map.get("orderNo")[0]);
+				writeLog("", "query orderList success! data:"+GsonUtil.dtoToJson(orderList), LOGLEVEL_INFO, AdOrderController.class);
+				if(orderList.size()>0){
+					CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+					BigDecimal total=new BigDecimal(0);
+					for (Tb_Order order : orderList) {//得到订单总额
+						total=total.add(order.getTotal_price());
+					}
+					CustomerWalletFlow dto =new CustomerWalletFlow();
+					dto.setAMOUNT(total);
+					dto.setCUSTOMER_ID(customerDto.getAccount_id());
+					dto.setFLOW_TYPE(3);
+					dto.setUserId(customerDto.getId());
+					writeLog("", "accountId:"+customerDto.getAccount_id()+"===dto:"+JSONObject.fromObject(dto), LOGLEVEL_INFO, AdOrderController.class);
+					parameter = orderService.batchUpdate(orderList,map.get("payWay")[0],dto,req);
+					if(parameter.getMsg().equals(RespCodeEnum.SUCCESS.getCode())){
+						parameter.setSuccess(true);
+					}else if(parameter.getMsg().equals(RespCodeEnum.wallet_withOut_error.getCode())){
+						parameter.setData(reqCt.getMessage("pay.common.money.notEnough"));
+					}else if(parameter.getMsg().equals(RespCodeEnum.wallet_withOut_error1.getCode())){
+						parameter.setData(reqCt.getMessage("pay.common.wallet.freeze"));
+					}else if(parameter.getMsg().equals(RespCodeEnum.wallet_withOut_error2.getCode())){
+						parameter.setData(reqCt.getMessage("pay.common.wallet.notExist"));
+					}
+				}else{
+					parameter.setMsg(RespCodeEnum.order_orderExpire_error.getCode());
+					parameter.setData(reqCt.getMessage("pay.common.order.orderTimeOut"));
+				}
+				
+			}else{//请求参数无效
+				parameter.setMsg(RespCodeEnum.global_parameter_isnull.getCode());
+				parameter.setData(reqCt.getMessage("common.exception.parameter"));
+			}
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	//订单有效时段
+	@RequestMapping("/queryEffectualTimeByOrderNo.do")
+	public void queryEffectualTimeByOrderNo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		Map<String,String[]> map = getAllParameter(req,"queryEffectualTimeByOrderNo.do","orderNo");
+		//RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+				writeLog("", "accountId:"+customerDto.getAccount_id()+"==== beginTime:"+getParameter(req, "beginTime")+"====endTime:"+getParameter(req, "endTime"), LOGLEVEL_INFO, AdQueryController.class);
+				List<OrderDetailDto> listDetail = orderService.queryEffectualTimeByOrderNo(map.get("orderNo")[0],customerDto.getAccount_id(),getParameter(req, "beginTime"),getParameter(req, "endTime"));
+				parameter.setData(listDetail);
+				parameter.setSuccess(true);
+				writeLog("", "query orderDetail info success! dataSize:"+listDetail.size(), LOGLEVEL_INFO, AdQueryController.class);
+			}else{//请求参数无效
+				parameter.setData(RespCodeEnum.global_parameter_isnull.getCode());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	//订单有效时段
+	@RequestMapping("/cancerInterCut.do")
+	public void cancerInterCut(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		Map<String,String[]> map = getAllParameter(req,"cancerInterCut.do","orderNo");
+		//RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				orderService.updateOrderType(map.get("orderNo")[0]);
+				PushVedioThread pushThread=new PushVedioThread(map.get("orderNo")[0],orderService);
+				pushThread.start();
+				parameter.setSuccess(true);
+			}else{//请求参数无效
+				parameter.setData(RespCodeEnum.global_parameter_isnull.getCode());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	
+	//检验订单支付状态
+	@RequestMapping("/checkOrderStatus.do")
+	public void checkOrderStatus(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		Map<String,String[]> map = getAllParameter(req,"cancerInterCut.do","orderNo");
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		try {
+			if(map!=null){
+				Tb_client_in_out_money inOutInfo = clientInOutMoneyDao.queryClientInOutInfo(map.get("orderNo")[0]);
+				if(inOutInfo!=null&&inOutInfo.getStatus()==2){
+					parameter.setSuccess(true);
+					//parameter.setData(data);
+				}else{
+					parameter.setData(reqCt.getMessage("pay.common.order.orderNotPay"));
+				}
+			}else{//请求参数无效
+				parameter.setData(reqCt.getMessage("common.exception.parameter"));
+			}
+		} catch (Exception e) {
+			parameter.setData(reqCt.getMessage("common.exception.unknow"));
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+}

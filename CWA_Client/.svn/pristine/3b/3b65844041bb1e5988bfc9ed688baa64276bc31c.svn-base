@@ -1,0 +1,85 @@
+var currPage=1,totolPage=1,beginTime,endTime;
+
+$(function(){
+	loadHistoryAdvertise();//加载广告商品
+	$(document).on("click",".index",function(){//首页
+		if(currPage==1){
+			return;
+		}
+		loadHistoryAdvertise();
+	})
+	$(document).on("click",".prev",function(){//上一页
+		if(currPage-1<1){
+			return;
+		}
+		loadHistoryAdvertise(currPage-1);
+	})
+	$(document).on("click",".next",function(){//下一页
+		if(currPage+1>totolPage){
+			return;
+		}
+		loadHistoryAdvertise(currPage+1);
+	})
+	$(document).on("click",".last",function(){//末页
+		if(currPage==totolPage){
+			return;
+		}
+		loadHistoryAdvertise(totolPage);
+	})
+	$(document).on("blur","#pageNo",function(){//页数跳转
+		var pageNo=$(this).val();
+		if(pageNo>totolPage){//大于最大页则跳到末页
+			pageNo=totolPage;
+			$(this).val(pageNo);
+		}else if(pageNo<1){//小于首页则跳到首页
+			pageNo=1;
+			$(this).val(1);
+		}else if(pageNo==currPage){
+			return;
+		}
+		loadHistoryAdvertise(pageNo);
+	})
+	
+	})
+//加载用户订单
+function loadHistoryAdvertise(pageNo){
+	jsonAjax("/"+language+"/customer/queryVedioPlayHistory.do",{pageNo:pageNo,beginTime:beginTime,endTime:endTime},function(res){
+		if(res.data!=null&&res.data!=[]){
+			var data=res.data,html="",pageMenu='';
+			for (var i = 0; i < data.list.length; i++) {
+				var dto=data.list[i];
+				if(i==0){//分页菜单
+					currPage=data.pageNo;
+					totolPage=Math.ceil(data.totalRecords/data.pageSize);
+					pageMenu+='<a href="#" class="btn-fy index">首页</a>';
+					pageMenu+='<a href="#" class="btn-fy prev"><i class="fa fa-chevron-left"></i></a>';
+					pageMenu+='<input type="number" id="pageNo" value="'+currPage+'" style="width:60px;font-size:14px;line-height:20px;text-align:center"> '+currPage+'/'+totolPage;
+					pageMenu+=' <a href="#" class="btn-fy next"><i class="fa fa-chevron-right"></i></a>';
+					pageMenu+='<a href="#" class="btn-fy last">末页</a>';
+				}
+				html+='<tr>';
+				html+='  <td>'+i+1+'</td>';
+				html+='  <td>'+dto.device_id+'</td>';
+				html+='  <td>'+dto.shopName+'</td>';
+				html+='  <td>'+dto.vedio_name+'</td>';
+				html+='  <td>'+dto.beginTime+'</td>';
+				html+='  <td>'+dto.endTime+'</td>';
+				html+='</tr>';
+			}
+			$("#tableInfo tr").not("#tableHeader").remove();
+			$("#tableHeader").after(html);//展示列表数据
+			$(".pageMenu").html(pageMenu);//展示分页菜单
+			if(currPage==1){
+				$(".index").addClass("active");
+			}else if(currPage==totolPage){
+				$(".last").addClass("active");
+			}
+		}
+	},function(){},"get");
+}
+
+function search(){
+	beginTime=$(".beginTime").val(),endTime=$(".endTime").val();
+	loadHistoryAdvertise(1);
+}
+

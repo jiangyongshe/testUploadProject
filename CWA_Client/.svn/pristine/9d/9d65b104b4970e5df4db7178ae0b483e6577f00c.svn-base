@@ -1,0 +1,415 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%-- 引入spring标签  --%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="/<spring:message code="url.language"/>/images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/font-awesome.min.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/public.css">
+<link rel="stylesheet" href="/<spring:message code="url.language"/>/css/index.css">
+<script src="/js/jquery.min.js"></script>
+<!--焦点图-->
+<script src="/js/banner.js"></script>
+<!--文字向上滚动-->
+<script src="/js/scroll.js"></script>
+<!--返回顶部-->
+<script src="/js/top.js"></script>
+<!-- 登录逻辑 -->
+<script src="/js/core/login.js"></script>
+<script>
+	$(document).ready(function() {
+		$(".dian-close").click(function() {
+			$(".dian-xq").hide(1000);
+		});
+
+		$('.dian-bt').on("click", function() {
+			$(this).next().slideToggle(100);
+			$('.dian-xq').not($(this).next()).slideUp('fast');
+		});
+	});
+</script>
+</head>
+
+<body>
+	<!-- 公用头部JS-->
+	<script type="text/javascript" src="/<spring:message code="url.language"/>/js/head.js"></script>
+
+	<div class="banner">
+		<%-- 会员登录开始--%>
+		<%@ include file="/commonJSP/loginInput.jsp" %>
+		
+		<!--图片轮播开始-->
+		<div class="slide-main" id="touchMain">
+			<a class="prev" stat="prev1001">
+			<img src="/<spring:message code="url.language"/>/images/l-btn.png" /></a>
+			<div class="slide-box text-s" id="slideContent">
+				<div class="slide" id="bgstylec">
+					<a stat="sslink-3">
+						<div class="obj-e">一站式户外全媒体覆盖</div>
+						<div class="obj-f">资源覆盖全国近300个城市</div>
+					</a>
+				</div>
+				<div class="slide" id="bgstylea">
+					<a stat="sslink-1">
+						<div class="obj-a">高品质 创新 节能 安全 美观</div>
+						<div class="obj-b">通过专业化、标准化、规模化的市场运作，改善了店招现场制作的落后模式</div>
+					</a>
+				</div>
+				<div class="slide" id="bgstyleb">
+					<a stat="sslink-2">
+						<div class="obj-c">集研发 设计 制作 安装于一体</div>
+						<div class="obj-d">具有先进的生产设备、精湛的制作工艺和完善的施工管理体制和售后服务体系</div>
+					</a>
+				</div>
+			</div>
+			<a class="next" stat="next1002">
+				<img src="/<spring:message code="url.language"/>/images/r-btn.png" />
+			</a>
+			<div class="item">
+				<a class="cur suspendPointer" stat="item1001"></a>
+				<a class="suspendPointer" stat="item1002"></a>
+				<a class="suspendPointer" stat="item1003"></a>
+			</div>
+		</div>
+		<!--图片轮播结束-->
+	</div>
+
+	<div class="wid120 font14 pad-t10 pad-b10 pos-r bg-f9">
+  <div class="mar-auto">
+   <div class="box">
+      <b class="news-bt"><i class="fa fa-volume-up red"></i><spring:message code="home.b.recentNews"/></b>
+      <div class="t_news">
+           <ul class="news_li">
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>不数字无未来 户外广告即，不数字无未来</a></li>
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>户外广告即，不数字无未来</a></li>
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>不数字无未来，不数字无未来</a></li>
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>户外广告即，不数字无未来</a></li>
+			 <li><span class="fr">2017-09-06</span><i class="fa fa-angle-double-right" aria-hidden="true"></i> <a>不数字无未来 户外广告即，不数字无未来</a></li>
+		   </ul>
+	       <ul class="swap"></ul>
+       </div>
+   </div>
+  </div>
+</div>
+
+<div class="wid120 pad-b50">
+  <div class="mar-auto">
+    <h2 class="font28 text-c rmgg-bt"><spring:message code="home.h2.hotAdvertisingPutInTimeFrame"/></h2>
+  
+    <div class="rmgg">
+			<ul>
+				<li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 200次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+				<li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">KFC</p>
+							<p class="p2">价格：<span class="font16">800元/月</span></p>
+							<p class="p2">广告时长: <span class="font16">15秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 1000次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">KFC</p>
+							<p class="p5">地址：广东省深圳市罗湖区火车站广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0002</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>15秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>1000次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>800元/月</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">奥尔玛超市</p>
+							<p class="p2">价格：<span class="font16">500元/月</span></p>
+							<p class="p2">广告时长: <span class="font16">10秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 398次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">奥尔玛超市</p>
+							<p class="p5">地址：广东省深圳市罗湖区</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0003</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>10秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>398次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>500元/月</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">华强北广告</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 200次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">华强北广告</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0004</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">福田高铁站</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 200次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">福田高铁站</p>
+							<p class="p5">地址：广东省深圳市福田区</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0005</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun06.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 200次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun07.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 200次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun08.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 200次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="/<spring:message code="url.language"/>/images/lun09.jpg"/>
+						<div class="rmgg-xx font14">
+							<p class="p1 font18">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+                            <p class="fr"><i class="fa fa-toggle-right" aria-hidden="true"></i> 200次</p>
+						</div>
+					</div>
+					<div class="a2 text-c font14">
+							<p class="p4 font20">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</p>
+                            </p>
+							<p class="p7">
+                              <img src="/<spring:message code="url.language"/>/images/lun01.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun02.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun03.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun04.jpg"/>
+                              <img src="/<spring:message code="url.language"/>/images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<script type="text/javascript">
+		$('.rmgg li').mouseenter(function(){
+			$(this).find('.rmgg-xx').stop().animate({bottom:'-66px'});
+			$(this).find('.a2').css({left:'0'})
+			$(this).children('.a2').find('.p4').css({left:'0'})
+			$(this).children('.a2').find('.p5').css({left:'0'})
+			$(this).children('.a2').find('.p6').css({transform:'scale(1)'})
+			$(this).children('.a2').find('.p7').css({bottom:'0'})
+		})
+		$('.rmgg li').mouseleave(function(){
+			$(this).find('.rmgg-xx').stop().animate({bottom:'0px'});
+			$(this).find('.a2').css({left:-$(this).width()})
+			$(this).children('.a2').find('.p4').css({left:-$(this).width()})
+			$(this).children('.a2').find('.p5').css({left:-$(this).width()})
+			$(this).children('.a2').find('.p6').css({transform:'scale(1.3)'})
+			$(this).children('.a2').find('.p7').css({bottom:'-74px'})
+		})
+		</script>
+      
+      <div class="text-r pad-t15 font16" style="visibility:hidden;"><a class="red"><spring:message code="home.href.morePutInTimeFrame"/>&gt;&gt;</a></div>
+  </div>
+</div>
+
+	<!-- 公用底部JS-->
+	<script type="text/javascript" src="/<spring:message code="url.language"/>/js/footer.js"></script>
+</body>
+</html>

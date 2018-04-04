@@ -1,0 +1,127 @@
+package com.cwa.client.dao;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+
+import com.cwa.client.dto.DeviceVedioCountDto;
+import com.cwa.client.model.Tb_Device_Vedio_Count;
+import com.cwa.client.service.OrderService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.GsonUtil;
+import com.cwa.client.utils.LogWriteUtil;
+
+/**
+ * 查询广告视频播放统计数据层
+ */
+public class DeviceVedioCountDao extends BaseDao<Tb_Device_Vedio_Count, DeviceVedioCountDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 根据所有条件查询
+	 */
+	public DeviceVedioCountDto findByAll(Object[] objs){
+		String sql="select * from Tb_Device_Vedio_Count where device_id=? and begin_time=? and end_time=? and DATE_FORMAT(play_date,'%Y-%m-%d')=DATE_FORMAT(?,'%Y-%m-%d')";
+		RowMapper<DeviceVedioCountDto> rowMapper=BeanPropertyRowMapper.newInstance(DeviceVedioCountDto.class);
+		List<DeviceVedioCountDto> list = getJdbcTemplate().query(sql, rowMapper,objs);
+		//logWriteUtil.writeLog("", "====listSize:"+list.size()+"objs:"+GsonUtil.dtoToJson(objs), LOGLEVEL_INFO, DeviceVedioCountDao.class);
+		return list.size()>0?list.get(0):null;
+	}
+	/**
+	 * 查询不能下单的时段
+	 */
+	public List<DeviceVedioCountDto> findNoOrderTime(Object[] objs){
+		String sql="select * from Tb_Device_Vedio_Count where device_id=? and begin_time=? and end_time=? and play_date>=str_to_date(?,'%Y-%m-%d') and play_date<=str_to_date(?,'%Y-%m-%d') order by id";// and PLAY_NUMBER>=?
+		RowMapper<DeviceVedioCountDto> rowMapper=BeanPropertyRowMapper.newInstance(DeviceVedioCountDto.class);
+		List<DeviceVedioCountDto> list = getJdbcTemplate().query(sql, rowMapper,objs);
+		logWriteUtil.writeLog("", "====listSize:"+list.size()+"objs:"+GsonUtil.dtoToJson(objs), LOGLEVEL_INFO, DeviceVedioCountDao.class);
+		return list;
+	}
+	/**
+	 * 批量插入播放条数
+	 * @param batchInsertOrder 生成订单数据
+	 * @return
+	 */
+	public int[] batchInsertCount(final List<Object[]> batchInsertOrder)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"INSERT INTO Tb_Device_Vedio_Count(DEVICE_ID,BEGIN_TIME,END_TIME,play_number,play_date) VALUES (?,?,?,?,?)",
+	 				batchInsertOrder);
+			/*updateCounts = jdbcTemplate.batchUpdate(
+					"INSERT INTO Tb_Device_Vedio_Count(DEVICE_ID,BEGIN_TIME,END_TIME,play_number,play_date) VALUES (?,?,?,?,?)",
+	 				new BatchPreparedStatementSetter() {
+		        @Override
+		        public void setValues(PreparedStatement ps, int i) throws SQLException {
+		            Object[] args = batchInsertOrder.get(i);
+		            ps.setString(1, (String) args[0]);
+		            ps.setString(2, (String) args[1]);
+		            ps.setString(3, (String) args[2]);
+		        }
+
+		        @Override
+		        public int getBatchSize() {
+		            return 0;
+		        }
+		    });*/
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	/**
+	 * 批量增加播放条数
+	 * @param batchInsertOrder 生成订单数据
+	 * @return
+	 */
+	public int[] batchUpdateCount(final List<Object[]> batchInsertOrder)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"update Tb_Device_Vedio_Count set play_number=play_number+1 where id=?",
+	 				batchInsertOrder);
+			/*updateCounts = jdbcTemplate.batchUpdate(
+					"update Tb_Device_Vedio_Count set play_number=play_number+1 where id=?",
+	 				new BatchPreparedStatementSetter() {
+		        @Override
+		        public void setValues(PreparedStatement ps, int i) throws SQLException {
+		            Object[] args = batchInsertOrder.get(i);
+		            ps.setString(1, (String) args[0]);
+		            ps.setString(2, (String) args[1]);
+		            ps.setString(3, (String) args[2]);
+		        }
+
+		        @Override
+		        public int getBatchSize() {
+		            return 0;
+		        }
+		    });*/
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	/**
+	 * 批量减少播放条数
+	 * @param batchInsertOrder 生成订单数据
+	 * @return
+	 */
+	public int[] batchUpdateSubstractCount(List<Object[]> batchUpdateCount)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"update Tb_Device_Vedio_Count set play_number=play_number-1 where device_id=? and begin_time=? and end_time=? and play_date=str_to_date(?,'%Y-%m-%d') and play_number>0",
+	 				batchUpdateCount);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+}

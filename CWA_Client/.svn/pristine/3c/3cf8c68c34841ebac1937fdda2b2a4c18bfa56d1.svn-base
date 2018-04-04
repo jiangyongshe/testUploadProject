@@ -1,0 +1,397 @@
+package com.cwa.client.utils;
+
+import java.text.SimpleDateFormat;
+
+/**
+ * 
+ * 
+ *@author zp
+ */
+public interface Constant {
+	
+	int ZERO = 0,ONE = 1,TWO = 2,THREE = 3,FOUR = 4, 
+			
+	FIVE = 5,SIX = 6,SEVEN = 7,EIGHT = 8,NINE = 9;
+	
+	String SUCCESS = "success",ERROR = "error";
+	
+	/**
+	 * 正整数的正则
+	 */
+	String REGEX_POSITIVE_INTEGER = "^[1-9]([\\d]+)?$";
+	
+	/**
+	 * 正实数的正则（两位小数内）
+	 */
+	String REG_POSITIVE_REALNUMBER = "^\\+?[0-9]+(.[0-9]{1,2})?$";
+	
+	/**
+	 * 0到10的正则
+	 */
+	String REG_POSITIVE_ZERO_TO_TEN = "^([1-9](\\.[0-9]{1,2})?)$|^(10.00)$|^(10.0)$|^(10)$|^(0\\.0[1-9]{1})$|^(0\\.[1-9]{1}[0-9]{0,1})$";
+
+	/**
+	 * 手机号的正则
+	 */
+	String REG_POSITIVE_MOBILE = "^1(3|4|5|7|8)\\d{9}$";
+
+	String AUTH_CODE = "AUTH_CODE";
+
+	String SESSION_USER = "SESSION_USER";
+	
+	String SESSION_USER_AD = "SESSION_USER_AD";
+	
+	String SESSION_USER_TYPE = "userType";
+	
+	String SESSION_USER_NAME = "userName";
+	
+	String LOGINTYPE = "loginType";
+	
+	String USERTYPE_CUSTOMER = "1";
+	
+	String USERTYPE_CUSTOMER_ADVERTISER = "2";
+	
+	String PAY_STATUS_FAIL="FAIL";
+	
+	String PAY_STATUS_SUCCESS="SUCCESS";
+	
+	String TIMEISNULL = "2001-01-01 00:00:00";
+	
+	String DEFALT_COMPANY="1000";
+	 
+	String LANGUAGE_ZH_CN= "zh_CN";
+	
+	String LANGUAGE_EN= "en";
+	
+	String LANGUAGE_ZH_TW= "zh_TW";
+	
+	
+    String LANGUAGE_CHINESE= "chinese";
+	
+	String LANGUAGE_ENGLISH= "english";
+	
+	String LANGUAGE_TRADITIONAL= "traditional";
+	
+	
+	
+	String LOGLEVEL_DEBUG= "DEBUG";
+	
+	String LOGLEVEL_WARN= "WARN";
+	
+	String LOGLEVEL_ERROR= "ERROR";
+	
+	String LOGLEVEL_INFO= "INFO";
+	
+	 public static final String UPDATE_VIDEO= "pushVideo";
+	 
+	String LOGTYPE_DBQUERY = "数据库查询";
+	
+	String LOGTYPE_PACKAGESQL = "组装SQL";
+	
+	String LOGTYPE_CONTROLLER = "控制层";
+	
+	String LOGTYPE_SERVICE = "逻辑层";
+	
+	String LOGTYPE_INTERCEPTOR = "拦截器";
+	
+	String LOGTYPE_CONFIG = "配置文件";
+	
+	String LOGTYPE_TIMER = "定时器";
+	
+	String FORGET_PWD = "forgetPwd";
+	
+	String UPDATE_MOBILE = "updateMobile";
+	
+	String DEFUALT_PAYTYPE="0000";
+	
+	String WECHATTPAY1_TYPE="0101";//微信支付1
+	
+	String WALLET_PAY="0400";
+	
+	String ALIPAY_TYPE1="0201";//阿里支付1
+	//订单类型
+	String WALLET_WITHDRAW="W10";//钱包提现
+	
+	String WALLET_RECHARGE="R10";//钱包充值
+	
+	String COMMISSION_WITHDRAW="W20";//佣金出金
+	
+	String ORDER_PAY="O10";
+	/**
+	 * 验证码有效时间，2分钟
+	 */
+	Integer VERIFICATION_VALID_TIME = 120;
+	
+	/**
+	 * 验证码redis有效时间，200秒
+	 */
+	Integer VERIFICATION_REDIS_TIME = VERIFICATION_VALID_TIME + 80;
+	
+	/**
+	 * mysql 日期格式 时分秒
+	 */
+	String MYSQL_DATE_FORMAT_HMS = "%H:%i:%s";
+	
+	/**
+	 * mysql 日期格式 年月日
+	 */
+	String MYSQL_DATE_FORMAT_YMD = "%Y-%m-%d";
+	
+	/**
+	 * mysql 日期格式 年月日时分秒
+	 */
+	String MYSQL_DATE_FORMAT_YCDHMS = "%Y-%m-%d %H:%i:%s";
+	
+	/**
+	 * 订单状态，申请中
+	 */
+	String ORDER_STUTAS_APPLY = "123";
+	
+	/**
+	 * 订单状态，已通过
+	 */
+	String ORDER_STUTAS_PASS = "4";
+	
+	/**
+	 * 订单状态，播放中
+	 */
+	String ORDER_STUTAS_PLAYING = "9";
+	
+	/**
+	 * 订单状态，等待播放
+	 */
+	String ORDER_STUTAS_WAITPLAY = "10";
+	
+	/**
+	 * 订单状态，已停播
+	 */
+	String ORDER_STUTAS_STOPPLAY = "11";
+	
+	/**
+	 * 图片类型
+	 */
+	String PIC_TYPE_PNG = "png";
+	
+	
+	public static final String FILE_NAME_FIELD = "name";
+	public static final String FILE_NAME_OLD = "oldName";
+	public static final String FILE_SIZE_FIELD = "size";
+	public static final String TOKEN_FIELD = "token";
+	public static final String SERVER_FIELD = "server";
+	public static final String MESSAGE = "message";
+	
+	public static final int BUFFER_LENGTH = 1024*10;
+	public static final String START_FIELD = "start";
+	public static final String CONTENT_RANGE_HEADER = "content-range";
+	
+	/**
+	 * 出金起始时间key
+	 */
+	String SYSTEM_KEY_WITHDRAW_BEGIN_TIME = "withdraw_begin_time";
+	
+	/**
+	 * 出金结束时间key
+	 */
+	String SYSTEM_KEY_WITHDRAW_END_TIME = "withdraw_end_time";
+	
+	/**
+	 * 客户出金是否受限key
+	 */
+	String SYSTEM_KEY_CUSTOMER_WITHDRAW_LIMIT = "customer_withdraw_limit";
+	
+	/**
+	 * 广告商出金是否受限key
+	 */
+	String SYSTEM_KEY_ADVERTISER_WITHDRAW_LIMIT = "advertiser_withdraw_limit";
+	
+	/**
+	 * 最小出金金额key
+	 */
+	String SYSTEM_KEY_MIN_WITHDRAW_VALUE= "min_withdraw_value";
+	
+	/**
+	 * 最大出金金额key
+	 */
+	String SYSTEM_KEY_MAX_WITHDRAW_VALUE= "max_withdraw_value";
+	
+	/**
+	 * 广告商出金审核阈值key
+	 */
+	String SYSTEM_KEY_ADVERTISERS_WITHDRAW_THRESHOLD = "advertisers_withdraw_threshold";
+	
+	/**
+	 * 客户出金审核阈值key
+	 */
+	String SYSTEM_KEY_CUSTOMER_WITHDRAW_THRESHOLD = "customer_withdraw_threshold";
+	
+	/**
+	 * 订单号广告商类型
+	 */
+	Integer SERIAL_ACCOUNT_TYPE_ADVERTISER = 5;
+	
+	/**
+	 * 订单号客户类型
+	 */
+	Integer SERIAL_ACCOUNT_TYPE_CUSTOMER = 6;
+	
+	/**
+	 * 订单号时间格式
+	 */
+	SimpleDateFormat SERIAL_YMDHMS = new SimpleDateFormat("yyyyMMddHHmmss");
+	
+	/**
+	 * 标准格式
+	 */
+	SimpleDateFormat NORMAL_YMD = new SimpleDateFormat("yyyyMMdd");
+	
+	/**
+	 * 出金
+	 */
+	Integer IN_OUT_TYPE_WITHDRAW = 1;
+	
+	/**
+	 * 入金
+	 */
+	Integer IN_OUT_TYPE_RECHARGE = 2;
+	
+	/**
+	 * 赠金
+	 */
+	Integer IN_OUT_TYPE_GIFT = 3;
+	
+	/**
+	 * 申请中
+	 */
+	Integer SERIAL_STATUS_APPLY = 1;
+	
+	/**
+	 * 通过
+	 */
+	Integer SERIAL_STATUS_PASS = 2;
+	
+	/**
+	 * 驳回
+	 */
+	Integer SERIAL_STATUS_REJECT = 3;
+	
+	/**
+	 * 需冲正
+	 */
+	Integer SERIAL_STATUS_NEEDREVERSAL = 4;
+	
+	/**
+	 * 处理中
+	 */
+	Integer SERIAL_STATUS_PROCESSING = 5;
+	
+	/**
+	 * 冲正成功
+	 */
+	Integer SERIAL_STATUS_REVERSALSUCCESS = 6;
+	
+	/**
+	 * 文件状态-未处理
+	 */
+	Integer FILE_MANAGER_STATUS_UNDISPOSE = 1;
+	
+	/**
+	 * 文件状态-已处理
+	 */
+	Integer FILE_MANAGER_STATUS_DISPOSE = 2;
+	
+	/**
+	 * 文件状态-已删除
+	 */
+	Integer FILE_MANAGER_STATUS_DELETE = 3;
+	
+	/**
+	 * 系统参数-广告条数
+	 */
+	String AD_COUNT_DISCOUNT = "ad_count_discount";
+	
+	/**
+	 * 系统参数-广告价格比例
+	 */
+	String AD_PRICE_DISCOUNT = "ad_price_discount";
+	
+	/**
+	 * 系统参数-运营中心客户广告价格比例
+	 */
+	String OPERATION_CENTER_AD_PRICE_DISCOUNT = "operation_center_ad_price_discount";
+	
+	/**
+	 * 系统参数-推荐人客户广告价格比例
+	 */
+	String REFERRALS_AD_PRICE_DISCOUNT = "referrals_ad_price_discount";
+	/**
+	 * 系统参数-直客广告价格比例
+	 */
+	String CLIENT_AD_PRICE_DISCOUNT = "client_ad_price_discount";
+
+	
+	final String ALIYUN_SMS_CODE_OK="OK";
+
+	
+	/**
+	 * 系统参数-播放周期年广告价格比例
+	 */
+	String YEAR_AD_PRICE_DISCOUNT = "year_price_discount";
+	
+	/**
+	 * 系统参数-播放周期月广告价格比例
+	 */
+	String MONTH_AD_PRICE_DISCOUNT = "month_price_discount";
+	/**
+	 * 系统参数-播放周期周广告价格比例
+	 */
+	String WEEK_AD_PRICE_DISCOUNT = "week_price_discount";
+	
+	/**
+	 * 系统参数-播放周期年广告价格比例
+	 */
+	String YEAR_AD_NUM = "year_num";
+	
+	/**
+	 * 系统参数-播放周期月广告价格比例
+	 */
+	String MONTH_AD_NUM = "month_num";
+	/**
+	 * 系统参数-播放周期周广告价格比例
+	 */
+	String WEEK_AD_NUM = "week_num";
+	
+	/**
+	 * 充值-阿里支付-同步返回URL
+	 */
+	String ALIPAY_RETURN_URL="chinese/exclude/pay/alipayReturnUrl.do";
+	
+	/**
+	 * 充值-阿里支付-异步返回URL
+	 */
+	String ALIPAY_NOTIFY_UTL="chinese/exclude/pay/alipayNotifyUrl.do";
+	
+	/**
+	 * 充值-微信支付-异步返回URL
+	 */
+	String WECHATPAY_NOTIFY_UTL="chinese/exclude/pay/wechatnotifyUrl.do";
+	
+	/**
+	 * 订单-阿里支付-同步返回URL
+	 */
+	String ORDER_ALIPAY_RETURN_URL="chinese/exclude/orderPay/alipayOrderReturnUrl.do";
+	
+	/**
+	 * 订单-阿里支付-异步返回URL
+	 */
+	String ORDER_ALIPAY_NOTIFY_UTL="chinese/exclude/orderPay/alipayOrderNotifyUrl.do";
+	
+	/**
+	 * 订单-微信支付-异步返回URL
+	 */
+	String ORDER_WECHATPAY_NOTIFY_UTL="chinese/exclude/orderPay/wechatOrderNotifyUrl.do";
+	
+	public static final String REALTIME_APPUPDATE_PUSH = "pushVideo";
+	
+	public static final String REALTIME_PUSHVEDIO_TYPE= "10003";
+
+}

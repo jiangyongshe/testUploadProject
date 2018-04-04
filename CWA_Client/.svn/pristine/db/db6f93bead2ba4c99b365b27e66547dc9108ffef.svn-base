@@ -1,0 +1,102 @@
+var html="<div class=\"ding\"><div class=\"mar-auto\">\n";
+    html+="<div class=\"fl ding-l\">\n";
+	html+="<p class=\"dis-in\">翔云播共享广告，人人广告，人人分享！</p>\n";
+	html+="</div>\n";
+	html+="<div class=\"fr ding-r\">\n";
+	html+="<div class=\"glzx pos-r\">\n";
+	html+="<span id=\"userName\">13612345678</span><i class=\"fa fa-angle-down pad-l5\" aria-hidden=\"true\"></i>\n";
+	html+="<div class=\"glzx-menu pos-a\">\n";
+	html+="<a href=\"#\" onclick=\"exitLogin()\" id=\"exit\"><i class=\"fa fa-arrow-left\" aria-hidden=\"true\"></i> <span>退出</span></a>\n";
+	html+="</div>\n";
+	html+="</div>\n";
+	html+="<div class=\"glzx pos-r\">\n";
+	html+="<i class=\"fa fa-tachometer\" aria-hidden=\"true\"></i> <span>管理中心</span>\n";
+	html+="<div class=\"glzx-menu pos-a\">\n";
+	html+="<a href=\"/"+language+"/forward/user/profile.do\"><i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i> <span>我的资料</span></a>\n";
+	html+="<a href=\"/"+language+"/forward/user/updatePwd.do\"><i class=\"fa fa-angle-right\" aria-hidden=\"true\"></i> <span>修改密码</span></a>\n";
+	html+="</div>\n";
+	html+="</div>\n";
+	html+="<a href=\"/"+language+"/forward/customerWallet.do\"><i class=\"fa fa-gg-circle\" aria-hidden=\"true\"></i> <span>翔云余额</span></a>\n";
+	html+="<a href=\"/"+language+"/html/khzx.html\"><i class=\"fa fa-user-circle\" aria-hidden=\"true\"></i> <span>客服中心</span></a>\n";
+	html+="<a href=\"/"+language+"/forward/shoppCart.do\" class=\"gwc\"><i class=\"fa fa-shopping-cart\" aria-hidden=\"true\"></i> <span>购物车</span> <b class=\"\">（<span class=\"\" id=\"buyCarCount\"></span>）</b></a>\n";
+	html+="</div>\n";
+	html+="</div></div>\n";
+    html+="<div class=\"clear width heade\"><div class=\"mar-auto pos-r\">\n";
+	html+="<div class=\"fl logo\"><a href=\"/"+language+"/forward/customerAdvertise.do\"><img src=\"/"+language+"/images/logo.png\" alt=\"翔云播\" /></a></div>\n";
+	html+="<div class=\"fr home-banner\">\n";
+	html+="<input type=\"text\" class=\"fl wenb06 advertiseSearch\" id=\"inputSearch\" placeholder=\"请输入店铺名称或设备编号搜索\">\n";
+    html+="<button type=\"button\" onclick=\"searchAdvertise()\" class=\"fl btn btn07 font12 col-999\"><i class=\"fa fa-2x fa-search\" aria-hidden=\"true\"></i></button>\n";
+	html+="</div>\n";
+	html+="</div></div>\n";
+document.writeln(html);
+
+
+var loginStatus=false;
+$(function(){
+	var accountId = getLocalStorage('accountId');
+	if(accountId!=null){// 已经登录
+		// 显示用户名
+		$('#userName').text(accountId);
+		$('#userName').parent().show();
+		$('#userName').attr('href','/'+language+'/forward/customerAdvertise.do');
+		// 加载用户信息
+		jsonAjax('/'+language+'/user/loadUser.do',{},
+		function(res){
+			var data = res.data;
+			if(data){
+				loginStatus=true;//修改状态
+				// 记录登录账号
+				//setLocalStorage('accountId',accountId);
+				// 记录用户ID
+				var userId = data.id;
+				setLocalStorage('userId',userId);
+				// 记录用户类型
+				var userType = res.msg;
+				setLocalStorage('userType',userType);
+				// 显示登录注册按钮
+				$('#loginRegP').hide();
+				if(Number(userType)!=1){//店主
+					$("[name='withdraw']").show();
+					$("[name='commission']").show();
+					$(".shopManager").show();
+				}
+				// 加载购物车数量 TODO
+				var shoppCount=data.shoppCount;
+				$("#buyCarCount").text(shoppCount);
+			}
+			
+		},function(){});
+	}
+	// 绑定搜索按钮
+	$('#titleSearch').bind('click',function(){
+		// 关键字
+		var keyword = $('#titleKeyword').val().trim();
+		window.location.href = '/'+language+'/forward/customerAdvertise.do?keyword='+encodeURIComponent(keyword);
+	});
+})
+
+//退出登录
+function exitLogin(){
+	if(loginStatus){
+		jsonAjax('/'+language+'/user/exit.do',{},
+			function(res){
+				if(res.respCode=='10000'){
+					clearLocalStorage();
+					// 跳去注册页
+					location.href = '/'+language+'/html/index1.html';
+					return;
+				}
+			},
+		function(){});
+	}
+}
+//搜索广告
+function searchAdvertise(){
+	var href=window.location.href;
+	if(href.indexOf("customerAdvertise.do")>0){
+		searchAdvertiseInCurrtPage();
+	}else{
+		var adName=$("#inputSearch").val();
+		window.location.href="/"+language+"/forward/customerAdvertise.do?adName="+adName;
+	}
+}

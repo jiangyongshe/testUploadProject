@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script src="/chinese/mobile/js/commonRel.js"></script><!--通用引用-->
+<script src="/chinese/mobile/js/banner.js"></script><!--焦点图-->
+<script src="/chinese/mobile/js/news.js"></script><!--消息公告-->
+</head>
+
+<body class="body2">
+<header>
+  <a href="index.html" class="logo pos-a"><img src="/chinese/mobile/images/logo2.png" /></a>
+  <a href="tfgg.html" class="search">寻找您想要的广告</a>
+  <i class="fa fa-search pos-a col-fff font16" aria-hidden="true"></i>
+  <div class="header-r pos-a col-fff">
+    <a href="wode.html" class="dis-b"><i class="fa fa-2x fa-user-circle-o col-fff" aria-hidden="true"></i></a>
+  </div>
+</header>
+<div class="hei36"></div>
+
+<div class="slide-main font12" id="touchMain">
+  <div class="slide-box" id="slideContent">
+    <div class="slide" id="bgstylec" style="background-image: url(/chinese/mobile/images/banner01.jpg); background-size:cover;"></div>
+    <div class="slide" id="bgstylea" style="background-image: url(/chinese/mobile/images/banner01.jpg); background-size:cover;"></div>
+    <div class="slide" id="bgstyleb" style="background-image: url(/chinese/mobile/images/banner01.jpg); background-size:cover;"></div>
+  </div>
+  <div class="item">
+    <a class="cur" stat="item1001" href="javascript:;"></a><a href="javascript:;" stat="item1002"></a><a href="javascript:;" stat="item1003"></a>
+  </div>
+</div>
+<!--图片轮播结束-->
+
+<div class="menu font12">
+  <ul>
+    <li>
+      <a href="tfgg.html" class="dis-b col-fff text-c text-c">
+        <span class="dis-in"><i class="fa fa-plus" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">投放广告</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="ggdd.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-building-o" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">广告订单</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="gwc.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-shopping-cart" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">购物车</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="bfls.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-toggle-right" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">播出记录</span>
+      </a>
+    </li>
+    
+    <li name="commission" style="display:none">
+      <a href="ggyj.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-gg" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">广告佣金</span>
+      </a>
+    </li>
+    
+    <li name="withdraw" style="display:none">
+      <a href="chuj.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-money" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">出金</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="qianbao.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-xiangyb" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">翔云余额</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" onclick="elementDisplay('ewmdiv')" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-qrcode" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">扫一扫</span>
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="box font12">
+  <b class="news-bt"><i class="fa fa-volume-up pad-r5" aria-hidden="true"></i>翔云动态 |</b>
+  <div class="t_news">
+    <ul class="news_li">
+       <li><a href="#">翔云播入住南航广州-北京电视广告屏</a></li>
+       <li><a href="#">翔云播入住广州南站候车A区广告屏</a></li>
+       <li><a href="#">翔云播入住南航广州-北京电视广告屏</a></li>
+       <li><a href="#">翔云播入住广州南站候车A区广告屏</a></li>
+       <li><a href="#">翔云播入住南航广州-北京电视广告屏</a></li>
+	</ul>
+    <ul class="swap"></ul>
+  </div>
+</div>
+
+<div class="ggdp-home font12">
+  <img src="/chinese/mobile/images/gg01.jpg" />
+  <img src="/chinese/mobile/images/gg02.jpg" />
+</div>
+
+<!--动态详情-->
+<div class="shade" id="venturediv" style="display: ;">
+  <div class="tanchu-xy">
+    <div class="tanchu-bt text-l">翔云播入住南航广州-北京电视广告屏<a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('venturediv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-xynr">
+翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏,翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏，翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏翔云播入住南航广州-北京电视广告屏
+    </div>
+  </div>
+</div>
+
+<!--弹出微信公众号-->
+<div class="shade" id="ewmdiv" style="display: ;">
+  <div class="tanchu">
+    <div class="tanchu-bt"><a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('ewmdiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-nr text-c">
+      <p class="tanchu-tspc">请用手机扫一下二维码，关注微信公众号。</p>
+      <p class="pad-t20"><img src="/chinese/mobile/images/ewm.jpg" /></p>
+    </div>
+  </div>
+</div>
+<script>
+var userType=getLocalStorage('userType');
+if(Number(userType)!=1){// 普通用户
+	$("li[name='withdraw']").show();
+	$("li[name='commission']").show();
+}
+</script>
+</body>
+</html>

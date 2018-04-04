@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="  
+    http://www.springframework.org/schema/beans  
+    http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+	<!-- spring自动任务调度器配置 -->
+	
+	<!-- 定时器1,清除过期文件 -->
+	<bean id="clearFile" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用正在任务目标(作业) -->
+		<property name="targetObject">
+			<bean class="com.cwa.client.web.quartzJob.ClearFileTaskTimer" />
+		</property>
+		<!-- 调用目标(作业)方法,方法是真正执行任务的内容 -->
+		<property name="targetMethod" value="execute" />
+		<!-- 作业不并发调度 -->
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="clearFileTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="clearFile" />
+		<!-- 每周一凌晨五点执行 -->
+		<property name="cronExpression" value="0 0 5 ? * 2" /> 
+	</bean>
+	
+	<!-- 定时器2,取消超时订单 -->
+	<bean id="cancelTimeoutOrder" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用正在任务目标(作业) -->
+		<property name="targetObject">
+			<bean class="com.cwa.client.web.quartzJob.CanceOrderlTaskTimer" />
+		</property>
+		<!-- 调用目标(作业)方法,方法是真正执行任务的内容 -->
+		<property name="targetMethod" value="execute" />
+		<!-- 作业不并发调度 -->
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="cancelTimeoutOrderTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">  
+        <property name="jobDetail" ref="cancelTimeoutOrder" />  
+        <property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->  
+        <property name="repeatInterval" value="3600000" /><!-- 每5分钟调度一次 300000秒 -->  
+    </bean>
+
+	<!-- 定时器3，定时刷新首页广告推介内容 -->
+	<bean id="homePageADRefresh" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+        	<bean class="com.cwa.client.web.quartzJob.CreateADRecommend"/>
+        </property>
+        <!-- 任务类中需要执行的方法 -->
+        <property name="targetMethod" value="execute"/>
+        <!-- 上一次未执行完成的，要等待其完成再执行。 -->
+        <property name="concurrent" value="false"/>
+    </bean>
+    <bean id="homePageADRefreshTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+        <property name="jobDetail" ref="homePageADRefresh"/>
+        <property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->  
+        <!-- 间隔（毫秒）,10分钟 -->
+        <property name="repeatInterval" value="600000"/>
+    </bean>
+
+	<!-- 总管理类 如果将lazy-init='false'那么容器启动就会执行调度程序 -->
+	<bean id="schedulerFactoryBean" lazy-init="false" autowire="no"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="clearFileTrigger" />
+				<ref bean="cancelTimeoutOrderTrigger" />
+				<ref bean="homePageADRefreshTrigger" />
+			</list>
+		</property>
+	</bean>
+
+</beans> 

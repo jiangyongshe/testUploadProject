@@ -1,0 +1,123 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var pageSize=15,type="";
+$(function(){
+	$(".filterHeader").show();
+	$("#headerTitle").text("提现明细");
+	currError=currErrorArray(chineseError,englishError,twError);
+	if(Number(getLocalStorage('userType'))==2){
+		var str='  <span class="pos-a screen-list-bt">收益类型</span>';
+	    str+='  <select name="" class="xlb01 width100 type">';
+	    str+='    <option value="">全部</option>';
+	    str+='    <option value="5">店主</option>';
+	    str+='    <option value="6">广告主</option>';
+	    str+='  </select>';
+	    var liDom=document.createElement("li");
+		liDom.innerHTML=str;
+	    $("#user_age2").parent().after(liDom);
+	}
+	upCallback();
+})
+
+/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+function upCallback(){
+	//联网加载数据
+	console.log("pageNo="+pageNo);
+	queryInOutMoneyDetail({pageNo:pageNo,pageSize:pageSize,startTime:bgDt,endTime:edDt,account_type:type});
+}
+
+/**
+ * 查询出金明细
+ * @param obj.pageNo 页码
+ * @param obj.startTime 播放开始时间，时:分:秒 hh:mm:ss
+ * @param obj.startTime 播放结束时间，时:分:秒 hh:mm:ss
+ * @param obj.userType
+ * @returns
+ */
+function queryInOutMoneyDetail(obj){
+	var url="";
+	if(Number(getLocalStorage('userType'))==2){
+		url="/"+language+"/AD/query/withdrawDetail.do";
+	}else{
+		url="/"+language+"/customer/query/withdrawDetail.do";
+	}
+	jsonAjax(url,obj,function(res){
+		//联网成功的回调,隐藏上拉加载的状态
+		if(res.data==null||res.data.length==0){
+			if($("#dataList li").length==0){
+				showEmplyDiv("没找到提现记录！","#dataList");
+			}
+			isData=false;
+			return;
+		}
+		isData=(pageNo==Math.ceil(res.data.totalRecords/parseFloat(pageSize))?false:true);//如果当前页是最后一页则不加载
+		
+		var data = res.data;
+		if(data&&data.length>0){
+			var listDom=document.getElementById("dataList");
+			for(var i=0;i<data.length;++i){
+				
+				var str='<div class="lsjy-l text-r font12">';
+				str+='<p>'+new Date(Number(data[i].open_date)).format(DATE_FORMAT_YTDHMS).substring(0,10)+'</p>';
+				str+='<p>'+new Date(Number(data[i].open_date)).format(DATE_FORMAT_YTDHMS).substring(10)+'</p>';
+				str+='</div>';
+				str+='<i class="fa fa-clock-o lsjy-z" aria-hidden="true"></i>';
+				str+='<div class="lsjy-r">';
+				str+='<p><b class="col-999">类型</b><span class="fr">'+function(type){
+					switch(type){
+					case 1:
+						return '店主';
+					case 2:
+						return '业务员';
+					case 3:
+						return '代理';
+					}
+				}(data[i].account_type)+'</span></p>';
+				str+='<p><b class="col-999">状态</b><span class="fr">'+function(status){
+					switch(status){
+					case 1:
+						return '申请中';
+					case 2:
+						return '成功';
+					case 3:
+						return '驳回';
+					case 4:
+						return '需冲正';
+					case 5:
+						return '处理中';
+					case 6:
+						return '冲正成功';
+					}
+				}(data[i].status)+'</span></p>';
+				str+='<p><b class="col-999">提现金额（元）</b><span class="fr red">'+formatNumber(data[i].amount,2,1)+'</span></p>';
+				str+='</div>';
+				
+				/*var str='<td>'+((Number(pageNo)-1)*Number(pageSize)+i+1)+'</td>';
+				str+='<td>'+new Date(Number(data[i].open_date)).format(DATE_FORMAT_YTDHMS)+'</td>';
+				str+='<td>'+(data[i].account_type==1?'店主':'广告主')+'</td>';
+				str+='<td>'+function(status){
+					switch(status){
+					case 1:
+						return '申请中';
+					case 2:
+						return '成功';
+					case 3:
+						return '驳回';
+					case 4:
+						return '需冲正';
+					case 5:
+						return '处理中';
+					case 6:
+						return '冲正成功';
+					}
+				}(data[i].status)+'</td>';
+				str+='<td>'+formatNumber(data[i].amount,2,1)+'</td>';*/
+				var liDom=document.createElement("li");
+				liDom.innerHTML=str;
+				listDom.appendChild(liDom);//加在列表的后面,上拉加载
+			}
+		}
+	},function(){});
+}

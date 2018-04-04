@@ -1,0 +1,320 @@
+package com.cwa.client.web;
+
+import java.lang.reflect.Field;
+import java.util.Date;
+import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.redis.RegPhoneRandomNumDto;
+import com.cwa.client.redis.UserRedis;
+import com.cwa.client.service.AdvertiserService;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.Encypter;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.RespCodeEnum;
+import com.cwa.client.utils.UniqId;
+
+@Controller
+@RequestMapping("/*/customer")
+public class CustomerController extends BaseController<GobalRespParameter> implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource// 普通用户service层
+	private UserService userService;
+	
+	@Resource// 广告商service层
+	private AdvertiserService advertiserService;
+	
+	@Resource
+	private UserRedis userRedis;
+	
+	@RequestMapping("/updUserInfo.do")
+	public void updUserInfo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		userService.updUserInfo(req, res);
+	}
+	
+	/**
+	 * 获取手机验证码(修改手机号时调用的方法)
+	 * @throws Exception
+	 */
+	@RequestMapping("/getMobileVerificationForUpdateMobile.do")
+	public void getMobileVerificationForUpdateMobile (HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 获取session数据
+		Object sessionObj = req.getSession().getAttribute(SESSION_USER);
+		String userType = req.getSession().getAttribute(SESSION_USER_TYPE).toString();
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();
+		Field accountIdField = sessionObj.getClass().getDeclaredField("account_id");
+		accountIdField.setAccessible(true);
+		String accountId = accountIdField.get(sessionObj).toString();
+		Object userObj = userService.queryUserObjByAccountIdAndUserType(accountId, userType);
+		// 获取手机号码
+		Field mobileField = userObj.getClass().getDeclaredField("mobile");
+		mobileField.setAccessible(true);
+		String mobile = mobileField.get(userObj).toString();
+		// 返回消息
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		// 判断该手机是否发送过验证码
+		String redisKey = userType+UPDATE_MOBILE+mobile;
+		Object phoneVerificationObj = userRedis.getObj(redisKey);
+		if(
+		   // 未发送验证码
+		   phoneVerificationObj==null
+				||
+		   // 已经过期
+		   (System.currentTimeMillis()-((RegPhoneRandomNumDto)phoneVerificationObj).getTimeStamp())/1000>VERIFICATION_VALID_TIME
+			){
+			RegPhoneRandomNumDto regdto=new RegPhoneRandomNumDto();
+			regdto.setVaildCode(UniqId.getRandomPwd(6));//生成验证码
+			regdto.setMovePhone(mobile);
+			regdto.setTimeStamp(new Date().getTime());
+			if(sendMessage(ZERO, regdto)){
+				//把验证码对象放入redis
+				userRedis.set(redisKey, regdto,VERIFICATION_REDIS_TIME);
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" get verification "+regdto.getVaildCode()+".", LOGLEVEL_INFO, UserController.class);
+				// 将验证码对象返回
+				String verificationSendSuccess = reqCt.getMessage("updateMobile.tip.verificationSendSuccess");
+				ruturnMessageDto.setMsg(RespCodeEnum.SUCCESS.getCode());
+				ruturnMessageDto.setData(verificationSendSuccess+'-'+VERIFICATION_VALID_TIME);
+				this.writeJSON(res, ruturnMessageDto);
+				return;
+			}else{
+				ruturnMessageDto.setMsg(RespCodeEnum.register_mobile_invalidcode.getCode());
+				ruturnMessageDto.setData(reqCt.getMessage("register.text.SendSMSFail"));
+				this.writeJSON(res, ruturnMessageDto);
+				return;
+			}
+			
+		}
+		// 验证码未过期
+		String verificationValid = reqCt.getMessage("updateMobile.tip.verificationValid");
+		RegPhoneRandomNumDto regdto = (RegPhoneRandomNumDto)phoneVerificationObj;
+		Long time = VERIFICATION_VALID_TIME - (System.currentTimeMillis()-regdto.getTimeStamp())/1000;
+		ruturnMessageDto.setMsg(RespCodeEnum.update_password_verificationValid.getCode());
+		ruturnMessageDto.setData(verificationValid+'-'+time);
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+mobile+" repetition get verification,need wait "+time+" s.", LOGLEVEL_INFO, UserController.class);
+		this.writeJSON(res, ruturnMessageDto);
+		return;
+	}
+	
+	/**
+	 * 修改手机号(修改手机号时调用的方法)
+	 * @throws Exception
+	 */
+	@RequestMapping("/updateMobile.do")
+	public void updateMobile (HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 获取session数据
+		Object sessionObj = req.getSession().getAttribute(SESSION_USER);
+		String userType = req.getSession().getAttribute(SESSION_USER_TYPE).toString();
+		Field accountIdField = sessionObj.getClass().getDeclaredField("account_id");
+		accountIdField.setAccessible(true);
+		String accountId = accountIdField.get(sessionObj).toString();
+		// 返回消息
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();
+		// 获取手机号码
+		String newMobile = ServletRequestUtils.getStringParameter(req, "mobile","").trim();
+		// 获取验证码
+		String verification = ServletRequestUtils.getStringParameter(req, "verification","").trim();
+		// 验证手机号是否为空
+		if(newMobile.equals("")){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updateMobile.tip.mobileEmpty"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 验证手机号是否合法
+		if(!Pattern.matches(REG_POSITIVE_MOBILE, newMobile)){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updateMobile.tip.mobileWrong"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		Object userObj = userService.queryUserObjByAccountIdAndUserType(accountId, USERTYPE_CUSTOMER);
+		// 获取手机号码
+		Field mobileField = userObj.getClass().getDeclaredField("mobile");
+		mobileField.setAccessible(true);
+		String userMobile = mobileField.get(userObj).toString();
+		// 判断手机号是否和以前一样
+		if(userMobile.equals(newMobile)){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updateMobile.tip.sameMobile"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断手机号是否被注册了
+		if(userService.getUser(newMobile, userType)!=null){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updateMobile.tip.mobileExist"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断验证码是否为空
+		if(verification.equals("")){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updateMobile.tip.verificationEmpty"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断验证码是否正确
+		String redisKey = userType+UPDATE_MOBILE+userMobile;
+		Object phoneVerificationObj = userRedis.getObj(redisKey);
+		if(
+		   // 未发送验证码
+		   phoneVerificationObj==null
+				||
+		   // 已经过期
+		   (System.currentTimeMillis()-((RegPhoneRandomNumDto)phoneVerificationObj).getTimeStamp())/1000>VERIFICATION_VALID_TIME
+		   	    ||
+		   // 验证码不一致
+		   !verification.equals(((RegPhoneRandomNumDto)phoneVerificationObj).getVaildCode())
+		){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "mobile "+userMobile+" input verification("+verification+") in vain.", LOGLEVEL_INFO, UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("updateMobile.tip.verificationMistake"));
+			this.writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 修改手机号
+		userService.updateUserMobile(accountId, USERTYPE_CUSTOMER, newMobile);
+		userService.updateUserMobile(accountId, USERTYPE_CUSTOMER_ADVERTISER, newMobile);
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Update mobile success.", LOGLEVEL_INFO, UserController.class);
+		ruturnMessageDto.setSuccess(true);
+		ruturnMessageDto.setMsg(reqCt.getMessage("updateMobile.tip.success"));
+		this.writeJSON(res, ruturnMessageDto);
+	}
+	
+	/**
+	 * 修改密码(根据原密码修改)
+	 */
+	@RequestMapping("/updatePwd.do")
+	public void updatePwd(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 用户名
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();	
+		// 获取前台参数
+		String oldPwd = ServletRequestUtils.getStringParameter(req,"oldPwd","").trim();
+		String newPwd = ServletRequestUtils.getStringParameter(req,"newPwd","").trim();
+		String confirmPwd = ServletRequestUtils.getStringParameter(req,"confirmPwd","").trim();
+		// 返回消息
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		// 判断旧密码是否为空
+		if("".equals(oldPwd)){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.oldPwdEmpty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断新密码是否为空
+		if("".equals(newPwd)){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.newPwdEmpty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断确认密码是否为空
+		if("".equals(confirmPwd)){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.confirmEmpty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断旧密码是否输入正确
+		Object sessionObj = req.getSession().getAttribute(SESSION_USER);
+		// 获取accountId
+		Field accountIdField = sessionObj.getClass().getDeclaredField("account_id");
+		accountIdField.setAccessible(true);
+		String accountId = accountIdField.get(sessionObj).toString();
+		Object userObj = userService.queryUserObjByAccountIdAndUserType(accountId, USERTYPE_CUSTOMER);
+		// 获取用户密码
+		Field pwdFiled = userObj.getClass().getDeclaredField("password");
+		pwdFiled.setAccessible(true);
+		String userPwd = Encypter.getDecryptValue(pwdFiled.get(userObj).toString());
+		if(!userPwd.equals(oldPwd)){
+			// 旧密码输入错误
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER,"User "+userName + " input password is false.",LOGLEVEL_INFO , UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.oldPwdMistake"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER,"User "+userName + " input password is true.",LOGLEVEL_INFO , UserController.class);
+		// 判断用户两次输入的密码是否一致
+		if(!newPwd.equals(confirmPwd)){
+			// 用户输入的两次密码不一致
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER,userName + " input the two new passwords don't match.",LOGLEVEL_INFO , UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.twoNewPwdNotMatch"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER,"User "+userName + " input the two new passwords match.",LOGLEVEL_INFO , UserController.class);
+		// 修改密码
+		boolean statusCustomer = userService.updatePwdByAccountIdAndUserType(accountId, newPwd, USERTYPE_CUSTOMER);
+		boolean statusAD = userService.updatePwdByAccountIdAndUserType(accountId, newPwd, USERTYPE_CUSTOMER_ADVERTISER);
+		if(statusCustomer && statusAD){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER,"User "+userName + " update password success.",LOGLEVEL_INFO , UserController.class);
+			ruturnMessageDto.setMsg(RespCodeEnum.SUCCESS.getCode());
+			ruturnMessageDto.setData(reqCt.getMessage("updatePwd.tip.updatePwdSuccess"));
+		}else{
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER,"User "+userName + " update password fail.",LOGLEVEL_INFO , UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.updatePwdFail"));
+		}
+		writeJSON(res, ruturnMessageDto);
+	}
+	
+	/**
+	 * 修改密码(根据原密码修改)
+	 */
+	@RequestMapping("/updateWithDrawPwd.do")
+	public void updateWithDrawPwd(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 用户名
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		// 返回消息的dto
+		RuturnMessageDto ruturnMessageDto = new RuturnMessageDto();	
+		// 获取前台参数
+		String newPwd = ServletRequestUtils.getStringParameter(req,"newPwd","").trim();
+		String confirmPwd = ServletRequestUtils.getStringParameter(req,"confirmPwd","").trim();
+		// 返回消息
+		RequestContext reqCt= new RequestContext(req);// 语言包
+		// 判断新密码是否为空
+		if("".equals(newPwd)){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.newPwdEmpty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断确认密码是否为空
+		if("".equals(confirmPwd)){
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.confirmEmpty"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		// 判断用户两次输入的密码是否一致
+		if(!newPwd.equals(confirmPwd)){
+			// 用户输入的两次密码不一致
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER,userName + " input the two new passwords don't match.",LOGLEVEL_INFO , UserController.class);
+			ruturnMessageDto.setMsg(reqCt.getMessage("updatePwd.tip.twoNewPwdNotMatch"));
+			writeJSON(res, ruturnMessageDto);
+			return;
+		}
+		try {
+			Object sessionObj = req.getSession().getAttribute(SESSION_USER);
+			// 获取accountId
+			Field accountIdField = sessionObj.getClass().getDeclaredField("account_id");
+			accountIdField.setAccessible(true);
+			String accountId = accountIdField.get(sessionObj).toString();
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER,"User "+userName + " input the two new passwords match.",LOGLEVEL_INFO , UserController.class);
+			// 修改密码
+			userService.updateWPWD(accountId,Encypter.getEncryptValue(newPwd));
+			ruturnMessageDto.setSuccess(true);
+			ruturnMessageDto.setMsg(RespCodeEnum.SUCCESS.getCode());
+			ruturnMessageDto.setData(reqCt.getMessage("updatePwd.tip.setPwdSuccess"));
+		} catch (Exception e) {
+			ruturnMessageDto.setMsg(RespCodeEnum.global_unknow_expiration.getCode());
+			ruturnMessageDto.setData(reqCt.getMessage("common.exception.unknow"));
+			e.printStackTrace();
+		}
+		writeJSON(res, ruturnMessageDto);
+	}
+}

@@ -1,0 +1,9 @@
+$(function(){
+	// 绑定获取验证码按钮
+	sendVerification();
+	// 发送请求按钮
+	updateMobileBtn();
+	// 修改按钮
+	modifyMobileBtn();
+})
+

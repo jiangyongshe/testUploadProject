@@ -1,0 +1,93 @@
+package com.cwa.client.utils;
+
+/**
+ * 错误状态码和错误信息描述 10000代表成功，全局 
+ * 1开头：代表全局通用错误代码，譬如：参数无效 
+ * 2开头：代表登录个性化错误代码
+ * 3开头：代表注册个性化错误代码 
+ * 4开头：代表下单个性化错误代码 
+ * 5开头 ：代表地址个性化错误代码 
+ * 6开头：代表修改密码个性化错误代码 
+ * 9开头：代表产品类别
+ * 如果有其他定义，请添加注释
+ * 
+ * @author javateam
+ *
+ */
+public enum RespCodeEnum {
+	
+	SUCCESS("success", "10000"),
+
+	// 全局参数异常代码
+	global_session_expiration("会话过期", "10001"),
+
+	global_unknow_expiration("未知异常", "10002"), 
+	global_parameter_isnull("非法参数", "10003"), 
+	global_update_fail("数据更新失败", "10004"), 
+	global_delete_fail("数据删除失败", "10005"), 
+	FAILD("faild", "10006"), 
+	global_list_isnull("数据为空", "10007"), 
+	
+	//注册异常代码
+	register_mobile_formaterror("手机号格式错误","30001"),
+	register_mobile_existed("手机号已存在","30002"),
+	register_mobile_invalidcode("手机验证码失效","30003"),
+	register_mobile_invaliderror("手机验证码错误","30004"),
+	register_passWord_invaliderror("两次输入密码不一致","30004"),
+	
+	//订单异常代码
+	order_create_notTimeInterval("改时段已被购买完","40001"),
+	order_uploadVideo_error("视频已上传","40002"),
+	order_playCycle_error("播放周期有误","40003"),
+	order_adexpire_error("广告过期","40004"),
+	order_orderExpire_error("订单过期","40005"),
+	order_orderlarge_error("每次下单小于100单","40006"),
+	order_device_error("当前下单设备状态非正常","40007"),
+	order_payMoreBig_error("银联支付金额不超过3000","40007"),
+	
+	//钱包出金错误代码
+	wallet_withOut_error("钱包出金余额不足","50001"),
+	wallet_withOut_error1("钱包已被冻结","50002"),
+	wallet_withOut_error2("钱包不存在","50003"),
+	wallet_withOut_error3("不在入金时间内","50004"),
+	wallet_withOut_error4("出金绑卡卡号错误","50005"),
+	wallet_withOut_error5("银盛出金未绑卡","50006"),
+	//wallet_recharge_error4("订单过期","40006"),
+	//文件上传
+	upload_file_error("文件过大","90001"),
+	upload_file_error1("文件为空","90002"),
+	
+	//修改用户信息错误代码
+	update_customerInfo_emailError("电子邮箱格式错误","30010"),
+	
+	
+	log_common_fileName("默认日志输出文件名", "CWA_Client"),
+
+	update_password_verificationValid("手机验证码有效","60001");
+	
+	private String message;
+
+	private String code;
+
+	private RespCodeEnum(String message, String code) {
+		this.message = message;
+		this.code = code;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+}

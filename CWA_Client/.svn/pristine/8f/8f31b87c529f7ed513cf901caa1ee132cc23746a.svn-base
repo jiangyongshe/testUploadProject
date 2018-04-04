@@ -1,0 +1,65 @@
+package com.cwa.client.utils;
+
+import org.jasypt.util.text.BasicTextEncryptor;
+
+/**
+ * 编码解码
+ */
+public class Encypter {
+	
+	/**
+	 * 根据Key读取Value
+	 * @param filePath
+	 * @param key
+	 * @return
+	 */
+	public static String getValueByKey(String key) {
+		try {
+			return GobalProperties.getGobalConfig().getValueByKey(key);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * 加密
+	 * @param pwd
+	 * @return
+	 */
+	public static String getEncryptValue(String pwd) {
+		String new_pwd = null;
+		try {
+			BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
+			String key = getValueByKey("goldwin_pwd_key");
+			textEncryptor.setPassword(key);
+			new_pwd = textEncryptor.encrypt(pwd);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new_pwd;
+	}
+
+	/**
+	 * 解密
+	 * @param pwd
+	 * @return
+	 */
+	public static String getDecryptValue(String pwd) {
+		String new_pwd = null;
+		try {
+			BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
+			String key = getValueByKey("goldwin_pwd_key");
+			textEncryptor.setPassword(key);
+			new_pwd = textEncryptor.decrypt(pwd);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new_pwd;
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(Encypter.getDecryptValue("nKJYfT7UYCbH0ZaX57GVCGtgiQe4bVhq"));
+	}
+	
+}

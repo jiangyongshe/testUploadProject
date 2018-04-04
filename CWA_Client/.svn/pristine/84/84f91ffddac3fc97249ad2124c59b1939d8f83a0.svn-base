@@ -1,0 +1,418 @@
+package com.cwa.client.service;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.AdvertiseInfoDao;
+import com.cwa.client.dao.AdvertiseOrderDao;
+import com.cwa.client.dao.AdvertiseOrderDetailDao;
+import com.cwa.client.dao.ClientInOutMoneyDao;
+import com.cwa.client.dao.CustomerCommReportDao;
+import com.cwa.client.dao.CustomerWalletDao;
+import com.cwa.client.dao.CustomerWalletFlowDao;
+import com.cwa.client.dao.DeviceVedioCountDao;
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.dto.CustomerWalletFlow;
+import com.cwa.client.dto.DeviceVedioCountDto;
+import com.cwa.client.model.Tb_Customer_Wallet;
+import com.cwa.client.model.Tb_Customer_Wallet_Flow;
+import com.cwa.client.model.Tb_Order;
+import com.cwa.client.model.Tb_Order_Detail;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.model.Tb_customer_comm_report;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.DateUtils;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.PageVars;
+import com.cwa.client.utils.RegUtil;
+import com.cwa.client.utils.RespCodeEnum;
+import com.cwa.client.utils.Tools;
+import com.cwa.client.utils.UniqId;
+
+import net.sf.json.JSONObject;
+
+@Service
+public class OrderService implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private AdvertiseOrderDao advertiseOrderDao;
+	
+	@Resource
+	private AdvertiseOrderDetailDao advertiseOrderDetailDao;
+	
+	@Resource
+	private DeviceVedioCountDao deviceVedioCountDao;
+	
+	@Resource
+	private AdvertiseInfoDao advertiseInfoDao;
+	@Resource
+	private ShoppCartService shoppCartService;
+	
+	@Resource
+	private CustomerWalletDao customerWalletDao;
+	
+	@Resource
+	private CustomerWalletFlowDao customerWalletFlowDao;
+	
+	@Resource
+	private CustomerCommReportDao customerCommReportDao;
+	
+	@Resource
+	private ClientInOutMoneyDao clientInOutMoneyDao;
+  
+	public Tb_Order findById(Integer id){
+		return advertiseOrderDao.findById(id);
+	}
+	
+	public void save(Tb_Order entity) throws Exception{
+		advertiseOrderDao.save(entity);
+	}
+	
+	
+	public String batchUpdate(List<Tb_Order> orderList,String payType,CustomerWalletFlow dto) throws Exception {
+		List<Object []> listObj=new ArrayList<>();
+		for (Tb_Order order : orderList) {
+			Object [] obj={
+				order.getSerial_number()
+			};
+			listObj.add(obj);
+		}
+		advertiseOrderDao.batchUpdate(listObj);
+		String accountId=dto.getCUSTOMER_ID();
+		if("4".equals(payType)){//钱包支付
+			Tb_Customer_Wallet walletDto = customerWalletDao.findByAccountId(dto.getCUSTOMER_ID());
+			if(walletDto==null){
+				return RespCodeEnum.wallet_withOut_error2.getCode();
+			}else{
+				if(walletDto.getSTATE()==2){
+					return RespCodeEnum.wallet_withOut_error1.getCode();
+				}
+				if(dto.getFLOW_TYPE()==1){
+					walletDto.setAMOUNT(walletDto.getAMOUNT().add(dto.getAMOUNT()));
+				}else{
+					if(walletDto.getAMOUNT().compareTo(dto.getAMOUNT())==-1){
+						return RespCodeEnum.wallet_withOut_error.getCode();
+					}
+					walletDto.setAMOUNT(walletDto.getAMOUNT().subtract(dto.getAMOUNT()));
+				}
+				customerWalletDao.update(walletDto);
+			}
+			
+			Tb_Customer_Wallet_Flow entity =new Tb_Customer_Wallet_Flow();//钱包流水
+			entity.setAMOUNT(dto.getAMOUNT());
+			entity.setCUSTOMER_ID(dto.getCUSTOMER_ID());
+			entity.setFLOW_TYPE(dto.getFLOW_TYPE());
+			entity.setOPEN_DATE(new Timestamp(new Date().getTime()));
+			customerWalletFlowDao.save(entity);
+			logWriteUtil.writeLog("", "update Tb_Customer_Wallet_Flow success flowEntity:"+JSONObject.fromObject(entity), LOGLEVEL_INFO, OrderService.class);
+		}else{
+			String serialNumber = Tools.createSerialNumber(accountId.substring(accountId.length()-4),SIX+"",payType);
+			Tb_client_in_out_money tb_client_in_out_money = new Tb_client_in_out_money();//出金流水
+			tb_client_in_out_money.setSerial_number(serialNumber);
+			tb_client_in_out_money.setAccount_id(accountId);
+			tb_client_in_out_money.setIn_out_type(IN_OUT_TYPE_RECHARGE);
+			tb_client_in_out_money.setAmount(dto.getAMOUNT());
+			tb_client_in_out_money.setOpen_date(new Timestamp(new Date().getTime()));
+			tb_client_in_out_money.setCommit_account_id(accountId);
+			tb_client_in_out_money.setRemark("订单支付");
+			tb_client_in_out_money.setPay_type(payType);
+			tb_client_in_out_money.setAccount_type(SIX);
+			// 判断是否大于审核阈值
+			tb_client_in_out_money.setStatus(TWO);
+			clientInOutMoneyDao.insert(tb_client_in_out_money);
+			logWriteUtil.writeLog("", "insert Tb_client_in_out_money success inOutEntity:"+JSONObject.fromObject(tb_client_in_out_money), LOGLEVEL_INFO, OrderService.class);
+		}
+		Tb_customer_comm_report repEntity = clientInOutMoneyDao.queryInOutInfo(accountId);
+		if(repEntity!=null){
+			repEntity.setDeposit(repEntity.getDeposit().add(dto.getAMOUNT()));
+			customerCommReportDao.update(repEntity);
+		}
+		logWriteUtil.writeLog("", "update Tb_customer_comm_report success repEntity:"+JSONObject.fromObject(repEntity), LOGLEVEL_INFO, OrderService.class);
+		return RespCodeEnum.SUCCESS.getCode();
+	}
+	
+	public String payOrder(CustomerWalletFlow dto) throws Exception {
+		return RespCodeEnum.SUCCESS.getCode();
+	}
+	
+	public PageModel<AdvertiseInfoDto> getPageModel(AdvertiseInfoDto dto){
+    	PageVars pvNm=this.getVars(dto,1);
+		PageVars pvlist=this.getVars(dto,0);
+		PageModel<AdvertiseInfoDto> pm=advertiseInfoDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    	
+    }
+    
+    
+    private PageVars getVars(AdvertiseInfoDto dto,int type){
+    	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+    	 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from (select distinct o.id,o.DEVICE_ID,o.SHOP_NAME,CONCAT(d.BEGIN_TIME,\"-\",d.END_TIME) idle_time,o.TOTAL_PRICE sumPrice,o.TOTAL_PRICE/o.price days,o.ORDER_STATUS,o.PLAY_BEGIN_TIME startDate,o.PLAY_END_TIME endDate "
+    				 + "from tb_order o join tb_advertiser A on o.ADVERTISER_ID=A.id join tb_order_detail d on o.ACCOUNT_ID=d.ACCOUNT_ID and o.SERIAL_NUMBER=d.SERIAL_NUMBER left join tb_vedio_audit v on v.SERIAL_NUMBER=o.SERIAL_NUMBER where 1=1 ");
+    	 } else {
+    		 sbStr.append("select distinct A.id,o.vedio_id,v.name adName,o.serial_number,A.MAILING_ADDRESS,o.DEVICE_ID,o.SHOP_NAME,CONCAT(d.BEGIN_TIME,\"-\",d.END_TIME) idle_time,o.TOTAL_PRICE sumPrice,o.OLD_TOTAL_PRICE/o.price days,o.ORDER_STATUS,o.PLAY_BEGIN_TIME startDate,o.PLAY_END_TIME endDate, "
+    				 +"(SELECT Group_concat(PIC ) FROM tb_advertiser_pic WHERE ADVERTISER_ID=A.ACCOUNT_ID) pics "
+    				 + "from tb_order o join tb_advertiser A on o.ADVERTISER_ID=A.id join tb_order_detail d on o.ACCOUNT_ID=d.ACCOUNT_ID and o.SERIAL_NUMBER=d.SERIAL_NUMBER left join tb_vedio_audit v on v.SERIAL_NUMBER=o.SERIAL_NUMBER where 1=1 ");
+    	 }
+    	 if(!RegUtil.getUtil().isNull(dto.getAccount_id())){
+    		 sbStr.append(" and o.account_id=:account_id ");
+    		 params.put("account_id", dto.getAccount_id());
+    	 }     
+    	 if(!RegUtil.getUtil().isNull(dto.getAdName())){
+    		 sbStr.append(" and v.name=:adName ");
+    		 params.put("adName", dto.getAdName());
+    	 }
+    	 if(!RegUtil.getUtil().isNull(dto.getShoppId())){//订单状态查询
+    		 if("1".equals(dto.getShoppId().substring(0,1))){//未支付
+    			 sbStr.append(" and o.order_status=1 ");
+    		 }else if("4".compareTo(dto.getShoppId().substring(0,1))>0){//申请中
+    			 sbStr.append(" and o.order_status<4 and o.order_status>1  ");
+    		 }else if("4".compareTo(dto.getShoppId().substring(0,1))==0){//申请通过
+    			 if("1".compareTo(dto.getShoppId().substring(2))==0){//等待播放
+    				 sbStr.append(" and o.order_status=4 and o.PLAY_BEGIN_TIME>date_format(now(),'%Y-%m-%d') ");
+    			 }else if("2".compareTo(dto.getShoppId().substring(2))==0){//播放中
+    				 sbStr.append(" and o.order_status=4 and o.PLAY_BEGIN_TIME<=date_format(now(),'%Y-%m-%d') and o.PLAY_END_TIME>=date_format(now(),'%Y-%m-%d') ");
+    			 }else if("3".compareTo(dto.getShoppId().substring(2))==0){//已停播
+    				 sbStr.append(" and o.order_status=4 and o.PLAY_END_TIME<date_format(now(),'%Y-%m-%d') ");
+    			 }
+    		 }else if("4".compareTo(dto.getShoppId().substring(0,1))<0){
+    			 sbStr.append(" and o.order_status=:order_status ");
+        		 params.put("order_status", dto.getShoppId());
+    		 }
+    	 }
+    	 if(!RegUtil.getUtil().isNull(dto.getIdle_time())){//时段查询
+    		 sbStr.append(" and d.BEGIN_TIME<=:beginTime and d.END_TIME>=:endTime ");
+    		 params.put("beginTime", dto.getIdle_time().split("-")[0]);
+    		 params.put("endTime", dto.getIdle_time().split("-")[1]);
+    	 }
+    	 if(type==1){
+    		 sbStr.append(") a");
+    	 }
+    	   
+    	  if (type!=1) {
+    		  sbStr.append(" ORDER BY o.id desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+    		  logWriteUtil.writeLog("", "===param:"+JSONObject.fromObject(dto)+"==sql:"+sbStr, LOGLEVEL_INFO, OrderService.class);
+		  }
+    	  
+    	  System.out.println("sql:"+sbStr.toString());
+    	  pv.setSbstr(sbStr);
+	      pv.setParams(params);
+		 
+		 return pv;
+    }	
+	//生成订单
+	public String createOrder(List<AdvertiseInfoDto> list,Map<String, String> map,String shoppIds,Double disCount) throws Exception{
+		List<Tb_Order> orderList=new ArrayList<>();
+		List<Tb_Order_Detail> orderDetailList=new ArrayList<>();
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");//日期格式化
+		StringBuilder orders=new StringBuilder();
+		BigDecimal total=new BigDecimal(0);
+		for (AdvertiseInfoDto dto : list) {
+			List<Tb_Order_Detail> temOrderDetailList=new ArrayList<>();
+			String key=dto.getDevice_id()+"-"+dto.getIdle_time()+"-"+dto.getShop_name();//设备id+时段+店铺名
+			String str = map.get(key);
+			Tb_Order orderEntity =new Tb_Order();//生成订单
+			orderEntity.setAccount_id(dto.getAccount_id());
+			orderEntity.setAccount_ip(dto.getAccount_IP());
+			orderEntity.setAdvertiser_id(dto.getId());
+//			orderEntity.setAudit_datetime(DateUtils.string2Time(TIMEISNULL, DateUtils.DATE_FORMAT_DEFAULT));
+//			orderEntity.setAudit_id(ZERO);
+			orderEntity.setCommit_time(new Timestamp(System.currentTimeMillis()));
+			orderEntity.setDevice_id(dto.getDevice_id());
+			orderEntity.setOrder_status(ONE);
+			orderEntity.setPay_type(WECHATTPAY1_TYPE);
+			orderEntity.setPlay_begin_time(dto.getStartDate());
+			orderEntity.setPlay_end_time(dto.getEndDate());
+			orderEntity.setPrice(dto.getAd_price());
+			orderEntity.setVedio_id(ZERO);
+			orderEntity.setResult("");
+			String currDate=DateUtils.TimestamptoString(new Timestamp(System.currentTimeMillis()),DateUtils.DATE_FORMAT_YYYYMMDDHHMMSS);
+			String serialNumber=currDate+dto.getDevice_id()+WECHATTPAY1_TYPE+dto.getAccount_id().substring(dto.getAccount_id().length()-4)+UniqId.getallSymbolArrayStr(4);
+			orders.append(serialNumber+",");
+			orderEntity.setSerial_number(serialNumber);
+			orderEntity.setShop_name(dto.getShop_name());
+			orderEntity.setOld_total_price(new BigDecimal(dto.getSumPrice()));
+			
+			//得到播放天数
+			Long time =(sdf.parse(dto.getEndDate()).getTime()-sdf.parse(dto.getStartDate()).getTime())/(3600 * 24 * 1000);
+			logWriteUtil.writeLog("", "===time:"+(time+1), LOGLEVEL_INFO, OrderService.class);
+			if(time<0||sdf.parse(dto.getStartDate()).getTime()<=new Date().getTime()){
+				return RespCodeEnum.order_playCycle_error.getCode();
+			}
+			for (int i = 0; i < time+1; i++) {
+				
+				boolean bl=true;//标识不能下单的时间
+				Date date=new Date((sdf.parse(dto.getStartDate()).getTime()+(3600 * 24 * 1000)*i));//播放时间
+				if(!RegUtil.getUtil().isNull(str)){
+					String[] strs = str.split(",");
+					String keyCount="canBuy-"+sdf.format(date)+key;//获取当天该广告可购买条数key
+					String valueStr = map.get(keyCount);
+					//剔除不能下单时段
+					for (int j = 0; j < strs.length; j++) {
+						if(RegUtil.getUtil().isNull(valueStr)) {break;}
+						if(strs[j].substring(0,10).equals(sdf.format(date))){
+							int count=Integer.parseInt(valueStr);//可购买条数
+							logWriteUtil.writeLog("", "+++keyCount"+keyCount+"====count:"+count, LOGLEVEL_INFO, OrderService.class);
+							if(count==0){//如果可买条数为0 则当天该广告不能下单
+								orderEntity.setOld_total_price(orderEntity.getOld_total_price().subtract(orderEntity.getPrice()));//减去不能购买天数的价格
+								bl=false;
+								break;
+							}else{
+								map.put(keyCount, (count-1)+"");
+							}
+						}
+					}
+				}
+				if(bl){
+					Tb_Order_Detail detailEntity=new Tb_Order_Detail();//生成订单详情
+					detailEntity.setAccount_id(dto.getAccount_id());
+					detailEntity.setBegin_time(dto.getIdle_time().split("-")[0]);
+					detailEntity.setCommit_time(new Timestamp(System.currentTimeMillis()));
+					detailEntity.setDevice_id(dto.getDevice_id());
+					detailEntity.setEnd_time(dto.getIdle_time().split("-")[1]);
+					detailEntity.setPlay_date(date);
+					detailEntity.setSerial_number(orderEntity.getSerial_number());
+					temOrderDetailList.add(detailEntity);//加入集合
+				}
+			}
+			logWriteUtil.writeLog("", "+++temOrderDetailListSize:"+temOrderDetailList.size(), LOGLEVEL_INFO, OrderService.class);
+			orderEntity.setTotal_price(orderEntity.getOld_total_price().multiply(new BigDecimal(disCount)));
+			if(temOrderDetailList.size()>0){
+				total=total.add(orderEntity.getOld_total_price());
+				orderList.add(orderEntity);//加入集合
+				orderDetailList.addAll(temOrderDetailList);
+			}else{
+				if(RegUtil.getUtil().isNull(shoppIds)){
+					return RespCodeEnum.order_create_notTimeInterval.getCode();
+				}else{
+					if(shoppIds.indexOf(dto.getShoppId())==0){
+						shoppIds=shoppIds.replace(dto.getShoppId()+",", "");//第一位替换
+					}else{
+						shoppIds=shoppIds.replace(","+dto.getShoppId(), "");
+					}
+					logWriteUtil.writeLog("", "replaceId:"+dto.getShoppId()+"===shoppIds:"+shoppIds, LOGLEVEL_INFO, OrderService.class);
+				}
+			}
+		}
+		logWriteUtil.writeLog("", "===orderListSize:"+orderList.size()+"---orderDetailListSize:"+orderDetailList.size(), LOGLEVEL_INFO, OrderService.class);
+		
+		batchCreateOrderAndOrderDetail(orderList,orderDetailList);//生成订单和订单详情
+		updateOrInsertVideoCount(orderDetailList);//插入或更新设备视频播放数量
+		if(shoppIds!=null){
+			shoppCartService.deleteByAccountId(list.get(0).getAccount_id(), shoppIds);
+		}
+		return RespCodeEnum.SUCCESS.getCode()+"-"+total+"-"+total.multiply(new BigDecimal(disCount))+"-"+orders.substring(0,orders.length()-1);
+	}
+	
+	
+	//生成订单和订单详情
+	public int batchCreateOrderAndOrderDetail(List<Tb_Order> orderList,List<Tb_Order_Detail> orderDetailList) throws Exception{
+   		 List<Object[]> batch = new ArrayList<Object[]>();
+   		 for (Tb_Order order : orderList) {
+   			 Object[] values = new Object[] {//封装订单数据
+   				 order.getSerial_number(),
+   				 order.getDevice_id(),
+   				 order.getOrder_status(),
+   				 order.getVedio_id(),
+   				 order.getAccount_id(),
+   				 order.getAccount_ip(),
+   				 order.getCommit_time(),
+   				 order.getPay_type(),
+   				 order.getPlay_begin_time(),
+   				 order.getPlay_end_time(),
+   				 order.getShop_name(),
+   				 order.getTotal_price(),
+   				 order.getPrice(),
+   				 order.getResult(),
+   				 order.getAdvertiser_id(),
+   				 order.getOld_total_price()
+   			 };
+   			 batch.add(values);
+   		 }
+   		 int[] orderCount = advertiseOrderDao.batchInsertOrder(batch);//批量生成订单
+   		 logWriteUtil.writeLog("", "====orderCount:"+orderCount.length, LOGLEVEL_INFO, OrderService.class);
+   		 batch.clear();
+   		 for (Tb_Order_Detail orderDetail : orderDetailList) {
+   			 Object[] values = new Object[] {//封装订单详情数据
+				orderDetail.getSerial_number(),
+				orderDetail.getDevice_id(),
+				orderDetail.getBegin_time(),
+				orderDetail.getEnd_time(),
+				orderDetail.getCommit_time(),
+				orderDetail.getPlay_date(),
+				orderDetail.getAccount_id()
+   			 };
+   			 batch.add(values);
+   		 }
+   		 int[] detailCount = advertiseOrderDetailDao.batchInsertOrderDetail(batch);//批量生成订单详情
+   		 logWriteUtil.writeLog("", "====detailCount:"+detailCount.length, LOGLEVEL_INFO, OrderService.class);
+   		return orderCount.length+detailCount.length;
+	}
+	
+	//修改和插入设备视频播放统计
+	public int updateOrInsertVideoCount(List<Tb_Order_Detail> orderDetailList) throws Exception{ 
+		List<Object[]> insertBatch = new ArrayList<Object[]>();
+		List<Object[]> updateBatch = new ArrayList<Object[]>();
+		for (Tb_Order_Detail orderDetail : orderDetailList) {
+  			 Object[] values = new Object[] {//封装订单详情数据
+				orderDetail.getDevice_id(),
+				orderDetail.getBegin_time(),
+				orderDetail.getEnd_time(),
+				orderDetail.getPlay_date()
+  			 };
+  			 DeviceVedioCountDto dto = deviceVedioCountDao.findByAll(values);
+  			 if(dto==null){
+  				 boolean bl=true;
+  				Object[] insertValues = new Object[] {//封装插入数据
+  					orderDetail.getDevice_id(),
+  					orderDetail.getBegin_time(),
+  					orderDetail.getEnd_time(),
+  					1,
+  					orderDetail.getPlay_date()
+  	  			 };
+  				for (Object[] objs : insertBatch) {//判断是否相同广告
+					if(objs[0].equals(orderDetail.getDevice_id())&&objs[1].equals(orderDetail.getBegin_time())&&objs[2].equals(orderDetail.getEnd_time())&&objs[4].equals(orderDetail.getPlay_date())){
+						objs[3]=Integer.parseInt(objs[3].toString())+1;
+						bl=false;//如果包含则不加入集合
+					}
+				}
+  				if(bl){
+  					insertBatch.add(insertValues);
+  				}
+  			 }else{
+  				Object[] updateValues = new Object[] {//封装更新数据
+					dto.getId()
+  	  			 };
+  				updateBatch.add(updateValues);
+  			 }
+  		 }
+		int[] insertCount = deviceVedioCountDao.batchInsertCount(insertBatch);//批量插入
+		int[] updateCount = deviceVedioCountDao.batchUpdateCount(updateBatch);//批量修改
+		logWriteUtil.writeLog("", "====insertBatch:"+insertBatch.size()+"--updateBatch:"+updateBatch.size()+"--insertCount:"+insertCount.length+"--updateCount:"+updateCount.length, LOGLEVEL_INFO, OrderService.class);
+		return insertCount.length+updateCount.length;
+	}
+	
+	public List<Tb_Order> findOrderByOrderNo(String orderNo){
+		return advertiseOrderDao.queryOrderByOrderNo(orderNo);
+	}
+	
+	public static void main(String[] args) {
+		String str="123sdfsdfsdfd";
+		System.out.println(str.substring(0, 5));
+	}
+}

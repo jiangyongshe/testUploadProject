@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+  <ul class="ggtf-sc ggtf-sc3 pad-q10 searchEv">
+        <li>
+          <span class="pos-a ggtf-sc-bt">用户类型</span>
+          <select name="" class="xlb05 width100 accountType">
+            <option value="5">店主</option>
+          </select>
+        </li>
+        
+        <!-- <li>
+          <span class="pos-a ggtf-sc-bt">提现类型</span>
+          <select name="" class="xlb05 width100 cardType">
+            <option value="3">银盛</option>
+          </select>
+        </li> -->
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">证件类型</span>
+          <select name="" class="xlb05 width100 papersType">
+            <option value="1">身份证</option>
+          </select>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">签约姓名</span>
+          <input type="text" class="wenb03 width100 bankCardName" placeholder="请输入真实姓名" />
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">证件号码</span>
+          <input type="text" class="wenb03 width100 papersCode" placeholder="请输入证件号码" />
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">手机号</span>
+          <input type="text" class="wenb03 width100 mobile" placeholder="请输入手机号" />
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">银行卡号</span>
+          <input type="text" class="wenb03 width100 bankCardCode" placeholder="请输入银行卡号" />
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">开户行</span>
+          <select name="" class="xlb05 width100 openAccountBankName">
+          <option value="请选择">请选择</option>
+            <option value="中国银行">中国银行</option>
+	        <option value="中国农业银行">中国农业银行</option>
+	        <option value="中国工商银行">中国工商银行</option>
+	        <option value="中国建设银行">中国建设银行</option>
+	        <option value="交通银行">交通银行</option>
+	        <option value="招商银行">招商银行</option>
+	        <option value="中国民生银行">中国民生银行</option>
+	        <option value="兴业银行">兴业银行</option>
+	        <option value="上海浦东发展银行">上海浦东发展银行</option>
+	        <option value="广东发展银行">广东发展银行</option>
+	        <option value="中信银行">中信银行</option>
+	        <option value="光大银行">光大银行</option>
+	        <option value="中国邮政储蓄银行">中国邮政储蓄银行</option>
+	        <option value="平安银行">平安银行</option>
+	        <option value="北京银行">北京银行</option>
+	        <option value="南京银行">南京银行</option>
+	        <option value="宁波银行">宁波银行</option>
+	        <option value="上海农村商业银行">上海农村商业银行</option>
+	        <option value="东亚银行">东亚银行</option>
+	        <option value="华夏银行">华夏银行</option>
+	        <option value="银联在线">银联在线</option>
+          </select>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">省份</span>
+          <select name="province" class="xlb05 width100 province">
+          </select>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">城市</span>
+          <select name="city" class="xlb05 width100 city">
+          </select>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt ">支行名称</span>
+          <input type="text" class="wenb03 width100 branchName" placeholder="请输入银行卡所属支行" />
+        </li>
+  </ul>
+      
+  <input name="" type="button" id="submit" value="提交" class="btn btn11 bg-blue width100 pad-q10 font13 mar-t20 mar-b10" />
+</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/js/jquery.citys.js"></script><!-- 省市区街道 -->
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/bandCard.js"></script>
+</body>
+</html>

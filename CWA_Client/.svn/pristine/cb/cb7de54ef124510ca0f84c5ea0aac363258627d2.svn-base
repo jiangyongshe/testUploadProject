@@ -1,0 +1,122 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport"/>
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords">
+<meta name="description" />
+<title>翔云播</title>
+<script src="/js/commonRel.js"></script>
+<!-- 银行卡相关 -->
+<script src="/js/bankCardCommon.js"></script>
+<!-- 逻辑处理 -->
+<script src="/js/core/bindCard.js"></script>
+<!-- 城市选择 -->
+<script src="/js/city-picker.data.js"></script>
+</head>
+<body>
+	<!-- 公用头部JS-->
+	<script src="/<spring:message code="url.language"/>/js/header.js"></script>
+	<div class="width clear font14">
+		<div class="mar-auto">
+			<div class="width clear quan pos-r">
+				<!--左侧菜单-->
+				<script src="/<spring:message code="url.language"/>/js/left.js"></script>
+				<!--右侧内容-->
+				<div class="right bg-ff">
+					<div class="clear width bg-f3 wddd">
+						<h2 class="fl font16 pad-t7 pad-b5">绑卡</h2>
+					</div>
+					<ul class="ggtf-sc pad-t20 font14" id="fillData">
+						<li>
+							<span class="pos-a ggtf-sc-bt">用户类型</span> 
+							<select id="userType" class="xlb04 font14 col-666">
+								<option value="5">店主</option>
+							</select>
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">提现类型</span> 
+							<select id="withdrawType" class="xlb04 font14 col-666">
+								<option value="3">银盛</option>
+							</select>
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">证件类型</span> 
+							<select id="credentialsType" class="xlb04 font14 col-666">
+								<option value="1">身份证</option>
+							</select>
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">签约姓名</span> 
+							<input id="signName" type="text" class="wenb03" placeholder="请输入签约姓名" />
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">证件号码</span> 
+							<input id="credentialsNo" type="text" class="wenb03" placeholder="请输入证件号码" />
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">手机号</span> 
+							<input id="mobile" type="text" class="wenb03" placeholder="请输入手机号" />
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">银行卡号</span> 
+							<input id="cardNo" type="text" class="wenb03" placeholder="请输入银行卡号" />
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">开户行</span> 
+							<select id="openBank" class="xlb04 font14 col-666">
+								<option value="中国银行">中国银行</option>
+						        <option value="中国农业银行">中国农业银行</option>
+						        <option value="中国工商银行">中国工商银行</option>
+						        <option value="中国建设银行">中国建设银行</option>
+						        <option value="交通银行">交通银行</option>
+						        <option value="招商银行">招商银行</option>
+						        <option value="中国民生银行">中国民生银行</option>
+						        <option value="兴业银行">兴业银行</option>
+						        <option value="上海浦东发展银行">上海浦东发展银行</option>
+						        <option value="广东发展银行">广东发展银行</option>
+						        <option value="中信银行">中信银行</option>
+						        <option value="光大银行">光大银行</option>
+						        <option value="中国邮政储蓄银行">中国邮政储蓄银行</option>
+						        <option value="平安银行">平安银行</option>
+						        <option value="北京银行">北京银行</option>
+						        <option value="南京银行">南京银行</option>
+						        <option value="宁波银行">宁波银行</option>
+						        <option value="上海农村商业银行">上海农村商业银行</option>
+						        <option value="东亚银行">东亚银行</option>
+						        <option value="华夏银行">华夏银行</option>
+						        <option value="银联在线">银联在线</option>
+							</select>
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">省份</span> 
+							<select id="province" class="xlb04 font14 col-666">
+								<option value="">-请选择-</option>
+							</select>
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">城市</span> 
+							<select id="city" class="xlb04 font14 col-666">
+								<option value="">-请选择-</option>
+							</select>
+						</li>
+						<li>
+							<span class="pos-a ggtf-sc-bt">支行名称</span> 
+							<input id="subBranch" type="text" class="wenb03" placeholder="请输入银行卡所属支行" />
+						</li>
+						<li>
+							<input id="submit" type="button" value="提交" class="btn btn05 bg-red font16 mar-t10" />
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 公用底部JS-->
+	<script type="text/javascript" src="/<spring:message code="url.language"/>/js/footer.js"></script>
+</body>
+</html>

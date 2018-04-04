@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script src="/js/commonRel.js"></script>
+</head>
+
+<body>
+<!-- 公用头部JS-->
+<script type="text/javascript" src="../js/header.js"></script>
+
+<div class="width clear font14">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script type="text/javascript" src="../js/left.js"></script>
+    
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <div class="clear width bg-f3 wddd">
+        <h2 class="fl font16 pad-t7 pad-b5">支付</h2>
+      </div>
+     <div class="clear width pad-t20">
+       <p class="text-c pad-t30 font28 green"><i class="fa fa-2x fa-check" aria-hidden="true"></i><br />支付成功</p>
+       <p class="text-c pad-t30 font16">您可以在<a href="../forward/customerOrder.do" class="red">我的广告订单</a>查看您的订单进程，或者继续<a href="../forward/customerAdvertise.do" class="red">投放广告</a></p>
+       
+      <!--  <p class="text-c pad-t30 font28 red"><i class="fa fa-2x fa-remove" aria-hidden="true"></i><br />支付失败</p>
+       <p class="text-c pad-t30 font16">支付宝余额不足，<a href="#" class="red">返回继续支付</a></p> -->
+    </div>
+  </div>
+</div>
+<script>
+$(".customerAdvertise").attr('class','active');
+</script>
+<script src="../js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

@@ -1,0 +1,38 @@
+package com.cwa.client.utils;
+
+import java.net.URLEncoder;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cwa.client.web.WeChatConstant;
+
+/**
+ * 微信
+ */
+public class WeChatUtil implements WeChatConstant{
+
+	
+	/**
+	 * 获取openId
+	 * @param url 获取openId后需要跳转的链接
+	 * @param req
+	 * @throws Exception
+	 */
+	public static String getOpenId(HttpServletRequest req,HttpServletResponse res,String url) throws Exception{
+		
+		System.out.println("Get openId...........");
+		
+		// 获取openId的回调
+		String receiveOpenIdUrl = req.getScheme()+"://"+req.getServerName()+"/chinese/exclude/weChat/openIdCallBack.do?url="+url;
+		
+		// 获取openId的链接
+		String getOpenIdUrl = URL1.replace("APPID", APPID).replace("REDIRECT_URI", URLEncoder.encode(receiveOpenIdUrl, "UTF-8"));
+
+		System.out.println("Get openId URL "+getOpenIdUrl);
+		
+		// 重定向
+		return getOpenIdUrl;
+	}
+	
+}

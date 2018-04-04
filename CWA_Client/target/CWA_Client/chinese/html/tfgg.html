@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云媒体</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<link rel="stylesheet" href="css/mescroll.css"><!--加载更多-->
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+<script src="js/mescroll.js"></script><!--加载更多-->
+<script src="js/mescroll-option.js"></script><!--加载更多-->
+<script src="js/pdlist1.js"></script><!--加载更多-->
+<script>
+//点击关闭层
+  function turnoff(obj){
+   document.getElementById(obj).style.display="none";
+    }
+//点击显示层
+  function elementDisplay(objid){
+   var obj=document.getElementById(objid);{
+    obj.style.display='inline-block';
+    }
+   }
+</script>
+<style>
+
+</style>
+</head>
+
+<body>
+<div id="mescroll" class="mescroll">
+<script src="js/header.js"></script><!--公用头部JS-->
+
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+    <!--右侧内容-->
+    <div class="right bg-ff">
+      <ul class="jindu font16">
+        <li class="active">购买广告位<span class="pos-a">1</span></li>
+        <li class="">上传广告投放资料<span class="pos-a">2</span></li>
+        <li class="">审核通过<span class="pos-a">3</span></li>
+      </ul>
+      
+      <h2 class="clear font18 pad-t40 pad-b10 bor-b">选择广告投放区域</h2>
+      
+      <div class="ggtf-city pad-t20">
+        <div class="pos-r font14 ggtf-city-list">
+          <span class="pos-a ggtf-city-bt">省份</span>
+          <select name="" class="font14 xlb03">
+            <option>全部</option>
+            <option>广东省</option>
+          </select>
+        </div>
+        
+        <div class="pos-r font14 ggtf-city-list">
+          <span class="pos-a ggtf-city-bt">城市</span>
+          <select name="" class="font14 xlb03">
+            <option>全部</option>
+            <option>深圳市</option>
+          </select>
+        </div>
+        
+        <div class="pos-r font14 ggtf-city-list">
+          <span class="pos-a ggtf-city-bt">区域</span>
+          <select name="" class="font14 xlb03">
+            <option>全部</option>
+            <option>罗湖区</option>
+          </select>
+        </div>
+        
+        <div class="pos-r font14 ggtf-city-list">
+          <span class="pos-a ggtf-city-bt">商圈</span>
+          <select name="" class="font14 xlb03">
+            <option>全部</option>
+            <option>金光华广场</option>
+          </select>
+        </div>
+      </div>
+      
+      <h2 class="clear font18 pad-t40 pad-b10 bor-b">选择广告投放时段</h2>
+      
+      
+      <div class="rmgg-table font13">
+        <div class="pad-t20 pad-b10 pad-l10 pos-r">
+          <label class="checkbox"><input type="checkbox" name="checkbox" id="" ><i>✓</i> 全选</label>
+          
+          <div class="pos-a fytj-gm">
+            <span class="dis-in font14">
+              费用总计：<span class="red font18">15000元</span>
+              <em class="dis-in pad-l10">折后价：</em>
+              <span class="red font18">12330元</span>
+            </span>
+        
+            <input name="" type="button" value="加入购物车" class="btn btn01 bg-red font16 mar-l15" onclick="elementDisplay('gwcdiv')" />
+        
+            <input name="" type="button" value="提交" class="btn btn01 bg-blue font16 mar-l15" onclick="location='tfgg01.html'" />
+          </div>
+        </div>
+        
+        <ul id="dataList" class="data-list mar-t10">
+        </ul>
+        
+        <div class="pad-t20 pad-b10 pad-l10 pos-r">
+          <label class="checkbox"><input type="checkbox" name="checkbox" id="" ><i>✓</i> 全选</label>
+          
+          <div class="pos-a fytj-gm">
+            <span class="dis-in font14">
+              费用总计：<span class="red font18">15000元</span>
+              <em class="dis-in pad-l10">折后价：</em>
+              <span class="red font18">12330元</span>
+            </span>
+        
+            <input name="" type="button" value="加入购物车" class="btn btn01 bg-red font16 mar-l15" onclick="elementDisplay('gwcdiv')" />
+        
+            <input name="" type="button" value="提交" class="btn btn01 bg-blue font16 mar-l15" onclick="location='tfgg01.html'" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</div>
+
+<!--加入购物车提示框-->
+<div class="shade" id="gwcdiv" style=" position: absolute; right: 0; top: 20px; background-color: #ee5544; padding: 8px 18px;">
+  <div class="tanchu tanchu2">
+    <div class="tanchu-bt"><span>加入购物车</span><a href="#" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('gwcdiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-nr text-c">
+      <p class="pad-t10"><i class="fa fa-smile-o fa-3x green" aria-hidden="true"></i></p>
+      <p class="pad-t10">加入成功，您可要通过点击 <a href="gwc.html" class="red">我的购物车</a> 完成支付</p>
+    </div>
+  </div>
+</div>
+
+<!--成为店主提示框-->
+<div class="shade" id="dianzhudiv" style="display: ;">
+  <div class="tanchu tanchu2">
+    <div class="tanchu-bt"><span>成为店主</span><a href="#" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('dianzhudiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-nr text-c">
+      <p class="pad-t10"><i class="fa fa-smile-o fa-3x green" aria-hidden="true"></i></p>
+      <p class="pad-t10">恭喜您，成功成为店主，请尽快 <a href="cwdz.html" class="red">完善店主资料</a>。</p>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+		$(function(){
+			//创建MeScroll对象
+			var mescroll = initMeScroll("mescroll", {
+				down:{
+					auto:false,//是否在初始化完毕之后自动执行下拉回调callback; 默认true
+					callback: downCallback, //下拉刷新的回调
+				},
+				up: {
+					auto:true,//初始化完毕,是否自动触发上拉加载的回调
+					isBoth: true, //上拉加载时,如果滑动到列表顶部是否可以同时触发下拉刷新;默认false,两者不可同时触发; 这里为了演示改为true,不必等列表加载完毕才可下拉;
+					callback: upCallback, //上拉加载的回调
+				}
+			});
+			
+			/*下拉刷新的回调 */
+			function downCallback(){
+				//加载轮播数据..
+				//...
+				//加载列表数据
+				getListDataFromNet(0, 1, function(data){
+					//联网成功的回调,隐藏下拉刷新的状态
+					mescroll.endSuccess();
+					//设置列表数据
+					setListData(data, false);
+				}, function(){
+					//联网失败的回调,隐藏下拉刷新的状态
+	                mescroll.endErr();
+				});
+			}
+			
+			/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+			function upCallback(page){
+				//联网加载数据
+				console.log("page.num="+page.num);
+				getListDataFromNet(page.num, page.size, function(data){
+					//联网成功的回调,隐藏上拉加载的状态
+					mescroll.endSuccess(data.length);//传参:数据的总数; mescroll会自动判断列表如果无任何数据,则提示空;列表无下一页数据,则提示无更多数据;
+					//设置列表数据
+					setListData(data, true);
+				}, function(){
+					//联网失败的回调,隐藏上拉加载的状态
+	                mescroll.endErr();
+				});
+			}
+			
+			/*设置列表数据*/
+			function setListData(data,isAppend){
+				var listDom=document.getElementById("dataList");
+				for (var i = 0; i < data.length; i++) {
+					var pd=data[i];
+					
+					var str='<div class="data-list-a"><label class="checkbox"><input type="checkbox" name="checkbox" id="" ><i>✓</i></label></div>';
+					str+='<div class="data-list-b pos-r">';
+					str+='<span class="data-list-b1"><img src="images/jgh.jpg" /></span>';
+					str+='<span class="data-list-b2 red">天虹商场</span>';
+					str+='<div class="dian-xq">';
+					str+='<p class="pos-a dian-close text-c" onclick="javascript:turnoff(\'diandiv\')"><i class="fa fa-close" aria-hidden="true"></i></p>';
+					str+='<p><b>店铺名称：</b>天虹商场</p><p><b>详细地址：</b>广东省深圳市罗湖区金光华广场</p>';
+					str+='<p class="dian-xq-img"><img src="images/jgh.jpg" /><img src="images/jgh.jpg" /><img src="images/jgh.jpg" /><img src="images/jgh.jpg" /><img src="images/jgh.jpg" /></p>';
+					str+='</div></div>';
+					str+='<div class="data-list-c col-999"><p>设备编号：GGKZQ0001</p><p>播放类型：<select name="" class="dis-in xlb08"><option>视频</option><option>图片</option><option>HTML模板</option></select></p><p>设备播放时段：19:00:00-20:00:00</p><p>广告时长：15秒</p></div>';
+					str+='<div class="data-list-d col-999 pos-r">';
+					str+='<p>最低循环播放次数：12次</p><p>价格：<span class="red">￥30</span> 元/天</p><p>费用：<span class="red">￥900</span> 元</p>';
+					str+='<span class="btn btn03 bg-orange ggdd-ckrq">插播</span>';
+					str+='<p class="pad-t7">';
+		            str+='<span class="dis-in">播放周期：</span>';
+					str+='<input type="text" class="dis-in wenb10" placeholder="" />';
+					str+='<select name="" class="dis-in xlb07 mar-l5"><option>月</option><option>年</option><option>周</option></select>';
+					str+='<span class="dis-in mar-l10">当前折扣 <em class="red">9</em> 折</span>';
+					str+='</p>';
+					str+='</div>';
+					
+					var liDom=document.createElement("li");
+					liDom.innerHTML=str;
+					
+					if (isAppend) {
+						listDom.appendChild(liDom);//加在列表的后面,上拉加载
+					} else{
+						listDom.insertBefore(liDom, listDom.firstChild);//加在列表的前面,下拉刷新
+					}
+				}
+			}
+			
+			/*联网加载列表数据*/
+			function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+				//延时一秒,模拟联网
+                setTimeout(function () {
+//              	$.ajax({
+//		                type: 'GET',
+//		                url: 'xxx',
+//		                url: 'xxx?num='+pageNum+'&size='+pageSize,
+//		                dataType: 'json',
+//		                success: function(data){
+							var data=pdlist1; // 模拟数据: ../res/pdlist1.js
+		                	var listData=[];
+		                	
+		                	if(pageNum==0){
+		                		//此处模拟下拉刷新返回的数据
+								var i = Math.floor(Math.random() * data.length);//随机取一个商品返回
+								data[i].pdName="【新增商品】 商品标题";
+								listData.push(data[i]);
+								
+		                	}else{
+		                		//此处模拟上拉加载返回的数据 (模拟分页数据)
+								for (var i = (pageNum-1)*pageSize; i < pageNum*pageSize; i++) {
+				            		if(i==data.length) break;
+				            		listData.push(data[i]);
+				            	}
+		                	}
+		                	
+		                	//回调
+		                	successCallback(listData);
+//		                },
+//		                error: errorCallback
+//		            });
+                },2000)
+			}
+			
+			//禁止PC浏览器拖拽图片,避免与下拉刷新冲突;如果仅在移动端使用,可删除此代码
+			document.ondragstart=function() {return false;}
+		});
+	</script>
+</body>
+</html>

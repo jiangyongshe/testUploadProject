@@ -1,0 +1,131 @@
+body, html {
+	height: 100%;
+	background-color: #fff;
+	background-image: url(../images/login-bg.jpg);
+	background-size: cover;
+}
+.body5 {
+	background-image: url(../images/login-bg2.jpg);
+}
+input, textarea, select {
+    font-size: 14px;
+}
+
+/*登录注册样式*/
+.login-logo {
+	padding: 65px 0;
+}
+.login-logo img {
+	width: 50%;
+}
+.login {
+	padding-left: 30px;
+	padding-right: 30px;
+}
+.body5 .login {
+	padding-top: 83%;
+}
+.login2 {
+	padding-left: 20px;
+	padding-right: 20px;
+}
+.body5 .login2 {
+	padding-top: 70%;
+}
+.login-tb {
+	left: 14px;
+	top: 15px;
+	line-height: 20px;
+	color: #999;
+}
+.login-yzm {
+	right: 4px;
+	top: 12px;
+	padding: 4px 16px;
+	border-left: 1px solid #ccc;
+	border-radius: 0;
+	color: #28a7e1;
+	background-color: #fff;
+}
+.body5 .login-yzm {
+	color: #f19522;
+}
+.wenb01 {
+	padding: 10px 4px 10px 50px;
+	border: 1px solid #ddd;
+	border-bottom: 1px solid #ccc;
+	border-radius: 5px;
+	box-shadow: 0 0 5px #ddd;
+	background-color: #fff;
+}
+.btn03 {
+	padding: 14px 20px;
+}
+.pad-l70 {
+	padding-left: 90px;
+}
+.font12 {
+	 font-size: 14px;
+}
+.fa-2x {
+    font-size: 2.2em;
+}
+.login .fa-lock {
+	font-size: 2.2em;
+}
+.login .fa-mobile {
+	padding-left: 2px;
+}
+.header-bt.font14 {
+	font-size: 16px;
+}
+.header-bt .fanhui {
+    top: 0;
+	height: 36px;
+	color: #999;
+}
+.login a {
+	color: #f02e36;
+	text-decoration: none;
+}
+.login a:hover {
+	color: #f02e36;
+	text-decoration: none;
+}
+.body5 .login a {
+	color: #999;
+	text-decoration: none;
+}
+.body5 .login a:hover {
+	color: #999;
+	text-decoration: none;
+}
+.body5 .login2 a {
+	color: #f02e36;
+	text-decoration: none;
+}
+.body5 .login2 a:hover {
+	color: #f02e36;
+	text-decoration: none;
+}
+
+@media (min-width:400px) {
+  body, html {
+	font-size: 16px;
+  }
+  input, textarea, select {
+    font-size: 16px;
+  }
+  .pad-l70 {
+    padding-left: 100px;
+  }
+  .login-tb {
+	top: 15px;
+  }
+  .login-yzm {
+    top: 10px;
+  }
+  .font12 {
+ 	 font-size: 16px;
+   }
+}

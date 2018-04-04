@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+<script>
+//点击关闭层
+  function turnoff(obj){
+   document.getElementById(obj).style.display="none";
+    }
+//点击显示层
+  function elementDisplay(objid){
+   var obj=document.getElementById(objid);{
+    obj.style.display='inline-block';
+    }
+   }
+</script>
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <h2 class="clear font18 pad-b10 bor-b">购物车</h2>
+      
+      <div class="rmgg-table font13">
+        <div class="pad-t20 pad-l10"><label class="checkbox"><input type="checkbox" name="checkbox" id="" ><i>✓</i> 全选</label> <a href="#" class="pad-l20"><i class="fa fa-trash-o" aria-hidden="true"></i> 删除</a></div>
+        
+        <ul class="data-list mar-t10">
+            <li>
+              <div class="data-list-a"><label class="checkbox"><input type="checkbox" name="checkbox" id="" ><i>✓</i></label></div>
+              
+              <div class="data-list-b pos-r">
+                <span class="data-list-b1"><img src="images/jgh.jpg" /></span>
+                <span class="data-list-b2 red">天虹商场</span>
+                
+                <div class="dian-xq">
+                  <p class="pos-a dian-close text-c" onclick="javascript:turnoff('diandiv')"><i class="fa fa-close" aria-hidden="true"></i></p>
+                  <p><b>店铺名称：</b>天虹商场</p>
+                  <p><b>详细地址：</b>广东省深圳市罗湖区金光华广场</p>
+                  <p class="dian-xq-img">
+                    <img src="images/jgh.jpg" />
+                    <img src="images/jgh.jpg" />
+                    <img src="images/jgh.jpg" />
+                    <img src="images/jgh.jpg" />
+                    <img src="images/jgh.jpg" />
+                  </p>
+                </div>
+              </div>
+              
+              <div class="data-list-c col-999">
+                <p>设备编号：GGKZQ0001</p>
+                <p>空闲时段：19:00:00-20:00:00</p>
+                <p>广告时长：15秒</p>
+                <p>播放次数：12次</p>
+              </div>
+              
+              <div class="data-list-d col-999 pos-r">
+                <p>价格：<span class="red">￥30</span> 元/天</p>
+                <p>费用：<span class="red">￥900</span>  元</p>
+                <p class="pad-t7">播放周期：<input type="date" /> 至 <input type="date" /></p>
+                <a href="#" class="pos-a data-list-shan"><i class="fa fa-trash-o" aria-hidden="true"></i> 删除</a>
+              </div>
+            </li>
+        </ul>
+      </div>
+      
+      <h2 class="clear font18 pad-t40 pad-b10 bor-b">选择支付方式</h2>
+      
+      <ul class="zf-xz clear">
+        <li class="active"><a href="#"><i class="fa fa-gg-circle red" aria-hidden="true"></i> 翔云宝: 5000 元</a></li>
+        <li><a href="#"><img src="images/zf01.jpg" alt="微信" /></a></li>
+        <li><a href="#"><img src="images/zf02.jpg" alt="支付宝" /></a></li>
+        <li><a href="#"><img src="images/zf03.jpg" alt="银联" /></a></li>
+      </ul>
+      
+      <div class="text-r pad-t30 clear ggtf-gm">
+        <span class="dis-in font14">支付方式：微信支付 | 费用总计：<span class="red font18">900元</span></span>
+        
+        <input name="" type="button" value="结算" class="btn btn01 bg-red font16 mar-l15" onclick="elementDisplay('ewmdiv')" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+
+<!--店铺详情提示宽-->
+<div class="shade" id="diandiv" style="display: ;">
+  <div class="dian-xq">
+    <p class="pos-a dian-close text-c" onclick="javascript:turnoff('diandiv')"><i class="fa fa-close" aria-hidden="true"></i></p>
+    <p><b>店铺名称：</b>天虹商场</p>
+    <p><b>详细地址：</b>广东省深圳市罗湖区金光华广场</p>
+    <p class="dian-xq-img">
+      <img src="images/jgh.jpg" />
+      <img src="images/jgh.jpg" />
+      <img src="images/jgh.jpg" />
+      <img src="images/jgh.jpg" />
+      <img src="images/jgh.jpg" />
+    </p>
+  </div>
+</div>
+
+<!--弹出微信支付提示宽-->
+<div class="shade" id="ewmdiv" style="display: ;">
+  <div class="tanchu">
+    <div class="tanchu-bt"><span>微信支付</span><a href="#0" class="tanchu-close text-c" title="关闭" onclick="javascript:turnoff('ewmdiv')"><i class="fa fa-close" aria-hidden="true"></i></a></div>
+    
+    <div class="tanchu-nr text-c">
+      <p class="tanchu-tspc">请用微信扫一下二维码，完成支付。</p>
+      <p class="tanchu-tssj">长按二维码，自动识别。</p>
+      <p class="pad-t20"><img src="images/ewm.jpg" /></p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

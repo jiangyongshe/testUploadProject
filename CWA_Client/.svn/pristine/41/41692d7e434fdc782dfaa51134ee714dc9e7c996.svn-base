@@ -1,0 +1,49 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var page=1,pageSize=15;
+$(function(){
+	$("#headerTitle").text("广告佣金明细");
+	currError=currErrorArray(chineseError,englishError,twError);
+	initMescroll();//初始化下拉控件
+})
+
+/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+function upCallback(page){
+	//联网加载数据
+	console.log("page.num="+page.num);
+	queryCommissionDetail({pageNo:page.num,pageSize:pageSize,startTime:bgDt,endTime:edDt});
+}
+
+/**
+ * 查询佣金明细
+ * @param obj.pageNo 页码
+ * @param obj.startTime 播放开始时间，时:分:秒 hh:mm:ss
+ * @param obj.startTime 播放结束时间，时:分:秒 hh:mm:ss
+ * @param obj.userType
+ * @returns
+ */
+function queryCommissionDetail(obj){
+	jsonAjax('/'+language+'/AD/query/commissionDetail.do',obj,function(res){
+		//联网成功的回调,隐藏上拉加载的状态
+		if(res.data==null||res.data==[]){
+			mescroll.endSuccess(0);
+			return;
+		}
+		mescroll.endSuccess(res.data.length);//传参:数据的总数; mescroll会自动判断列表如果无任何数据,则提示空;列表无下一页数据,则提示无更多数据;
+		var data = res.data;
+		if(data&&data.length>0){
+			var listDom=document.getElementById("dataList");
+			for(var i=0;i<data.length;++i){
+				var str='<p class="yjmx-list01">'+((Number(obj.pageNo)-1)*Number(pageSize)+i+1)+'</p>';
+				str+='<p class="yjmx-list02">'+new Date(Number(data[i].balance_datetime)).format(DATE_FORMAT_YTD)+'</p>';
+				str+='<p class="yjmx-list03">'+formatNumber(data[i].advertiser_comm,2,1)+'</p>';
+
+				var liDom=document.createElement("li");
+				liDom.innerHTML=str;
+				listDom.appendChild(liDom);//加在列表的后面,上拉加载
+			}
+		}
+	},function(){});
+}

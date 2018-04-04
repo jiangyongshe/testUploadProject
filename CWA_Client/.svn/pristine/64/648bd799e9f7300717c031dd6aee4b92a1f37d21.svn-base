@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+<script src="/chinese/mobile/js/banner.js"></script><!--焦点图-->
+<script src="/chinese/mobile/js/news.js"></script><!--消息公告-->
+</head>
+
+<body class="body2">
+<div id="mescroll" class="mescroll">
+<header class="header">
+  <p class="logo2 pos-a"><i class="fa fa-map-marker pad-r5" aria-hidden="true"></i><span class="currCity"></span></p>
+  <a href="tfgg.html" class="search">请输入广告屏编号或店铺名称</a>
+  <i class="fa fa-search pos-a col-fff font16" aria-hidden="true"></i>
+</header>
+
+<!--图片轮播开始-->
+<div id="slideBox" class="slideBox">
+	<div class="bd">
+		<ul>
+			<li><a class="pic" href="#"><img src="/chinese/mobile/images/banner01.jpg"/></a></li>
+			<li><a class="pic" href="#"><img src="/chinese/mobile/images/banner02.jpg"/></a></li>
+			<li><a class="pic" href="#"><img src="/chinese/mobile/images/banner03.jpg"/></a></li>
+		</ul>
+	</div>
+	<div class="hd sc">
+		<ul>
+        </ul>
+	</div>
+</div>
+<script type="text/javascript">
+	TouchSlide({ 
+		slideCell:"#slideBox",
+		titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+		mainCell:".bd ul", 
+		effect:"leftLoop", 
+		autoPage:true,//自动分页
+		autoPlay:true //自动播放
+	});
+</script>
+<!--图片轮播结束-->
+
+<!-- <div class="menu font12">
+  <ul>
+    <li>
+      <a href="tfgg.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-plus2" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">批量投放</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="ggdd.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-building-o2" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">我的订单</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="gwc.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-shopping-cart" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">购物车</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="bfls.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-toggle-right" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">播出记录</span>
+      </a>
+    </li>
+    
+    <li>
+      <a href="qianbao.html" class="dis-b col-fff text-c">
+        <span class="dis-in"><i class="fa fa-xiangyb" aria-hidden="true"></i></span>
+        <span class="dis-b pad-t5">我的翔云</span>
+      </a>
+    </li>
+  </ul>
+</div> -->
+
+<div class="box font12">
+  <b class="news-bt"><i class="fa fa-volume-up pad-r5" aria-hidden="true"></i>翔云动态 |</b>
+  <div class="t_news">
+    <ul class="news_li">
+       <li><span class="fl">翔云播广告屏成功入驻7-11连锁便利店</span><span class="fl"><img src="/chinese/mobile/images/rlqz.png" height="19" /></span></li>
+       <li><span class="fl">翔云播广告屏成功入驻大参林连锁大药房</span><span class="fl"><img src="/chinese/mobile/images/rlqz.png" height="19" /></span></li>
+       <li><span class="fl">翔云播广告屏成功入驻美宜佳连锁便利店</span><span class="fl"><img src="/chinese/mobile/images/rlqz.png" height="19" /></span></li>
+       <li><span class="fl">翔云播广告屏成功入驻好顺景大酒楼</span><span class="fl"><img src="/chinese/mobile/images/rlqz.png" height="19" /></span></li>
+	</ul>
+    <ul class="swap"></ul>
+  </div>
+</div>
+<div class="ggdp-home font12">
+  <ul>
+    <li>
+    
+      <h3 class="font16 green">
+        <span>热门广告位</span>
+        <a href="tfgg.html" class="fr green font12">更多广告位</a>
+      </h3>
+      <div class="index-sea clear">
+        <dl class="searchEv">
+          <dd>
+            <select name="province" class="xlb21 width100">
+           <!--  <option value="">请选择</option>
+            <option value="440000" data-code="440000">广东省</option> -->
+            </select>
+          </dd>
+        
+          <dd>
+            <select name="city" class="xlb21 width100">
+            </select>
+          </dd>
+          
+          <dd>
+            <select name="area" class="xlb21 width100">
+            </select>
+          </dd>
+        
+          <dd>
+            <select name="town" class="xlb21">
+            </select>
+          </dd>
+        
+          <dd>
+            <select name="" class="xlb21 width100 deviceIndustry">
+                <option value="">全部</option>
+			    <option value="1">超市便利店</option>
+			    <option value="2">餐饮</option>
+			    <option value="3">奶茶店</option>
+			    <option value="4">药店</option>
+			    <option value="5">娱乐休闲</option>
+			    <option value="6">美容院</option>
+			    <option value="7">地产中介</option>
+			    <option value="8">美容美发</option>
+			    <option value="9">婚纱摄影</option>
+			    <option value="10">面包店</option>
+			    <option value="11">培训机构</option>
+			    <option value="12">服饰</option>
+			    <option value="0">其它</option>
+            </select>
+          </dd>
+       </dl>
+      </div>
+      <dl class="ggdp-tj" id="dataList">
+      </dl>
+    </li>
+  </ul>
+</div>
+
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/jquery.citys.js"></script><!-- 省市区街道 -->
+<script src="https://int.dpool.sina.com.cn/iplookup/iplookup.php?format=js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部菜单-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_index.js"></script>
+</div>
+</body>
+</html>

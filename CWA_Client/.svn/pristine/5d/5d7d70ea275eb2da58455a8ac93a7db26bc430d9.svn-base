@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+
+</head>
+
+<body class="body1">
+<div id="mescroll" class="mescroll">
+
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<a href="javascript:;" onclick="elementDisplay('tc-eject')" class="font12 col-fff header-r2">筛选<i class="fa fa-filter pad-l5" aria-hidden="true"></i></a>
+
+<div class="font12 col-fff">
+  <ul id="dataList" class="ggcx-list">
+  </ul>
+</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+</div>
+<script src="/chinese/mobile/js/core/ad_queryAD.js"></script><!--公用底部JS-->
+<!--弹出筛选-->
+<div class="shade" id="tc-eject" style="display: ;">
+  <span class="cd-close2 text-c pad-l5" onclick="javascript:turnoff('tc-eject')" title="关闭"></span>
+  
+  <ul class="screen-list">
+  </ul>
+</div>
+</body>
+</html>

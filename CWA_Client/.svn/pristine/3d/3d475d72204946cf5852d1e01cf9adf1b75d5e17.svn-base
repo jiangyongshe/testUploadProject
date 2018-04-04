@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+<script src="/chinese/mobile/js/bolang.js"></script><!--波浪动画-->
+</head>
+
+<body class="body1">
+<div class="wode pos-r font12">
+   <img src="/chinese/mobile/images/wode01.jpg" />
+   
+   <a href="wdzl.html" class="pos-a wode-lj">
+     <span class="pos-a wode-xx">
+       <span class="dis-b font16 green accountId"></span>
+       <span class="dis-b pad-t7 green userName"></span>
+     </span>
+   </a>
+</div>
+  
+<div class="font12 mar-t10 wode-list">
+  <a href="wdzl.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa-address-book-o" aria-hidden="true"></i> 我的资料</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+  
+<div class="font12 mar-t5 wode-list hide commission">
+  <a href="ggyj.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa-gg" aria-hidden="true"></i> 广告收益</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+
+<div class="font12 mar-t5 wode-list hide advertisingEnquiries">
+  <a href="ggcx.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa-search" aria-hidden="true"></i> 广告查询</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+
+<div class="font12 mar-t5 wode-list hide equipmentMonitoring">
+  <a href="sbjk.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa fa-fire-extinguisher" aria-hidden="true"></i> 设备监控</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+
+<div class="font12 mar-t5 wode-list hide deviceDetails">
+  <a href="sbxq.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa-building-o" aria-hidden="true"></i> 设备详情</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+  
+<div class="font12 mar-t5 wode-list hide withdraw">
+  <a href="chuj.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa-money" aria-hidden="true"></i> 提现</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+  
+<div class="font12 mar-t5 wode-list">
+  <a href="qianbao.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa-xiangyb dis-in" aria-hidden="true" style="height: .7rem;"></i> 翔云余额</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+
+<div class="font12 mar-t5 wode-list">
+  <a href="kefu.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa-volume-control-phone" aria-hidden="true"></i> 客服中心</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+
+<div class="font12 mar-t5 wode-list">
+  <a href="xgmm.html" class="dis-b pos-r">
+    <span class="font13"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> 修改密码</span>
+    <span class="pos-a wode-r"><i class="fa fa-15x fa-angle-right" aria-hidden="true"></i></span>
+  </a>
+</div>
+
+<input name="" type="button" onclick="exitLogin()" value="退出当前账号" class="btn btn11 bg-blue width100 pad-q10 font13 mar-t20" />
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/myAccount.js"></script>
+</body>
+</html>

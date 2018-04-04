@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<link rel="stylesheet" href="css/mobiscroll-date.css" />
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+<script src="js/mobiscroll-date.js"></script><!--日期选择-->
+<script src="js/mobiscroll.js"></script><!--日期选择-->
+<script>
+$(function(){			
+  $(".tab01-t > li").click(function(){
+	$(this).addClass("active").siblings().removeClass("active");
+    var index = $(this).index();
+	$(".tab01-b > li").eq(index).css("display","block").siblings().css("display","none");
+  });
+})
+</script>
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <div class="clear font16 pad-b10 bor-b">
+        <ul class="tab01-t dis-in">
+          <li class="active">广告佣金</li>
+          <li>佣金明细</li>
+          <li>出金明细</li>
+        </ul>
+        <a href="chuj.html" class="fr btn btn01 bg-yellow font15">出金</a>
+      </div>
+      
+      <ul class="tab01-b">
+        <li class="active">
+          <ul class="ggtf-sc pad-t20 font14">
+            <li>
+              <span class="pos-a ggtf-sc-bt">佣金类型</span>
+              <select name="" class="font14 xlb04">
+                <option>店主佣金</option>
+                <option>广告主佣金</option>
+              </select>
+            </li>
+        
+            <li>
+              <span class="pos-a ggtf-sc-bt">佣金账户</span>
+              <p class="ggtf-sc-sj">200000011</p>
+            </li>
+            
+            <li>
+              <span class="pos-a ggtf-sc-bt">佣金总额</span>
+              <p class="ggtf-sc-sj"><span class="red font16">10000.39</span> 元</p>
+            </li>
+            
+            <li>
+              <span class="pos-a ggtf-sc-bt">可出佣金</span>
+              <p class="ggtf-sc-sj"><span class="red font16">5000</span> 元</p>
+            </li>
+            
+            <li>
+              <span class="pos-a ggtf-sc-bt">佣金月结日</span>
+              <p class="ggtf-sc-sj">2017-09-15</p>
+            </li>
+          </ul>
+        </li>
+        
+        <li>
+          <div class="pad-t20 rmgg-ss">
+             <b class="dis-in pad-r20 font14">日期选择</b>
+             <input type="text" name="user_age" id="user_age1" readonly class="dis-in wenb05" placeholder="请输入开始日期" />
+             <span class="dis-in">至</span>
+             <input type="text" name="user_age" id="user_age2" readonly class="dis-in wenb05" placeholder="请输入结束日期" />
+             <input name="" type="button" value="搜 索" class="dis-in btn btn03 bg-orange font16 mar-l10" />
+          </div>
+          
+          <div class="rmgg-table rmgg-table2 font13">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th>序号</th>
+    <th>日期</th>
+    <th>资金变动（元）</th>
+    <th>类型</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>2017-09-20</td>
+    <td>1892</td>
+    <td>推荐人</td>
+  </tr>
+</table>
+          </div>
+          
+          <div class="fenye font14 text-c">
+           <a href="#" class="btn-fy"><i class="fa fa-chevron-left"></i></a>
+           <a href="#" class="btn-fy active">1</a>
+           <a href="#" class="btn-fy">2</a>
+           <a href="#" class="btn-fy">3</a>
+           <a href="#" class="btn-fy">...</a>
+           <a href="#" class="btn-fy">9</a>
+           <a href="#" class="btn-fy">10</a>
+           <a href="#" class="btn-fy"><i class="fa fa-chevron-right"></i></a>
+          </div>
+        </li>
+        
+        <li>
+          <div class="pad-t20 rmgg-ss">
+             <b class="dis-in pad-r20 font14">日期选择</b>
+             <input type="text" name="user_age" id="user_age1" readonly class="dis-in wenb05" placeholder="请输入开始日期" />
+             <span class="dis-in">至</span>
+             <input type="text" name="user_age" id="user_age2" readonly class="dis-in wenb05" placeholder="请输入结束日期" />
+             <input name="" type="button" value="搜 索" class="dis-in btn btn03 bg-orange font16 mar-l10" />
+          </div>
+          
+          <div class="rmgg-table rmgg-table2 font13">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th>序号</th>
+    <th>日期</th>
+    <th>资金变动（元）</th>
+    <th>类型</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>2017-08-25</td>
+    <td>96387</td>
+    <td></td>
+  </tr>
+</table>
+          </div>
+          
+          <div class="fenye font14 text-c">
+           <a href="#" class="btn-fy"><i class="fa fa-chevron-left"></i></a>
+           <a href="#" class="btn-fy active">1</a>
+           <a href="#" class="btn-fy">2</a>
+           <a href="#" class="btn-fy">3</a>
+           <a href="#" class="btn-fy">...</a>
+           <a href="#" class="btn-fy">9</a>
+           <a href="#" class="btn-fy">10</a>
+           <a href="#" class="btn-fy"><i class="fa fa-chevron-right"></i></a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+
+<script type="text/javascript">
+$(function () {
+	var currYear = (new Date()).getFullYear();	
+	var opt={};
+	opt.date = {preset : 'date'};
+	opt.datetime = {preset : 'datetime'};
+	opt.time = {preset : 'time'};
+	opt.default = {
+		theme: 'android-ics light', //皮肤样式
+		display: 'modal', //显示方式 
+		mode: 'scroller', //日期选择模式
+		dateFormat: 'yyyy-mm-dd',
+		lang: 'zh',
+		showNow: true,
+		nowText: "今天",
+		startYear: currYear - 50, //开始年份
+		endYear: currYear + 10 //结束年份
+	};
+
+	$("#user_age1").mobiscroll($.extend(opt['date'], opt['default']));
+    $("#user_age2").mobiscroll($.extend(opt['date'], opt['default']));
+});
+</script>
+</body>
+</html>

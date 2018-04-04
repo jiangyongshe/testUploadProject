@@ -1,0 +1,161 @@
+package com.cwa.client.model;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+public class Tb_Branch {
+
+	private Integer id;
+	private String company_id;
+	private String company_name;
+	private String company_full_name;
+	private String contract_user;
+	private Integer certificate_type;
+	private String id_number;
+	private Timestamp open_date;
+	private BigDecimal register_fund;
+	private String office_address;
+	private String postal_code;
+	private String fax;
+	private String contacts;
+	private String telephone;
+	private String e_mail;
+	private String commit_id;
+	private BigDecimal commit_time;
+	private Integer company_status;
+	private Integer company_type;
+	private String salesman_id;
+	
+	
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getCompany_id() {
+		return company_id;
+	}
+	public void setCompany_id(String company_id) {
+		this.company_id = company_id;
+	}
+	public String getCompany_name() {
+		return company_name;
+	}
+	public void setCompany_name(String company_name) {
+		this.company_name = company_name;
+	}
+	public String getCompany_full_name() {
+		return company_full_name;
+	}
+	public void setCompany_full_name(String company_full_name) {
+		this.company_full_name = company_full_name;
+	}
+	public String getContract_user() {
+		return contract_user;
+	}
+	public void setContract_user(String contract_user) {
+		this.contract_user = contract_user;
+	}
+	public Integer getCertificate_type() {
+		return certificate_type;
+	}
+	public void setCertificate_type(Integer certificate_type) {
+		this.certificate_type = certificate_type;
+	}
+	public String getId_number() {
+		return id_number;
+	}
+	public void setId_number(String id_number) {
+		this.id_number = id_number;
+	}
+	public Timestamp getOpen_date() {
+		return open_date;
+	}
+	public void setOpen_date(Timestamp open_date) {
+		this.open_date = open_date;
+	}
+	public BigDecimal getRegister_fund() {
+		return register_fund;
+	}
+	public void setRegister_fund(BigDecimal register_fund) {
+		this.register_fund = register_fund;
+	}
+	public String getOffice_address() {
+		return office_address;
+	}
+	public void setOffice_address(String office_address) {
+		this.office_address = office_address;
+	}
+	public String getPostal_code() {
+		return postal_code;
+	}
+	public void setPostal_code(String postal_code) {
+		this.postal_code = postal_code;
+	}
+	public String getFax() {
+		return fax;
+	}
+	public void setFax(String fax) {
+		this.fax = fax;
+	}
+	public String getContacts() {
+		return contacts;
+	}
+	public void setContacts(String contacts) {
+		this.contacts = contacts;
+	}
+	public String getTelephone() {
+		return telephone;
+	}
+	public void setTelephone(String telephone) {
+		this.telephone = telephone;
+	}
+	public String getE_mail() {
+		return e_mail;
+	}
+	public void setE_mail(String e_mail) {
+		this.e_mail = e_mail;
+	}
+	public String getCommit_id() {
+		return commit_id;
+	}
+	public void setCommit_id(String commit_id) {
+		this.commit_id = commit_id;
+	}
+	public BigDecimal getCommit_time() {
+		return commit_time;
+	}
+	public void setCommit_time(BigDecimal commit_time) {
+		this.commit_time = commit_time;
+	}
+	public Integer getCompany_status() {
+		return company_status;
+	}
+	public void setCompany_status(Integer company_status) {
+		this.company_status = company_status;
+	}
+	public Integer getCompany_type() {
+		return company_type;
+	}
+	public void setCompany_type(Integer company_type) {
+		this.company_type = company_type;
+	}
+	public String getSalesman_id() {
+		return salesman_id;
+	}
+	public void setSalesman_id(String salesman_id) {
+		this.salesman_id = salesman_id;
+	}
+	@Override
+	public String toString() {
+		return "Tb_Branch [id=" + id + ", company_id=" + company_id + ", company_name=" + company_name
+				+ ", company_full_name=" + company_full_name + ", contract_user=" + contract_user
+				+ ", certificate_type=" + certificate_type + ", id_number=" + id_number + ", open_date=" + open_date
+				+ ", register_fund=" + register_fund + ", office_address=" + office_address + ", postal_code="
+				+ postal_code + ", fax=" + fax + ", contacts=" + contacts + ", telephone=" + telephone + ", e_mail="
+				+ e_mail + ", commit_id=" + commit_id + ", commit_time=" + commit_time + ", company_status="
+				+ company_status + ", company_type=" + company_type + ", salesman_id=" + salesman_id + "]";
+	}
+	
+}

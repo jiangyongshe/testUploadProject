@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<link rel="shortcut icon" href="../images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="../css/font-awesome.min.css">
+<link rel="stylesheet" href="../css/public.css">
+<link rel="stylesheet" href="../css/index.css">
+<script src="/js/commonRel.js"></script>
+<script src="/js/top.js"></script><!--返回顶部-->
+</head>
+
+<body>
+<!-- 公用头部JS-->
+<script type="text/javascript" src="../js/header.js"></script>
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script type="text/javascript" src="../js/left.js"></script>
+    
+   <!--右侧内容-->
+    <div class="right bg-ff">
+       <p class="text-c pad-t30 font28 green"><i class="fa fa-2x fa-check" aria-hidden="true"></i><br />充值成功</p>
+       <p class="text-c pad-t30 font16">充值可能存在网络延迟，请稍等几分钟可到<a href="../forward/customerWallet.do" class="red">翔云宝</a>查看您的余额.</p>
+       
+      <!--  <p class="text-c pad-t30 font28 red"><i class="fa fa-2x fa-remove" aria-hidden="true"></i><br />支付失败</p>
+       <p class="text-c pad-t30 font16">支付宝余额不足，<a href="#" class="red">返回继续支付</a></p> -->
+    </div>
+  </div>
+</div>
+<script>
+document.getElementsByName("customerWallet")[0].className="active";
+$(".customerAdvertise").attr('class','active');
+</script>
+<script src="../js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

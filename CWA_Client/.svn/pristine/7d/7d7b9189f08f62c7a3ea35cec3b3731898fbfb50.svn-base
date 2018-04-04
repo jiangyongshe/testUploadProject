@@ -1,0 +1,59 @@
+body, html {
+	height: 100%;
+	color: #2badd7;
+    background: -webkit-linear-gradient(#16355d, #2176a9); /* Safari 5.1 - 6.0 */
+    background: -o-linear-gradient(#16355d, #2176a9); /* Opera 11.1 - 12.0 */
+    background: -moz-linear-gradient(#16355d, #2176a9); /* Firefox 3.6 - 15 */
+    background: linear-gradient(#16355d, #2176a9); /* 标准的语法 */
+}
+a {
+	color: #2badd7;
+	text-decoration: none;
+}
+a:hover {
+	color: #2badd7;
+	text-decoration: none;
+}
+
+/*登录注册样式*/
+.login-logo {
+	padding: 3rem 0;
+}
+.login-logo img {
+	width: 8rem;
+}
+.login {
+	padding-left: 1.5rem;
+	padding-right: 1.5rem;
+}
+.login2 {
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+.login-tb {
+	left: .7rem;
+	top: .5rem;
+	line-height: 1rem;
+	color: #2179ac;
+}
+.login-yzm {
+	right: .2rem;
+	top: .15rem;
+}
+.wenb01 {
+	padding: .5rem .2rem .5rem 2rem;
+	color: #2179ac;
+	border: 1px solid #0c2e51;
+	border-radius: 0;
+	background-color: #0c2e51;
+}
+.pad-l70 {
+	padding-left: 3.5rem;
+}
+
+@media only screen and (max-width: 330px) {
+.login-yzm {
+	right: 3px;
+	top: 3px;
+}
+}

@@ -1,0 +1,344 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var disCount="1",disCountArr;
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	orderNo=getURLParam("orderNo")/*订单支付订单号*/,payAmount=getURLParam("sumPrice")/*订单支付金额*/;
+	$(document).on("click",".checkAd",function(){
+		checkSum();//汇总
+	})
+	$(document).on("click","#ckAll",function(){//全选
+		$("input[name='checkbox']").prop("checked",this.checked);
+		checkSum();//汇总
+	})
+	
+	$(document).on("change",".playCycle",function(){//播放周期改变事件
+		var value=$(this).val();//当前周期文本值
+		var sumPrice=$(this).parents("li").find(".sumPrice");
+		if(!REG_POSITIVE_INTEGER.test(value)||value.length>3){//周期为正整数且不超过3位数
+			showJudegTip("fail","提示","播放周期有误！(播放周期只能填正整数并且不超过3位)");
+			$(this).val("--");
+			sumPrice.text("--");
+			$(this).parents("li").find(".disCount").text("--");
+		}else{
+			var cycleType=$(this).parents("li").find(".cycleType option:selected").val();
+			/*if(value>4&&cycleType=="w"){//如果大于4周提醒客户可使用月或年的折扣类型
+				showJudegTip("normal","提示","当前播放周期可以按月或年购买可获得更多的折扣！");
+			}else if(value>12&&cycleType=="m"){//如果大于12个月提醒客户可使用年的折扣类型
+				showJudegTip("normal","提示","当前播放周期可以按年购买可获得更多的折扣！");
+			}*/
+			countCost(value,cycleType,sumPrice);//费用计算
+			checkSum();//汇总
+		}
+	})
+	$(document).on("change",".cycleType",function(){//周期类型改变事件
+		var value=$(this).find("option:selected").val();//周期类型
+		
+		var sumPrice=$(this).parents("li").find(".sumPrice");
+		countCost($(this).parents("li").find(".playCycle").val(),value,sumPrice);//费用计算
+		checkSum();//汇总
+	})
+	
+	
+	if(window.location.href.indexOf("customerAdvertise.do")<0){
+		$(document).on("click",".zf-xz li",function(){
+			if($(this).attr("data")=="1010"){
+				$(".payTypeText").html("支付方式：微信支付 |");
+			}else if($(this).attr("data")=="2010"){
+				$(".payTypeText").html("支付方式：支付宝支付 |");
+			}else if($(this).attr("data")=="3010"){
+				$(".payTypeText").html("支付方式：银联支付 |");
+			}else if($(this).attr("data")=="4000"){
+				$(".payTypeText").html("支付方式：翔云宝支付 |");
+			}
+			$(".zf-xz li").removeClass("active");
+			$(this).addClass("active");//激活样式
+		})
+		loadUserWalletInfo();//钱包数据初始化
+	}
+	
+})
+
+
+//加载用户信息
+function loadUserWalletInfo(){
+	jsonAjax("/"+language+"/customerWallet/findWallet.do",{},function(res){
+		if(res.success&&res.data!=null&&res.data!=[]){
+			var dto=res.data;
+			$(".amount").text(dto.amount);
+		}
+	},function(){},"get");
+}
+//加载广告折扣
+function loadDisCountAndNum(){
+	jsonAjax("/"+language+"/customer/queryUserYMWDiscount.do",{},function(res){
+		if(res.success){
+			disCountArr=res.data;
+			if(getURLParam("isInterCut")==""){
+				checkSum();//汇总
+			}else{
+				$("input[type='checkbox']").attr("disabled",true);
+			}
+		}
+	},function(){},null,null,null,false);
+}
+
+//汇总
+function checkSum(){
+	var objs=$("input[type='checkbox']:checked").not("#ckAll");//得到所有选中数据
+	var ckAll=$("#dataList").find("input[name='checkbox']");
+	var totalBal=0;
+	checkAdvertiseId="",deviceIds="",timeInterval="",playCycles="",shoppIds="";
+	if(ckAll.length==objs.length+1){
+		$("#ckAll")[0].checked=true;
+	}else{
+		$("#ckAll")[0].checked=false;
+	}
+	for (var i = 0; i < objs.length; i++) {
+		//计算费用
+		countCost($(objs[i]).parents("li").find(".playCycle").val(),$(objs[i]).parents("li").find(".cycleType option:selected").val(),$(objs[i]).parents("li").find(".sumPrice"));
+		var sumPrice=$(objs[i]).parents("li").find(".sumPrice").text().substring(1);//汇总
+		var pc=$(objs[i]).parents("li").find(".playCycle").val();
+		if(!REG_POSITIVE_INTEGER.test(pc)||pc.length>3){
+			showJudegTip("fail","错误提示","播放周期有误！(播放周期只能填正整数并且不超过3位)");
+			$(objs[i]).parents("li").find(".playCycle").val("");
+			$(objs[i]).parents("li").find(".sumPrice").text("￥--");
+			$(objs[i]).parents("li").find(".disCount").text("--");
+			$("#ckAll")[0].checked=false;
+			objs[i].checked=false;
+			continue;
+		}
+		totalBal=totalBal+parseInt(sumPrice);//总金额
+		playCycles+=pc+"-"+$(objs[i]).parents("li").find(".cycleType option:selected").val()+",";//播放周期
+		checkAdvertiseId+=$(objs[i]).attr("data-id")+",";//广告商编号
+		if($(objs[i]).attr("data-shoppId")!=undefined){
+			shoppIds+=$(objs[i]).attr("data-shoppId")+",";
+		}
+		deviceIds+=$(objs[i]).parents("li").find(".deviceId").text()+",";//设备编号
+		timeInterval+=$(objs[i]).parents("li").find("#timeInterval").text()+",";//播放时段
+	}  
+	if(parseFloat(disCount)!=parseFloat("1")&&totalBal!=0){
+		$(".totalBal").html("<span class='red font18 totalBal'>"+totalBal+"元</span> 折后价：<span class='red font18 disTotalBal'>"+eval(totalBal*disCount).toFixed(2)+"元</span>");//计算总金额
+	}else{
+		$(".totalBal").html("<span class='red font18 totalBal'>"+totalBal+"元</span>");//计算总金额
+	}
+	deviceIds=deviceIds.substring(0,deviceIds.length-1);
+	shoppIds=shoppIds.substring(0,shoppIds.length-1);
+	timeInterval=timeInterval.substring(0,timeInterval.length-1);
+	checkAdvertiseId=checkAdvertiseId.substring(0,checkAdvertiseId.length-1);
+	playCycles=playCycles.substring(0,playCycles.length-1);
+}
+
+//计算一条广告费用 cyclePlay 播放周期文本值  cycleType 周期类型  price 单价
+function countCost(cyclePlay,cycleType,sumPriceObj){
+	var date=new Date(),price=sumPriceObj.attr("data-price"),currDisCount="--";
+	var startDate=new Date(),day=0;
+	startDate.setDate(date.getDate()+1);//开始时间
+	if(cycleType=="w"){//周
+		day=eval(cyclePlay*oneWeek);
+		if(parseInt(disCountArr["week_num"])<=parseInt(cyclePlay)){
+			currDisCount=disCountArr["week_price_discount"];
+		}
+	}else if(cycleType=="m"){//月
+		day=eval(cyclePlay*oneMonth);
+		if(parseInt(disCountArr["month_num"])<=parseInt(cyclePlay)){
+			currDisCount=disCountArr["month_price_discount"];
+		}
+	}else{//年
+		day=eval(cyclePlay*oneYear);
+		if(parseInt(disCountArr["year_num"])<=parseInt(cyclePlay)){
+			currDisCount=disCountArr["year_price_discount"];
+		}
+	}
+	date.setDate(date.getDate()+day);//结束时间
+	sumPriceObj.text("￥"+eval((isNaN(currDisCount/100)?1:currDisCount/100)*price*(day)));//费用汇总
+	if(currDisCount!="--"){
+		sumPriceObj.parents("li").find(".disCount").text(currDisCount/10.0);
+	}else{
+		sumPriceObj.parents("li").find(".disCount").text(currDisCount);
+	}
+}
+//确认提交
+function commit(obj){
+	
+	disabledBtn($(obj).attr("id"));//禁用提交按钮
+	if(getURLParam("isInterCut")!=""){
+		playCycles="",shoppIds="";
+		checkTimes=getURLParam("checkTimes"),checkAdvertiseId=getURLParam("checkAdvertiseId"),deviceIds=getURLParam("deviceId"),timeInterval=getURLParam("timeInterval"),isInterCut=getURLParam("isInterCut");
+	}else{
+		checkSum();
+	}
+	var objs=$("input[type='checkbox']:checked").not("#ckAll");//得到所有选中数据
+	if(objs.length>0){
+		if(objs.length>3){
+			showJudegTip("fail","提示","每次下单不超过3单");
+			startBtn($(obj).attr("id"));
+			return;
+		}
+		openWaitAnimation("正在检验订单,请稍后...");
+		jsonAjax("/"+language+"/order/queryNoOrderTime.do",{playCycles:playCycles,checkAdvertiseId:checkAdvertiseId,deviceId:deviceIds,timeInterval:timeInterval,isInterCut:getURLParam("isInterCut")},function(res){
+			closeWaitAnimation();
+			if(res.success){
+				startBtn($(obj).attr("id"));
+				var result=queryEffectualTimeByOrderNo(res.data,placeAnOrder);//下单提示
+				if(result==""){
+					placeAnOrder("1");//下单 参数标识下单不许再检验订单
+				}
+			}else{
+				showJudegTip("fail","提示",res.data);
+				startBtn($(obj).attr("id"));
+			}
+		},function(){},null,null,false);
+		startBtn($(obj).attr("id"));
+	}else{
+		showJudegTip("normal","提示","请选择购买广告播放时段！");
+		startBtn($(obj).attr("id"));
+	}
+}
+//下单
+var placeAnOrder=function placeAnOrder(isCheckOrder){
+	turnoff('orderTitlediv');
+	openWaitAnimation("正在下单,请稍后...");
+	jsonAjax("/"+language+"/order/placeAnOrder.do",{isCheckOrder:isCheckOrder,playCycles:playCycles,checkAdvertiseId:checkAdvertiseId,deviceId:deviceIds,shoppIds:shoppIds,timeInterval:timeInterval,isInterCut:getURLParam("isInterCut")},function(res){
+		closeWaitAnimation();
+		var msg=res.msg.split("-");
+		if(msg[0]=="10000"){
+			orderNo=msg[3];
+			var data=res.data,total=msg[1];
+			var result=queryEffectualTimeByOrderNo(data,null,msg);//下单提示
+			if(result=="fail"){
+				return;
+			}
+			
+			//showJudegTip("SUCCESS","提示","下单成功,订单5分钟有效。请选择支付方式支付! 订单金额:<span class='red font16'>"+parseFloat(msg[2]).toFixed(2)+"</span>"+str);
+			var totStr="<span class='red font18 totalBal'>"+total+"元</span>";
+			if(msg[2]!=msg[1]){
+				totStr+=" 折后价:<span class='red font18 disTotalBal'>"+parseFloat(msg[2]).toFixed(2)+"元</span>";
+			}
+			$(".totalBal").html(totStr);//计算总金额
+			$("#payWay").show();
+			$(".commit").hide();
+			$("#payOrder").show();
+			$(".payTypeText").show();
+			$("input").not("input[type='button']").attr("disabled",true);
+			$(".playAndCycleP").attr("disabled",true);
+			$(".cycleType").attr("disabled",true);
+			if($(".delete").length>0){
+				$(".delete").hide();
+			}
+			currtScrollToEnd();//滚动到底部
+			try {
+				if(mescroll){
+					mescroll.endSuccess(0);
+				}
+			} catch (e) {
+				
+			}
+			//startBtn("commitUpdate");
+		}else{
+			showJudegTip("fail","提示",res.data);//注册回调显示
+			//startBtn("commitUpdate");
+		}
+	},function(){closeWaitAnimation();},null,null,false);
+}
+//广告购买天数提示
+function queryEffectualTimeByOrderNo(data,confirmFun,msg){
+	if(data){
+		var html="",tableHtml="";
+		for (var o in data) {
+			if(o.indexOf("body")>=0){
+				var keys=o.split("-"),time=data["time"+o.replace("body","")],strs=data[o].split(",");
+				var days=(new Date(time.split("==")[1])-new Date(time.split("==")[0]))/1000/3600/24 + 1;
+				if(days==data[o].split("<em class=\"red\">0</em>").length-1){//判断选择广告周期是否已售罄
+					str="==店铺:"+keys[3]+" 设备编号:"+keys[0].replace("body","")+" 空闲时段:"+keys[1]+"-"+keys[2]+"在<span class='green'>"+time+"</span>周期已被购买完,不能再购买,请重新选择播放周期!";
+					showJudegTip("normal","提示",str);
+					turnoff('orderTitlediv');
+					return "fail";
+				}
+				tableHtml+='       <div class="font14 bor-b tanchu5-nr-b">';
+				tableHtml+='         <span class="red font16"><em class="col-999 font14">店铺：</em>'+keys[3]+'</span>';
+				tableHtml+='         <span class="pad-l10"><em class="col-999">设备编号：</em>'+keys[0].replace("body","")+'</span>';
+				tableHtml+='         <span class="pad-l10"><em class="col-999">空闲时段：</em'+keys[1]+"-"+keys[2]+'</span>';
+				tableHtml+='         <span class="pad-l10"><em class="col-999">播放周期：</em>'+time.split("==")[0]+'至'+time.split("==")[1]+'</span>';
+				tableHtml+='       </div>';
+				tableHtml+='       <div class="tanchu5-list bor-b3">';
+				for (var i = 0; i < strs.length; i++) {
+					tableHtml+='         <span class="pad-l10 dis-in">'+strs[i]+'</span>';
+				}
+				tableHtml+='       </div>';
+			}
+		}
+		if($("#orderTitlediv").length==0){//元素不存在则创建
+			html+='<div class="shade" id="orderTitlediv" style="display:none ;">';
+			html+='  <div class="tanchu tanchu5">';
+			html+='    <div class="tanchu-bt">';
+			html+='      <span>广告日期可购买数量</span><a href="#0" onclick="turnoff(\'orderTitlediv\')" class="tanchu-close text-c" title="关闭"><i class="fa fa-close" aria-hidden="true"></i></a>';
+			html+='    </div>';
+			html+='    <div class="tanchu5-nr" id="timeTable">';
+			html+=tableHtml;
+			html+='    </div>';
+			html+='    <div class="tis01 text-c" style="display:block;"><span class="xiadantishi font16 red">确认继续下单吗？</span></div>';
+			html+='    <div class="tanchu-xyan text-c orderConfirmBtn">';
+			html+='      <input name="confirm" type="button" value="确定" class="btn btn04 font14 mar-l10 bg-red">';
+			html+='      <input name="" onclick="turnoff(\'orderTitlediv\')" type="button" value="取消" class="btn btn04 font14 mar-l10">';
+			html+='    </div>';
+			html+='  </div>';
+			html+='</div>';
+			$("body").append(html);
+			$("input[name='confirm']").bind("click",confirmFun);
+		}else{
+			$("#timeTable").html(tableHtml);
+		}
+		if(confirmFun){//确认下单
+			$(".xiadantishi").text("确认继续下单吗？");
+			$(".orderConfirmBtn").show();//确认取消按钮
+		}else{//下单
+			$(".xiadantishi").html("下单成功,订单5分钟有效。请选择支付方式支付! 订单金额:<span class='red font18'>"+parseFloat(msg[2]).toFixed(2)+"</span>");
+			$(".orderConfirmBtn").hide();//确认取消按钮
+		}
+		if(tableHtml!=""){
+			$("#orderTitlediv").show();//确认下单弹出框
+		}
+		$(".tanchu5")[0].style.marginTop=-$(".tanchu5").height()/2+"px";//调整弹出框位置
+		return tableHtml;
+	}
+}
+//支付订单
+function payOrder(){
+	disabledBtn("payOrder");//禁用提交按钮
+	var payWay=$(".zf-xz").find(".active").attr("data");
+	if(payWay==undefined||payWay==""){
+		showJudegTip("fail","提示","请选择支付方式");
+		startBtn("payOrder");
+		return;
+	}
+	jsonAjax("/"+language+"/order/payOrder.do",{payWay:payWay,orderNo:orderNo},function(res){
+		if(res.success){
+			startBtn("payOrder");
+			showJudegTip("success","提示","支付成功！正在跳转到上传视频...");
+			setTimeout(function(){
+				if(getURLParam("isInterCut")==""){
+					window.location.href="/"+language+"/forward/updateOrUploadVideo.do?adNo="+orderNo;
+				}else{
+					window.location.href="/"+language+"/forward/updateOrUploadVideo.do?adNo="+orderNo+"&isInterCut=2";
+				}
+			},2000);
+			$("#payWay").hide();
+			/*$("#commit").show();
+			$("#commit").val("继续下单");*/
+			$("#payOrder").hide();
+		}else{
+			showJudegTip("fail","提示",res.data);
+			startBtn("payOrder");
+		}
+	},function(){});
+	startBtn("payOrder");
+}
+function currtScrollToEnd(){//滚动到底部
+	if($("#mescroll").length>0){
+		var h = $("#mescroll")[0].scrollHeight-window.innerHeight;
+		$("#mescroll").scrollTop(h); 
+	}
+}

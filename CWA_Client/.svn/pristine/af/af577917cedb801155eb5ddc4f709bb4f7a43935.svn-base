@@ -1,0 +1,194 @@
+package com.cwa.client.web.app;
+
+import java.io.IOException;
+import java.util.regex.Pattern;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import com.cwa.client.constant.AppConatnt;
+import com.cwa.client.constant.AppRetunCode;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.redis.UserRedis;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.Encypter;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.Tools;
+import com.cwa.client.utils.ipUtil;
+import com.cwa.client.web.BaseController;
+import com.cwa.client.web.GobalRespParameter;
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/app/account")
+public class AccountController extends BaseController<GobalRespParameter> implements Constant,AppConatnt {
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+
+	@Resource
+	private UserService userService;
+	
+	@Resource
+	private UserRedis userRedis;
+	
+	/**
+	 * 登录请求
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/login/cm.do",method=RequestMethod.POST)
+	public void login(HttpServletRequest req,HttpServletResponse res){
+		try {
+			// 获取IP
+			String ip = ipUtil.getIpAddress(req);
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Ip "+ip+" Attempting to log in.", LOGLEVEL_INFO, AccountController.class);
+			// 解析传入的参数
+			JSONObject accountInfoJSON = null;
+			try {
+				accountInfoJSON = JSONObject.fromObject(Tools.b64Decode(ServletRequestUtils.getStringParameter(req, "accountInfo","").trim()));
+			} catch (Exception e) {
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Afferent parameter exception.Exception is "+e.getMessage(), LOGLEVEL_ERROR, AccountController.class);
+				accountInfoJSON = null;
+			}
+			if(accountInfoJSON == null){
+				// 参数格式传入错误
+				writeJSON(res, Tools.returnObj(AppRetunCode.LOGIN_PARAMS_ERROR_FORMAT.getCode(), AppRetunCode.LOGIN_PARAMS_ERROR_FORMAT.getDescribe()));
+				return;
+			}
+			// 判断登录类型是否为安卓或者IOS
+			int loginType = 0;
+			try {
+				loginType = accountInfoJSON.getInt("loginType");
+			} catch (Exception e) {
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "'loginType' param exception "+e.getMessage(), LOGLEVEL_ERROR, AccountController.class);
+				loginType = 0;
+			}
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Login type is "+loginType, LOGLEVEL_INFO, AccountController.class);
+			if(loginType!=LOGIN_TYPE_IOS&&loginType!=LOGIN_TYPE_ANDROID){
+				// 登录类型异常
+				writeJSON(res,Tools.returnObj(AppRetunCode.LOGIN_TYPE_ILLEGAL.getCode(), AppRetunCode.LOGIN_TYPE_ILLEGAL.getDescribe()));
+				return;
+			}
+			// 判断账户是否正确
+			String accountId = accountInfoJSON.getString("accountId");
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "AccountId is "+accountId, LOGLEVEL_INFO, AccountController.class);
+			if(accountId==null||accountId.trim().equals("")){
+				writeJSON(res,Tools.returnObj(AppRetunCode.LOGIN_NOT_ENTER_ACCOUNT_ID.getCode(), AppRetunCode.LOGIN_NOT_ENTER_ACCOUNT_ID.getDescribe()));
+				return;
+			}
+			Object objUser = userService.queryUserObjByAccountIdAndUserType(accountId, "USERTYPE_CUSTOMER");
+			if(objUser==null){
+				// 账户不存在
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "The account does not exist", LOGLEVEL_INFO, AccountController.class);
+				writeJSON(res,Tools.returnObj(AppRetunCode.ACCOUNT_ID_NOT_EXIST.getCode(), AppRetunCode.ACCOUNT_ID_NOT_EXIST.getDescribe()));
+				return;
+			}
+			CustomerDto user = (CustomerDto)objUser;
+			// 判断用户是否被禁用
+			int userStatus = user.getUser_status();
+			if(userStatus == USER_STATUS_FORBIDDEN){
+				// 用户被禁用
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Users are disabled", LOGLEVEL_INFO, AccountController.class);
+				writeJSON(res,Tools.returnObj(AppRetunCode.ACCOUNT_ID_WAS_DISABLED.getCode(), AppRetunCode.ACCOUNT_ID_WAS_DISABLED.getDescribe()));
+				return;
+			}
+			// 判断密码是否正确
+			String inputPwd = accountInfoJSON.getString("password");
+			if(inputPwd==null||inputPwd.trim().equals("")){
+				// 未输入密码
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Users no enter ths password", LOGLEVEL_INFO, AccountController.class);
+				writeJSON(res,Tools.returnObj(AppRetunCode.LOGIN_NOT_ENTER_PWD.getCode(), AppRetunCode.LOGIN_NOT_ENTER_PWD.getDescribe()));
+				return;
+			}
+			if(!inputPwd.equals(Encypter.getDecryptValue(user.getPassword()))){
+				// 密码输入错误
+				writeJSON(res,Tools.returnObj(AppRetunCode.ACCOUNT_OR_PWD_MISTAKE.getCode(), AppRetunCode.ACCOUNT_OR_PWD_MISTAKE.getDescribe()));
+				return;
+			}
+			// 将用户信息保存到SESSION
+			req.getSession().setAttribute(SESSION_USER, user);
+			// 将用户名保存到SESSION
+			String userName = accountId+"("+"id="+user.getId()+",type="+user.getT_type()+")";
+			req.getSession().setAttribute(SESSION_USER_NAME, userName);
+			// 将登录类型保存到SESSION
+			req.getSession().setAttribute(LOGINTYPE,loginType);
+			// 返回信息
+			writeJSON(res,Tools.returnObj(AppRetunCode.SUCCESS.getCode(), AppRetunCode.SUCCESS.getDescribe()));
+		} catch (Exception e) {
+			// 未知异常
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Exception "+e.getMessage(), LOGLEVEL_ERROR, AccountController.class);
+			e.printStackTrace();
+			try {
+				writeJSON(res,Tools.returnObj(AppRetunCode.FAILD.getCode(), AppRetunCode.FAILD.getDescribe()));
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * 注册时获取的验证码
+	 * @param req
+	 * @param res
+	 */
+	@RequestMapping(value="/registerVerificationCode.do",method=RequestMethod.POST)
+	public void registerVerificationCode(HttpServletRequest req,HttpServletResponse res){
+		try {
+			// 获取IP
+			String ip = ipUtil.getIpAddress(req);
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Ip "+ip+" Gets the registration verification code.", LOGLEVEL_INFO, AccountController.class);
+			// 获取手机号
+			String mobile = ServletRequestUtils.getStringParameter(req, "mobile","");
+			if(mobile.trim().equals("")){
+				// 未输入手机号
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "No phone number entered.", LOGLEVEL_INFO, AccountController.class);
+				writeJSON(res,Tools.returnObj(AppRetunCode.GET_REGISTER_CODE_NOT_ENTER_MOBILE.getCode(), AppRetunCode.GET_REGISTER_CODE_NOT_ENTER_MOBILE.getDescribe()));
+				return;
+			}
+			if(!Pattern.matches(REG_POSITIVE_MOBILE, mobile)){
+				// 手机号格式不正确
+				writeJSON(res,Tools.returnObj(AppRetunCode.GET_REGISTER_CODE_MOBILE_ERROR_FORMAT.getCode(), AppRetunCode.GET_REGISTER_CODE_MOBILE_ERROR_FORMAT.getDescribe()));
+				return;
+			}
+			// 验证手机号是否已经注册
+			
+			// 判断REDIS是否已经缓存了该手机号的验证码对象
+			String redisKey = ZERO + mobile;
+			Object verificationCodeRedisObj = userRedis.getObj(redisKey);
+			if(verificationCodeRedisObj!=null){
+				// 判断验证码是否过期
+				
+			}else{
+				// 重新发送验证码
+				
+				
+			}
+		} catch (Exception e) {
+			// 未知异常
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Exception "+e.getMessage(), LOGLEVEL_ERROR, AccountController.class);
+			e.printStackTrace();
+			try {
+				writeJSON(res,Tools.returnObj(AppRetunCode.FAILD.getCode(), AppRetunCode.FAILD.getDescribe()));
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * 注册请求
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/register.do",method=RequestMethod.POST)
+	public void register(HttpServletRequest req,HttpServletResponse res){
+		
+	}
+	
+}

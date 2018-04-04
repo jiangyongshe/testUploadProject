@@ -1,0 +1,57 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var mescroll,pageSize=9;
+
+/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+function upCallback(page){
+	//联网加载数据
+	console.log("page.num="+page.num);
+	loadRecommendAdvertiseInfo(page.num);
+}
+
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	var city = remote_ip_info['city'];
+    $(".currCity").text(city);
+    
+	initMescroll();//初始化下拉控件
+})
+
+//加载广告商品
+function loadRecommendAdvertiseInfo(pageNo){
+	jsonAjax("/"+language+"/customer/queryRecommendAd.do",{pageNo:pageNo,pageSize:pageSize},function(res){
+		//联网成功的回调,隐藏上拉加载的状态
+		if(res.data==null||res.data==[]){
+			mescroll.endSuccess(0);
+			return;
+		}
+		mescroll.endSuccess(res.data["data"].length);//传参:数据的总数; mescroll会自动判断列表如果无任何数据,则提示空;列表无下一页数据,则提示无更多数据;
+		if(res.data["data"]!=null&&res.data["data"].length>0){
+			var data=res.data["data"];
+			var listDom=document.getElementById("dataList");
+			for (var i = 0; i < data.length; i++) {
+				var dto=data[i],imgs="";
+				if(dto.pics!=null&&dto.pics!=""){
+					imgs=dto.pics.split(",");
+				}
+				
+				
+				var str='<p class="ggdp-bt">';
+				str+='<img onclick="javascript:window.location.href=\'detail.html?checkAdvertiseId='+dto.advertiser_id+'&deviceId='+dto.device_id+'&timeInterval='+dto.play_begin_time+'-'+dto.play_end_time+'&fileType=1\'" src="'+imagePath+imgs[0]+'"/>';
+				str+='</p>';
+				str+='<p class="title">'+dto.name+'</p>';
+			    
+			    var liDom=document.createElement("dd");
+				liDom.innerHTML=str;
+				
+				listDom.appendChild(liDom);//加在列表的后面,上拉加载
+			}
+		}else{
+		}
+	},function(){
+		//联网失败的回调,隐藏上拉加载的状态
+		mescroll.endErr();
+		},"get");
+}

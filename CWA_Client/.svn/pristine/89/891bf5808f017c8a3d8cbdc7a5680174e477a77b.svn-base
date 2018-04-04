@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/index.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+<style>
+.heade, menu {
+	display: none;
+}
+footer {
+	background-color: #f6f6f6;
+}
+footer a {
+	color: #333;
+}
+</style>
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="clear width">
+  <div class="mar-auto pos-r">
+	<div class="dis-in logo"><a href="index.html"><img src="images/logo.png" alt="翔云媒体" /></a></div>
+    <div class="dis-in pad-l20 font20">欢迎登录</div>
+  </div>
+</div>
+
+<div class="clear width login">
+  <!--会员登录开始-->
+  <div class="mar-auto hei580 pos-r">
+    <div class="pos-a h-login">
+      <div class="h-login-bt pad-b10 font18">密码登录</div>
+      
+      <div class="pos-r pad-t20">
+        <i class="fa fa-2x fa-mobile pos-a h-login-tb"></i>
+        <input type="text" class="wenb01" placeholder="请输入手机号" />
+      </div>
+        
+      <div class="pos-r pad-t20">
+        <i class="fa fa-2x fa-lock pos-a h-login-tb"></i>
+        <input type="password" class="wenb01" placeholder="请输入密码" />
+      </div>
+      
+      <div class="pad-t10 font14 text-c red tishi01">手机号或密码错误</div>
+      
+      <div class="pad-t20">
+        <input name="" type="button" value="登 录" class="btn btn01 bg-red font14 width" />
+      </div>
+      
+      <div class="text-r h-login-b col-999">
+        <a href="register.html">免费注册</a>|<a href="wangjimima.html">忘记密码</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

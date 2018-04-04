@@ -1,0 +1,130 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var mescroll,isDelete=false/*删除标识 如果true 则重新加载数据*/;
+
+/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+function upCallback(page){
+	$("#headerTitle").text("购物车");
+	$(".wcBtn").hide();
+	//联网加载数据
+	console.log("page.num="+page.num);
+	if(isDelete){initMescroll();return;};//初始化下拉控件
+	loadShoppCartInfo(page.num, 10);//加载广告商品
+}
+
+//加载广告商品
+function loadShoppCartInfo(pageNo,pageSize){
+	jsonAjax("/"+language+"/shoppCart/queryShoppCart.do",{pageNo:pageNo,pageSize:pageSize},function(res){
+		//联网成功的回调,隐藏上拉加载的状态
+		if(res.data.list==null||res.data.list.length==0){
+			mescroll.endSuccess(0);
+			if(pageNo==1){
+				showEmplyDiv("亲，购物车是空的","#dataList");
+			}
+			return;
+		}
+		mescroll.endSuccess(res.data.list.length);//传参:数据的总数; mescroll会自动判断列表如果无任何数据,则提示空;列表无下一页数据,则提示无更多数据;
+		if(res.data!=null&&res.data!=[]){
+			var data=res.data,pageMenu='',html="";
+			disCount=res.msg;
+			var listDom=document.getElementById("dataList");
+			for (var i = 0; i < data.list.length; i++) {
+				var dto=data.list[i],price=dto.price,imgs="",length=dto.ad_length;
+				//价格
+				if(dto.file_type=="2"){
+					price=dto.html_price;
+					length=dto.html_length;
+				}else if(dto.file_type=="3"){
+					price=dto.pic_price;
+					length=dto.pic_length;
+				}
+				if(dto.pics!=null&&dto.pics!=""){
+					imgs=dto.pics.split(",");
+				}
+				/*if(addr!=null&&addr!=""){,addr=dto.mailing_address
+					var addrList=dto.mailing_address.split("*");
+					if(addrList[0]==addrList[1]){
+						addr=dto.mailing_address.replace(addrList[0],"");
+					}
+				}*/
+				var str='<span class="ggdp-list1-xz pos-a"><label class="checkbox"><input type="checkbox" data-id="'+dto.advertiser_id+'" data-shoppId="'+dto.id+'" name="checkbox" class="checkAd" ><i>✓</i></label></span>';
+				str+='<div class="ggdp-list1-tp pos-a" onclick="showShopDetail(\''+dto.shop_name+'\',\''+dto.mailing_address+'\',\''+dto.pics+'\')">';
+				str+='<span><img src="'+imagePath+imgs[0]+'" /></span>';
+				str+='<p class="sbmc">'+dto.shop_name+'</p>';
+				str+='</div>';
+				str+='<div class="ggdp-list1-nr">';
+				str+='<p class="col-999 dis-in pad-t2">设备编号：<span class="col-666 deviceId hide">'+dto.device_id+'</span><span class="col-666=">'+dto.device_code+'</span></p>';
+				str+='<p class="col-999 dw-bflx">';
+				str+='<span class="dis-in">播放类型：</span>';
+				str+='<select name="" class="dis-in xlb03 fileType" data-htmlPrice="'+dto.html_price+'" data-htmlLength="'+dto.html_length+'" data-picPrice="'+dto.pic_price+'" data-picLength="'+dto.pic_length+'" data-videoPrice="'+dto.price+'" data-videoLength="'+dto.ad_length+'">';
+				str+='	<option value="1" '+(dto.file_type=="1"?'selected = "selected"':'')+'>视频</option>';
+				str+='	<option value="3" '+(dto.file_type=="3"?'selected = "selected"':'')+'>图片</option>';
+				str+='	<option value="2" '+(dto.file_type=="2"?'selected = "selected"':'')+'>图文模板</option>';
+				str+='</select></p>';
+				str+='<p class="col-999">设备播放时段：<span class="col-666" id="timeInterval">'+dto.begin_time+'-'+dto.end_time+'</span></p>';
+				str+='<p class="col-999 dis-in">最低循环次数：<span class="col-666">'+dto.play_number+'次</span></p>';
+				str+='<p class="col-999 dis-in pad-l10">广告时长：<span class="col-666 adLength">'+length+'</span>秒</p>';
+				str+='<p class="col-999 dis-in">价格：<em class="red"><span class="adPrice">'+price+'</span>元/天</em></p>';
+				str+='<p class="col-999 dis-in pad-l10">费用：<em class="red"><span class="sumPrice">'+dto.total_price+'</span>元</em></p>';
+				str+='</div>';
+				str+='<span onclick="reject('+dto.id+',this)" class="btn btn08 bg-red bor-rad pos-a chabo delete">删除</span>';
+				str+='<p class="col-999 pad-t5 gwc-dw">';
+				str+='<span class="dis-in">播放日期：</span>';
+				str+='<input type="text" data-playNumber='+dto.play_number+' readonly value="'+dto.play_begin_time+'" placeholder="请选择开始时间" class="dis-in wenb02 dt bgDate" />';
+				str+='<span class="dis-in pad-l5 pad-r5">至</span>';
+				str+='<input type="text" value="'+dto.play_end_time+'" placeholder="请选择结束时间" readonly class="dis-in wenb02 dt edDate">';
+				str+='</p>';
+				
+				var liDom=document.createElement("li");
+				liDom.innerHTML=str;
+				
+				listDom.appendChild(liDom);//加在列表的后面,上拉加载
+			}
+			createDateControl();//绑定时间控件
+		}
+	},function(){
+		//联网失败的回调,隐藏上拉加载的状态
+		mescroll.endErr();
+		},"get");
+}
+
+//剔除购物车
+function reject(id,obj){
+	isDelete=true;
+	var objs=$("input[type='checkbox']:checked").not("#ckAll"),bl=false;//得到所有选中数据
+	if(id==undefined||id==null||id==""){
+		id="";
+		for (var i = 0; i < objs.length; i++) {
+			id+=$(objs[i]).attr("data-shoppId")+",";
+		}  
+		if(id==""){
+			showJudegTip("fail","请选择要删除的广告！");
+			return;
+		}
+		bl=true;
+		id=id.substring(0,id.length-1);
+	}
+	jsonAjax("/"+language+"/shoppCart/reJectShoppCart.do",{cartId:id},function(res){
+		if(res.respCode=="10000"){
+			if(bl){
+				for (var i = 0; i < objs.length; i++) {
+					$(objs[i]).parents("li").remove();
+				}  
+				$("#buyCarCount").text(parseInt($("#buyCarCount").text())-objs.length);
+			}else{
+				$(obj).parents("li").remove();
+				$("#buyCarCount").text(parseInt($("#buyCarCount").text())-1);
+			}
+			if($("ul li").length==0){
+				showEmplyDiv("亲，购物车是空的","#dataList");
+			}
+			showJudegTip("SUCCESS","删除成功");
+			//startBtn("commitUpdate");
+		}else{
+			$(".error").html(res.respMessge);//注册回调显示
+			//startBtn("commitUpdate");
+		}
+	},function(){});
+}

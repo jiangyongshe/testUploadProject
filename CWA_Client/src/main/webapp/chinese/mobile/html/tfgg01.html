@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+<style>
+.mescroll-totop {
+    bottom: 5rem;
+}
+</style>
+</head>
+
+<body>
+<div id="mescroll" class="mescroll">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+<!-- <header>
+  <p class="logo pos-a"><a href="javascript:;" onclick="javascript:history.back(-1);" title="返回" class="pos-a dis-in fanhui col-fff pad-l5"><i class="fa fa-2x fa-angle-left" aria-hidden="true"></i></a></p>
+  <input name="" type="text" maxlength="20" placeholder="寻找您想要的广告" class="col-fff search">
+  <i class="fa fa-search pos-a col-fff font16" aria-hidden="true"></i>
+  <div class="header-r pos-a">
+    <a href="#" class="dis-b col-fff">搜索</a>
+  </div>
+</header> -->
+<div class="font12">
+  <ul id="dataList" class="ggdp-list1 ggdp-list5 bg-ff">
+  </ul>
+  
+  <div id="payWay" class="hide">
+    <h2 class="font13 pad-q10 bor-b">选择支付方式</h2>
+      
+    <ul class="zf-xz pad-q10">
+      
+      <li data="0101" class="active wechatPay"><a href="#"><img src="/chinese/mobile/images/zf01.jpg" alt="微信" /></a></li>
+      <li data="0201" class="aliPay"><a href="#"><img src="/chinese/mobile/images/zf02.jpg" alt="支付宝" /></a></li>
+      <li data="0400" class="walletPay"><a href="#"><img src="/chinese/mobile/images/zf04.jpg" alt="翔云余额" /></a></li>
+      <!-- <li><a href="#"><img src="/chinese/mobile/images/zf03.jpg" alt="银联" /></a></li> -->
+    </ul>
+  </div>
+  
+  <div class="ggdp-gm bor-t">
+    <span class="dis-in pad-l5 text-c col-999">
+    	共计<br /><span class="red font13 payCount">0条</span>
+    </span>
+    
+    <span class="dis-in pad-l10 text-c col-999">
+    	费用总计<br /><span class="red font13 totalBal">0元</span>
+    </span>
+    
+    <!-- <span class="dis-in pad-l10 text-c col-999">折后价<br /><span class="red font13">90000元</span></span> -->
+    
+    <p class="fr">
+      <!-- <input name="" id="payOrder" onclick="payOrder()" type="button" value="确定支付" class="btn btn09 bg-red font13 mar-l2 hide" /> -->
+      <input name="" id="payOrder" onclick="payOrder()" type="button" value="确定付款" class="btn btn09 bg-red font13 mar-l2 commit" />
+    </p>
+  </div>
+</div>
+
+<div class="hei44"></div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="/chinese/mobile/js/commonMobisDateRel.js"></script><!--通用日期引用-->
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+</div>
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_buyConfirm.js"></script>
+<script type="text/javascript" src="/chinese/mobile/js/core/orderCommon.js"></script>
+<!-- var str='<span class="ggdp-list1-xz pos-a"><label class="checkbox"><input type="checkbox" name="checkbox" id="" ><i>✓</i></label></span>';
+str+='<div class="ggdp-list1-tp pos-a" onclick="elementDisplay(\'tc-eject2\')">';
+str+='<span><img src="images/zwtp.png" /></span>';
+str+='<p class="sbmc">福田高铁福田高铁站站</p>';
+str+='</div>';
+str+='<div class="ggdp-list1-nr">';
+str+='<p class="col-999 dis-in pad-t2">设备编号：<span class="col-666">080023</span></p>';
+str+='<p class="col-999 dw-bflx">';
+str+='<span class="dis-in">播放类型：</span>';
+str+='<select name="" class="dis-in xlb03"><option>视频</option><option>图片</option><option>HTML模板</option></select>';
+str+='</p>';
+str+='<p class="col-999">设备播放时段：<span class="col-666">19:00:00-20:00:00</span></p>';
+str+='<p class="col-999 dis-in">最低循环次数：<span class="col-666">19条</span></p>';
+str+='<p class="col-999 dis-in pad-l10">广告时长：<span class="col-666">15秒</span></p>';
+str+='<p class="col-999 dis-in">价格：<em class="red">30元/天</em></p>';
+str+='<p class="col-999 dis-in pad-l10">费用：<em class="red">900元</em></p>';
+str+='</div>';
+str+='<p class="col-999 pad-t5 gwc-dw">';
+str+='<span class="dis-in">播放周期：</span>';
+str+='<input type="text" name="user_age" id="user_age1" class="dis-in wenb02" placeholder="请输入开始时间" />';
+str+='<span class="dis-in pad-l5 pad-r5">至</span>';
+str+='<input type="text" name="user_age" id="user_age2" class="dis-in wenb02" placeholder="请输入结束时间" />';
+str+='</p>'; -->
+</body>
+</html>

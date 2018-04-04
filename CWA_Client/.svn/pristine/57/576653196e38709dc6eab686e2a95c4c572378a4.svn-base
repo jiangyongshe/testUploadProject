@@ -1,0 +1,131 @@
+var inOutMoneyPage = 1;
+var inOutMoneyCount = 9;
+
+$(function(){
+	// 查询出金明细
+	queryInOutMoneyDetail({pageNo:inOutMoneyPage});
+	
+	// 绑定出金明细查询按钮 
+	inOutMoneyBtnSearch();
+	
+	// 查询可出金额
+	queryAllowWithdrawMoney(1);
+	// 绑定出金按钮
+	bindWithdrawBtn();
+});
+
+
+/**
+ * 查询可出金额
+ * @returns
+ */
+function queryAllowWithdrawMoney(){
+	var uri = '/AD/query/commission.do';
+	jsonAjax('/'+language+uri,{},
+	function(res){
+		var data = res.data;
+		if(data){
+			$('#allowWithdrawMoney').attr('placeholder',formatNumber(data.available_comm,2,1));
+		}else{
+			$('#allowWithdrawMoney').attr('placeholder',formatNumber(0,2,1));
+		}
+	},
+	function(){});
+}
+
+/**
+ * 绑定出金按钮
+ * @returns
+ */
+function bindWithdrawBtn(){
+	$('#submit').bind('click',function(){
+		var uri = '/AD/withdraw.do';
+		jsonAjax('/'+language+uri,{withdrawMoney:$('#withdrawMoney').val()},
+		function(res){
+			var status = res.success;
+			var msg = res.msg;
+			if(status){
+				showJudegTip('success','',msg);
+				$('#withdrawMoney').val('');
+				// 重新查询可出佣金
+				queryAllowWithdrawMoney(userType);
+			}else{
+				showJudegTip('fail','',msg);
+			}
+		},
+		function(){});
+	});
+}
+
+/**
+ * 查询出金明细
+ * @param obj.pageNo 页码
+ * @param obj.startTime 播放开始时间，时:分:秒 hh:mm:ss
+ * @param obj.startTime 播放结束时间，时:分:秒 hh:mm:ss
+ * @param obj.userType
+ * @returns
+ */
+function queryInOutMoneyDetail(obj){
+	jsonAjax('/'+language+'/AD/query/withdrawDetail.do',{
+		pageNo:obj.pageNo,
+	    pageSize:inOutMoneyCount,
+	    startTime:obj.startTime,
+	    endTime:obj.endTime
+	},function(res){
+		var data = res.data;
+		// 清空数据
+		$('#withdrawDetailData').empty();
+		// 清空页码
+		$('#withdrawDetailPageTurn').empty();
+		if(data&&data.length>0){
+			var withdrawDetailDataHTML = '';
+			for(var i=0;i<data.length;++i){
+				withdrawDetailDataHTML += '' 
+					       + '<tr>'
+					       + '<td>'+((Number(obj.pageNo)-1)*Number(inOutMoneyCount)+i+1)+'</td>'
+						   + '<td>'+new Date(Number(data[i].open_date)).format(DATE_FORMAT_YTDHMS)+'</td>'
+						   + '<td>'+formatNumber(data[i].amount,2,1)+'</td>'
+						   + '<td>'+function(status){
+									switch(status){
+									case 1:
+										return '申请中';
+									case 2:
+										return '通过';
+									case 3:
+										return '驳回';
+									case 4:
+										return '需冲正';
+									case 5:
+										return '处理中';
+									case 6:
+										return '冲正成功';
+									}
+								}(data[i].status)+'</td>'
+						   + '</tr>';
+			}
+			$('#withdrawDetailData').html(withdrawDetailDataHTML);
+			// 添加页码HTML代码
+			pageNumber(res.count,obj,queryInOutMoneyDetail,'withdrawDetail');
+		}
+	},function(){});
+}
+
+/**
+ * 绑定出金明细查询按钮 
+ * @returns
+ */
+function inOutMoneyBtnSearch(){
+	$('#inOutMoneySearchBtn').bind('click',function(){
+		// 获取开始结束日期
+		var startTime = $('#inOutMoneyStartTime').val();
+		var endTime = $('#inOutMoneyEndTime').val();
+		// 获取用户类型
+		var userType = $('#threeCommissionType').find('option:selected').val();
+		queryInOutMoneyDetail({pageNo:inOutMoneyPage,startTime:startTime,endTime:endTime});
+	});
+}
+//清空出入金时间
+function clearInOutMoneyDate(){
+	$("#inOutMoneyStartTime").val("");
+	$("#inOutMoneyEndTime").val("");
+}

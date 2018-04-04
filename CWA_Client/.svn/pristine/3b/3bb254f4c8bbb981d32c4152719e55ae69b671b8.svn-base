@@ -1,0 +1,181 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var userMobile;
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	loadUserInfo();//加载用户信息
+	$("#updateInfo").bind("click",function(){//修改按钮
+		//真实姓名
+		if(!$(".userName").hasClass('disabled')){
+			$(".userName").addClass("disabled");
+		}else{
+			$(".userName").removeClass("disabled");
+		}
+		//电子邮箱
+		if(!$(".email").hasClass('disabled')){
+			$(".email").addClass("disabled");
+		}else{
+			$(".email").removeClass("disabled");
+		}
+		// 提交按钮
+		if($(".userName").hasClass('disabled')&&$('#mobile').hasClass('disabled')){
+			$("#updateMobile").addClass("disabled");
+		}else{
+			$("#updateMobile").removeClass("disabled");
+		}
+	})
+	$("#updateMobile").bind("click",function(){//提交修改
+		updateMobile();
+	})
+	
+	// 绑定获取验证码按钮
+	sendVerification();
+	// 修改按钮
+	modifyMobileBtn();
+})
+
+
+/**
+ * 修改按钮
+ * @returns
+ */
+function modifyMobileBtn(){
+	$('#modifyMobile').on('click',function(){
+		var verificationDisabled = $('#verification').hasClass('disabled');
+		if(!verificationDisabled){
+			$('#verification').addClass('disabled');
+			$('#verification').removeAttr('placeholder');
+		}else{
+			$('#verification').removeClass('disabled');
+			$('#verification').attr('placeholder','发送至尾号'+userMobile+'的手机');
+		}
+		var verificationBtnDisabled = $('#verificationBtn').hasClass('disabled');
+		if(!verificationBtnDisabled){
+			$('#verificationBtn').addClass('disabled');
+		}else{
+			$('#verificationBtn').removeClass('disabled');
+		}
+		var mobileDisabled = $('#mobile').hasClass('disabled');
+		if(!mobileDisabled){
+			$('#mobile').addClass('disabled');
+			$('#mobile').removeAttr('placeholder');
+		}else{
+			$('#mobile').removeClass('disabled');
+			$('#mobile').attr('placeholder','请输入新的手机号');
+		}
+		// 提交按钮
+		if($(".userName").hasClass('disabled')&&$('#mobile').hasClass('disabled')){
+			$("#updateMobile").addClass("disabled");
+		}else{
+			$("#updateMobile").removeClass("disabled");
+		}
+		
+	});
+}
+
+/**
+ * 绑定获取验证码按钮
+ * @returns
+ */
+function sendVerification(){
+	$('#verificationBtn').on('click',function(){
+		// 发送请求
+		jsonAjax('/'+language+'/user/getMobileVerificationForUpdateMobile.do',{},
+		function(res){
+			var msg = res.msg;
+			if(msg=='10000'||msg=='60001'){
+				var tip = res.data.split('-')[0];
+				var time = Number(res.data.split('-')[1]);
+				// 提示
+				//showJudegTip('success','',tip);
+				if(time>=0){
+					$('#verificationBtn').removeClass('bg-red').val(time--+" s");
+				}
+				// 启动倒计时
+				interval = setInterval(function() {
+					if(time<0){
+						$('#verificationBtn').addClass('bg-red').val('获取验证码');
+						clearInterval(interval);
+						return;
+					}
+					$('#verificationBtn').removeClass('bg-red').val(time--+" s");
+				}, 1000);
+			}else{
+				// 提示
+				showJudegTip('fail','',tip);
+			}
+		},function(){});
+	});
+} 
+
+/**
+ * 发送请求按钮
+ * @returns
+ */
+function updateMobileBtn(){
+	// 发送请求
+	jsonAjax('/'+language+'/user/updateMobile.do',{mobile:$('#mobile').val(),verification:$('#verification').val()},
+	function(res){
+		var msg = res.msg;
+		var status = res.success;
+		if(status){
+			// 提示
+			showJudegTip('success','',msg);
+			// 清空数据
+			$('#verification').attr('placeholder','发送至尾号'+$('#mobile').val().substring($('#mobile').val().length-4)+'的手机');
+			$('#verification').val('');
+			$('#verificationBtn').addClass('bg-red').val('获取验证码');
+			clearInterval(interval);
+		}else{
+			// 提示
+			showJudegTip('fail','',msg);
+		}
+	},function(){});
+}
+
+function loadUserInfo(){//加载用户信息
+	jsonAjax("/"+language+"/user/loadUser.do",{},function(res){
+		if(res.data!=null&&res.data!=[]){
+			$(".accountId").val(res.data.account_id);//用户名
+			$(".userName").val(res.data.user_name);//用户真实姓名
+			$('#mobile').val(res.data.fullMb);// 手机号
+			userMobile=res.data.mobile;
+			$(".email").val(res.data.email);//电子邮箱
+		}
+	},function(){},"get");
+}
+
+function updateMobile(){
+	disabledBtn("updateMobile");//禁用提交按钮
+	var accountId=$(".accountId").val();//用户名
+	var userName=$(".userName").val();//真实姓名
+	var email=$(".email").val();//电子邮箱
+	$(".error").show();
+	if(userName==""||email==""){
+		$(".error").html(currError[1]);
+		startBtn("updateMobile");
+		return;
+	}
+	if(!REG_EMAIL.test(email)){
+		$(".error").html(currError[2]);
+		startBtn("updateMobile");
+		return;
+	}
+	
+	var url = "/"+language+"/customer/updUserInfo.do";
+	jsonAjax(url,{accountId:accountId,userName:userName,email:email},function(res){
+		if(res.respCode=="10000"){
+			if(!$('#mobile').hasClass('disabled')){
+				updateMobileBtn();
+			}else{
+				$(".error").html(currError[0]);
+			}
+			startBtn("updateMobile");
+		}else{
+			$(".error").html(res.respMessge);//注册回调显示
+			startBtn("updateMobile");
+		}
+	},function(){});
+}

@@ -1,0 +1,126 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var mescroll,isDelete=false/*删除标识 如果true 则重新加载数据*/;
+
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	$("#headerTitle").text("广告屏详情");
+	$(".wcBtn").hide();
+	var fileType=getURLParam("fileType"),checkTimes=getURLParam("checkTimes"),checkAdvertiseId=getURLParam("checkAdvertiseId"),deviceIds=getURLParam("deviceId"),timeInterval=getURLParam("timeInterval");
+	loadBuyConfirmInfo({checkAdvertiseId:checkAdvertiseId,deviceId:deviceIds,timeInterval:timeInterval,checkTimes:checkTimes,fileType:fileType});//加载广告商品
+})
+
+
+//加载广告商品
+function loadBuyConfirmInfo(obj){
+	jsonAjax("/"+language+"/customer/queryConfimBuyAdvertiseInfo.do",obj,function(res){
+		if(res.data!=null&&res.data!=[]&&res.success){
+			var data=res.data,pageMenu='',html="";
+			var listDom=document.getElementById("dataList");
+			
+			var dto=data[0],price=dto.pic_price,imgs="",length=dto.pic_length;
+			disCount=res.msg;
+			if(dto.pics!=null&&dto.pics!=""){
+				imgs=dto.pics.split(",");
+				var shopImageHtml="",effect="leftLoop";
+				for (var i = 0; i < imgs.length; i++) {
+					shopImageHtml+='<li><a class="pic" href="javascript:;"><img src="'+imagePath+imgs[i]+'"/></a></li>';
+				}
+				$("#shopImage").html(shopImageHtml);
+				$(".allImgNumber").text(imgs.length);
+				if(imgs.length>1){
+					TouchSlide({ 
+						slideCell:"#slideBox",
+						titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+						mainCell:".bd ul", 
+						effect:effect, 
+						autoPage:true,//自动分页
+						autoPlay:false, //自动播放
+						endFun:function(){
+							$(".currImgIndex").text($(".hd .on").text());
+						}
+					});
+				}
+			}
+			if(imgs==""){
+				var shopImageHtml='<li><a class="pic" href="javascript:;"><img src="'+(imgs==""?'/chinese/mobile/images/zwtp.png':imagePath+imgs[0])+'"/></a></li>';
+				$("#shopImage").html(shopImageHtml);
+			}
+			html+='<p class=""><span class="dis-in width50">广告屏编号：<span>'+dto.device_code+'</span></span><span class="dis-in width42">播放中：'+(dto.currPlayCount==null?0:dto.currPlayCount)+'条</span><span class="deviceId hide" data-id="'+dto.id+'" data-timeInterval='+dto.idle_time+'>'+dto.device_id+'</span></p>';
+			html+='<p class=""><span class="">店铺：</span>'+dto.shop_name+'</p>';
+			html+='<div class="pos-r pltf-dz">';
+			html+='  <span class="">'+dto.mailing_address.replace(/\*/g,"").replace(/&/g,"")+'</span>';
+			html+=' <a href="javascript:;" onclick="showAddMap(\''+dto.mailing_address.replace(/\*/g,"").replace(/&/g,"")+'\',\''+dto.mailing_address.split("*")[1]+'\')" class="pos-a pltf-dz2"><i class="fa fa-map-marker red" aria-hidden="true"></i></a>';
+			html+='</div>';
+			var d=new Date(),showBgTm=dto.startDate,showEdTm=dto.endDate.substring(0,10);
+			if(showBgTm==showEdTm){
+				//默认最大日期
+				d.setMonth(d.getMonth() +1);
+				showEdTm=d.format(DATE_FORMAT_YTD);
+			}
+			html+=' <p class="pad-t8 gwc-dw">';
+		    html+='<span class="dis-in font14">投放日期：</span>';
+		    html+='<span class="dis-in riqi pos-r">';
+		    html+='<input type="text" min='+miDate+' max='+maDate+' data-playNumber='+dto.play_number+' readonly value="'+showBgTm+'" placeholder="请选择开始时间" class="dis-in wenb02 dt bgDate" />';
+		    html+='  <i class="fa fa-angle-right pos-a" aria-hidden="true"></i>';
+		    html+='</span>';
+		    html+='<span class="dis-in pad-l5 pad-r5">-</span>';
+		    html+='<span class="dis-in riqi pos-r">';
+		    html+='<input type="text" min='+miDate+' max='+maDate+' value="'+showEdTm+'" placeholder="请选择结束时间" readonly class="dis-in wenb02 dt edDate">';
+		    html+='  <i class="fa fa-angle-right pos-a" aria-hidden="true"></i>';
+		    html+='</span>';
+		    html+=' </p>';
+		    html+='<div class="pad-t8 tflx pos-r">';
+		    html+='<span class="dis-in">投放类型：</span>';
+		    html+='<span class="dis-in tfsl fileType">';
+		    html+='	<em onclick="" class="active" data-price="'+dto.pic_price+'" data-length="'+dto.pic_length+'" value="3">图片</em>';
+		    html+='	<em onclick="" data-price="'+dto.ad_price+'" data-length="'+dto.ad_length+'" value="1">视频</em>';
+		    html+='</span>';
+		    html+='<div class="col-999 zhehouj zhehouj-wu">';
+		    html+='  <p class="priceAndLength">单价：<em class="red"><span class="adPrice">'+price+'</span>元</em>/个</p>';
+		    html+='	 <p class="hide disCountDiv">折后价：<em class="red"><span class="disPrice">'+price*disCount+'</span>元</em>/个</p>';
+			html+='</div>';
+		    
+		    /*html+='<span class="col-999 fr pad-t5 pad-r5 priceAndLength">';
+		    html+=' 单价：<em class="red font14"><span class="adPrice">'+price+'</span>元/</em>个';
+		    html+='</span>';*/
+		    
+		    
+		    html+='</div>';
+		    html+='<div class="pad-t8 tfsl-plus">';
+		    html+='<span class="dis-in">投放数量：</span>';
+		    html+='<div class="pos-r dis-in cpxq-mk-zl fr mar-r5">';
+		    html+='<a href="javascript:;" class="minus2 pos-a subtract"><i class="fa fa-minus" aria-hidden="true"></i></a>';
+		    html+='<input name="" type="text" class="wenb02 text-c buyCount" value="1">';
+		    html+='<a href="javascript:;" class="plus2 pos-a add"><i class="fa fa-plus" aria-hidden="true"></i></a>';
+		    html+='</div>';
+		    html+='</div>';
+		    listDom.innerHTML=html;
+			createDateControl();//绑定时间控件
+			checkSum();
+			$(".disPrice").html($(".disPrice").html().substring(0,$(".disPrice").html().indexOf(".")+3));//截取
+		}
+	},function(){
+		//联网失败的回调,隐藏上拉加载的状态
+		mescroll.endErr();
+		},"get",null,null,false);
+}
+
+//插播
+function intercut(obj){
+	var ct=new Date().format(DATE_FORMAT_YTD);
+	isInterCut="2";
+	$(this).hide();
+	$(".bgDate").val(ct).addClass("disabled");
+	$(".edDate").val(ct).addClass("disabled");
+}
+
+//提交
+function detailCommit(obj){
+	if(checkSum()){
+		placeAnOrder(obj);
+	}
+}
+

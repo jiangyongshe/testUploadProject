@@ -1,0 +1,264 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var addr="",currPage=1,totolPage=1,checkAdvertiseId=""/*选中广告id*/,checkTimes=""/*选中时间间隔*/,subtotals=""/*选中广告小计*/,selectTimePeriod/*时间间隔*/,minDate/*最小选择日期*/,maxDate//最大选择日期;
+
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	loadAdvertiseInfo();//加载广告商品
+	initAddr();//加载省市区
+	$(".advArea select").bind("change",function(){//省市区条件查询改变
+		if($(this).attr("name")!="province"){//选择省份不做查询
+			var province=$(".advArea select[name='province']").find("option:selected").text();
+			var city=$(".advArea select[name='city']").find("option:selected").text();
+			var area=$(".advArea select[name='area']").find("option:selected").text();
+			var town=$(".advArea select[name='town']").find("option:selected").text();
+			if($(this).attr("name")=="city"){//改变城市
+				addr=province+"--"+city;
+			}else if($(this).attr("name")=="area"){//改变地区
+				addr=province+"--"+city+"--"+area;
+			}else if($(this).attr("name")=="town"){//改变街道
+				addr=province+"--"+city+"--"+area+"--"+town;
+			}
+			loadAdvertiseInfo();//加载
+			checkSum();
+		}
+	})
+	$(document).on("click",".index",function(){//首页
+		if(currPage==1){
+			return;
+		}
+		loadAdvertiseInfo();
+	})
+	$(document).on("click",".prev",function(){//上一页
+		if(currPage-1<1){
+			return;
+		}
+		loadAdvertiseInfo(currPage-1);
+	})
+	$(document).on("click",".next",function(){//下一页
+		if(currPage+1>totolPage){
+			return;
+		}
+		loadAdvertiseInfo(currPage+1);
+	})
+	$(document).on("click",".last",function(){//末页
+		if(currPage==totolPage){
+			return;
+		}
+		loadAdvertiseInfo(totolPage);
+	})
+	$(document).on("blur","#pageNo",function(){//页数跳转
+		var pageNo=$(this).val();
+		if(pageNo>totolPage){//大于最大页则跳到末页
+			pageNo=totolPage;
+			$(this).val(pageNo);
+		}else if(pageNo<1){//小于首页则跳到首页
+			pageNo=1;
+			$(this).val(1);
+		}else if(pageNo==currPage){
+			return;
+		}
+		loadAdvertiseInfo(pageNo);
+	})
+	
+	$(document).on("change","#endDate",function(){//时间选择变化时间
+		var startDate=$(this).parent().find("#startDate").val();//开始时间
+		var endDate=$(this).val();//结束时间
+		if(endDate<minDate||endDate>maxDate||endDate<startDate){//判断时间选择是否正确
+			showJudegTip("fail","错误提示","日期选择有误！")
+			$(this).val("");
+			return;
+		}
+		if(startDate!=""){
+			startDate=new Date(startDate);
+			endDate=new Date(endDate);
+			selectTimePeriod=parseInt((endDate-startDate)/1000/60/60/24)+1;//得到时间相差的天数
+			var sumPrice=$(this).parents("tr").find(".sumPrice");
+			sumPrice.text(eval(sumPrice.attr("data-price")*selectTimePeriod));//汇总
+			checkSum();
+		}
+	})
+	$(document).on("change","#startDate",function(){//时间选择变化时间
+		var startDate=$(this).val();//开始时间
+		var endDate=$(this).parent().find("#endDate").val();//结束时间
+		if(startDate<minDate||startDate>maxDate||(endDate<startDate&&endDate!="")){//判断时间选择是否正确
+			showJudegTip("fail","错误提示","日期选择有误！")
+			$(this).val("");
+			return;
+		}
+		if(endDate!=""){
+			startDate=new Date(startDate);
+			endDate=new Date(endDate);
+			selectTimePeriod=parseInt((endDate-startDate)/1000/60/60/24)+1;//得到时间相差的天数
+			var sumPrice=$(this).parents("tr").find(".sumPrice");
+			sumPrice.text(eval(sumPrice.attr("data-price")*selectTimePeriod));//汇总
+			checkSum();
+		}
+	})
+	
+	//复选框
+	$(document).on("click","#checkAd",function(){
+		checkSum();//汇总
+	})
+	
+	//加入购物车
+	$(document).on("click",".joinCart",function(){
+		joinCart();//加入购物车
+	})
+	//全选
+	$(document).on("click","#ckAll",function(){
+		$("table tr").find("input[name='checkbox']").prop("checked",this.checked);
+		checkSum();//汇总
+	})
+})
+//加载省市区
+function initAddr(){
+	 var $town = $('.advArea select[name="town"]');
+	  /* var defaultcode='350203003';*/
+	  var defaultname=''; 
+	  var townFormat = function(info){
+	  	$town.hide().empty();
+	  	if(info['code']%1e4&&info['code']<7e5){	//是否为“区”且不是港澳台地区
+	  		$.ajax({
+	  			url:'/js/town/'+info['code']+'.json',
+	  			dataType:'json',
+	  			success:function(town){
+	  				$town.show();
+	  				for(i in town){
+	  					   if(defaultname==town[i]){
+	  					      $town.append('<option value="'+i+'" selected="selected">'+town[i]+'</option>');
+	  					   }else{
+	  					     $town.append('<option value="'+i+'">'+town[i]+'</option>');
+	  					   }
+	  						
+	  				}
+	  			}
+	  		});
+	  	}
+	  };
+	  $('.advArea').citys({
+	  	province:'广东省',
+	  	city:'深圳市',
+	  	area:'罗湖区',
+	  	onChange:function(info){
+	  		 townFormat(info);
+	  	}
+	  },function(api){
+	  	var info = api.getInfo();
+	  	console.info(info);
+	  	townFormat(info);
+	  });
+}
+//加载广告商品
+function loadAdvertiseInfo(pageNo){
+	jsonAjax("/"+language+"/customer/queryAdvertiseInfo.do",{pageNo:pageNo,mailingAddress:addr},function(res){
+		if(res.data!=null&&res.data!=[]){
+			var data=res.data,html="",pageMenu='',date=new Date();
+			date.setDate(date.getDate()+1);
+			minDate=date.format(DATE_FORMAT_YTD);
+			if(eval(date.getMonth()+7)>12){//计算可选择的最大日期
+				maxDate=eval(date.getFullYear()+1)+'-0'+eval(date.getMonth()+7-12)+'-'+date.getDate();
+			}else{
+				if(eval(date.getMonth()+7)<10){
+					maxDate=date.getFullYear()+'-0'+eval(date.getMonth()+7)+'-'+date.getDate();
+				}else{
+					maxDate=date.getFullYear()+'-'+eval(date.getMonth()+7)+'-'+date.getDate();
+				}
+			}
+			for (var i = 0; i < data.list.length; i++) {
+				var dto=data.list[i];
+				if(i==0){//分页菜单
+					currPage=data.pageNo;
+					totolPage=Math.ceil(data.totalRecords/data.pageSize);
+					pageMenu+='<a href="#" class="btn-fy index">首页</a>';
+					pageMenu+='<a href="#" class="btn-fy prev"><i class="fa fa-chevron-left"></i></a>';
+					pageMenu+='<input type="number" id="pageNo" value="'+currPage+'" style="width:60px;font-size:14px;line-height:20px;text-align:center"> '+currPage+'/'+totolPage;
+					pageMenu+=' <a href="#" class="btn-fy next"><i class="fa fa-chevron-right"></i></a>';
+					pageMenu+='<a href="#" class="btn-fy last">末页</a>';
+				}
+				html+='<tr>';
+				html+='  <td><label class="checkbox"><input type="checkbox" data-id="'+dto.id+'" name="checkbox" id="checkAd" ><i>√</i></label></td>';
+				html+='	<td>'+dto.rowNo+'</td>';
+				html+='  <td>'+dto.device_id+'</td>';
+				html+='  <td><span class="red dian-bt" onmouseover="elementDisplay(\'diandiv\')">'+dto.shop_name+'</span></td>';
+				html+='  <td>'+dto.idle_time+'</td>';
+				html+='  <td>'+dto.ad_length+'秒</td>';
+				html+='  <td>'+dto.play_number+'次</td>';
+				html+='  <td>'+dto.ad_price+'</td>';
+				html+='  <td>';
+				html+='   <!-- <select name="" class="xlb02">';
+				html+='    <option>一个月</option>';
+				html+='    <option>二个月</option>';
+				html+='   </select> -->';
+				html+='   <input id="startDate" type="date" min="'+date.format(DATE_FORMAT_YTD)+'" max="'+maxDate+'" class="dis-in" style="width:135px" /> - <input id="endDate" type="date" class="dis-in" min="'+date.format(DATE_FORMAT_YTD)+'" max="'+maxDate+'" style="width:135px"/>';
+				html+='  </td>';
+				html+='  <td class="sumPrice" data-price="'+dto.ad_price+'">--</td>';
+				html+='</tr>';
+			}
+			$("table tr").not("#tableHeader").remove();
+			$("#tableHeader").after(html);//展示列表数据
+			$(".pageMenu").html(pageMenu);//展示分页菜单
+			if(currPage==totolPage){
+				$(".last").addClass("active");
+			}else if(currPage==1){
+				$(".index").addClass("active");
+			}
+			checkSum();
+		}
+	},function(){},"get");
+}
+//汇总
+function checkSum(){
+	var objs=$("table input[type='checkbox']:checked").not("#ckAll");//得到所有选中数据
+	var totalBal=0;
+	checkTimes="",checkAdvertiseId="",subtotals="";
+	for (var i = 0; i < objs.length; i++) {
+		var sumPrice=$(objs[i]).parents("tr").find(".sumPrice").text();//汇总
+		if(isNaN(sumPrice)){
+			showJudegTip("fail","错误提示","请选择播放周期！");
+			$("#ckAll")[0].checked=false;
+			objs[i].checked=false;
+			return;
+		}
+		totalBal=totalBal+parseInt(sumPrice);
+		subtotals+=sumPrice+",";
+		checkTimes+=$(objs[i]).parents("tr").find("#startDate").val()+"@"+$(objs[i]).parents("tr").find("#endDate").val()+",";
+		checkAdvertiseId+=$(objs[i]).attr("data-id")+",";
+	}  
+	$(".totalBal").text(totalBal+"元");//计算总金额
+	checkTimes=checkTimes.substring(0,checkTimes.length-1);
+	subtotals=subtotals.substring(0,subtotals.length-1);
+	checkAdvertiseId=checkAdvertiseId.substring(0,checkAdvertiseId.length-1);
+}
+
+function submit(){
+	checkSum();
+	var objs=$("table input[type='checkbox']:checked");//得到所有选中数据
+	if(objs.length>0){
+		window.location.href="/"+language+"/customer/queryConfimBuyAdvertiseInfo.do?checkTimes="+checkTimes+"&checkAdvertiseId="+checkAdvertiseId+"&subtotals="+subtotals;
+	}else{
+		showJudegTip("normal","提示","请选择广告播放时段！");
+	}
+}
+
+//加入购物车
+function joinCart(){
+	checkSum();
+	var objs=$("table input[type='checkbox']:checked");//得到所有选中数据
+	if(objs.length>0){
+		jsonAjax("/"+language+"/shoppCart/joinShoppCart.do",{checkTimes:checkTimes,checkAdvertiseId:checkAdvertiseId,subtotals:subtotals},function(res){
+			if(res.respCode=="10000"){
+				showJudegTip("SUCCESS","加入购物车","加入成功，您可要通过点击 <a href='/"+language+"/forward/shoppCart.do' class='red'>我的购物车</a> 完成支付");
+				//startBtn("commitUpdate");
+			}else{
+				$(".error").html(res.respMessge);//注册回调显示
+				//startBtn("commitUpdate");
+			}
+		},function(){});
+	}else{
+		showJudegTip("normal","提示","请选择广告播放时段！");
+	}
+}
+

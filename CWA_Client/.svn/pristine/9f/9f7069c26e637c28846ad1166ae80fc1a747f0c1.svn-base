@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+</head>
+
+<body class="body1">
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<div class="font12">
+  <ul class="ggtf-sc ggtf-sc3 pad-q10 bor-b4">
+        <li>
+          <span class="pos-a ggtf-sc-bt">充值方式</span>
+          <p class="wenb03 dis-b payType">
+            <label class="radio wechatPay"><input type="radio" value="0101" name="radio" id="" checked ><i>✓</i> 微信</label>
+            <label class="radio pad-l10 aliPay"><input type="radio" value="0201" name="radio" id="" ><i>✓</i> 支付宝</label>
+            <label class="radio pad-l10 unionPay"><input type="radio" value="0301" name="radio" id="" ><i>✓</i> 银联</label>
+          </p>
+        </li>
+        
+        <li>
+          <span class="pos-a ggtf-sc-bt">充值金额</span>
+          <input type="text" class="wenb03 width100 amount" placeholder="请输入充值金额" />
+        </li>
+        
+        <li class="cardCodeLi hide">
+          <span class="pos-a ggtf-sc-bt">银行卡号</span>
+          <input type="text" class="wenb03 width100 cardCode" placeholder="请输入银行卡号" />
+          <input id="updateCardCode" onclick="updateCardCode()" class="btn btn04 bg-blue pos-a yzm" type="button" value="修改" />
+        </li>
+        
+        <li class="phoneMobileLi hide">
+          <span class="pos-a ggtf-sc-bt">手机号码</span>
+          <input type="text" class="wenb03 width100 phoneMobile" placeholder="请输入银行预留手机号" />
+        </li>
+        
+        <li class="pos-r phoneValidCodeLi hide">
+          <span class="pos-a ggtf-sc-bt">手机验证码</span>
+          <input type="text" class="wenb03 width100 phoneValidCode" placeholder="请输入手机验证码" />
+          <input id="getValidCode" onclick="getValidCode()" class="btn btn04 bg-blue pos-a yzm" type="button" value="获取验证码" />
+          <input id="getValidCode1" class="btn btn04 bg-blue pos-a yzm hide" type="button" value="120 s" />
+        </li>
+  </ul>
+  
+  <input name="" id="commit" type="button" value="提交" class="btn btn11 bg-blue width100 pad-q10 font13 mar-t20" />
+</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_walletRecharge.js"></script>
+</body>
+</html>

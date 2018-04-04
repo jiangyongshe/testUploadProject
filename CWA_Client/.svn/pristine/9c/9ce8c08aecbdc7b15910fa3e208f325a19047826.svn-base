@@ -1,0 +1,35 @@
+var html="<script src=\"/js/globalVar.js\"></script>\n";// 全局变量
+ 	html+="<script src=\"/js/common.js\"></script>\n";// 公共方法
+ 	html+="<script src=\"/js/language.js\"></script>\n";// 语言
+ 	html+="<header>\n";
+	html+="<a href=\"/chinese/forward/home.do\" class=\"logo\"><img src=\"/chinese/images/logo.png\" alt=\"橱窗广告\" /></a>\n";
+	html+="<div class=\"fr hear-r font14\">\n";
+	html+="<span class=\"dis-in col-999\">\n";
+	html+="<span class=\"\">欢迎你，<a class=\"red\" id=\"userName\"></a>|<a href=\"/chinese/user/exit.do\">退出</a></span>\n";
+	html+="</span>\n";
+	html+="<select id=\"lanauge\" class=\"xlb01 dis-in col-666\" onchange=\"changeLanguage()\"></select>\n";
+	html+="</div>\n";
+	html+="<menu><ul>\n";
+	html+="<li name=\"home\"><a href=\"/chinese/forward/home.do\">首页</a></li>\n";
+	html+="<li name=\"gotoChangeToAd\"><a href=\"/chinese/forward/AD/gotoChangeToAd.do\">我要成为广告商</a></li>\n";
+	html+="<li><a href=\"/chinese/html/gywm.html\">关于我们</a></li>\n";
+	html+="</ul></menu>\n";
+	html+="</header>\n";
+document.writeln(html);
+$(function(){
+	// 加载语言
+	$('#lanauge').append(languageHtml);
+	//加载用户信息
+	loadUserMsg();
+})
+//点击关闭层
+function turnoff(obj) {
+	document.getElementById(obj).style.display = "none";
+}
+//点击显示层
+function elementDisplay(objid) {
+	var obj = document.getElementById(objid);
+	{
+		obj.style.display = 'inline-block';
+	}
+}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+<style>
+header {
+    border-bottom: 0;
+    background-color: rgba(21,47,86,.8);
+}
+.header-r {
+	display: none;
+}
+</style>
+</head>
+
+<body>
+<script src="/chinese/mobile/js/header.js"></script><!--公用头部JS-->
+
+<!--产品大图-->
+<div id="slideBox" class="slideBox bg-ff font12">
+	<div class="bd">
+		<ul id="shopImage">
+		</ul>
+	</div>
+	<div class="hd sc">
+		<ul>
+        </ul>
+	</div>
+</div>
+
+<div class="font12 bg-ff bor-b3 ggdp-xq pos-r" id="dataList">
+  
+</div>
+
+<div class="font12 hide" id="payWay">
+  <h2 class="font13 pad-q10 bor-b">选择支付方式</h2>
+      
+  <ul class="zf-xz pad-q10">
+      <li class="active" data="0400" class="walletPay"><a href="#"><i class="fa fa-gg-circle blue" aria-hidden="true"></i> 翔云余额: <span class="amount">0</span> 元</a></li>
+      <li data="0101" class="wechatPay"><a href="#"><img src="/chinese/mobile/images/zf01.jpg" alt="微信" /></a></li>
+      <li data="0201" class="aliPay"><a href="#"><img src="/chinese/mobile/images/zf02.jpg" alt="支付宝" /></a></li>
+      <!-- <li><a href="#"><img src="/chinese/mobile/images/zf03.jpg" alt="银联" /></a></li> -->
+    </ul>
+</div>
+
+<div class="ggdp-gm bor-t">
+  <span class="dis-in pad-l10 pad-t10 text-c col-999">共计：<span class="red font15 totalBal">0元</span></span>
+    
+  <p class="fr">
+    <input name="" type="button" onclick="joinCart()" value="加入购物车" class="btn btn09 bg-yellow font13 joinCart" />
+    <input name="" id="payOrder" onclick="payOrder()" type="button" value="确定支付" class="btn btn09 bg-red font13 mar-l2 hide" />
+    <input name="" id="commit" onclick="commit(this,true)" type="button" value="立即购买" class="btn btn09 bg-red font13 mar-l2 commit" />
+  </p>
+</div>
+
+<div class="hei44"></div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/core/customer_indexBuy.js"></script><!--公用底部JS-->
+<script type="text/javascript" src="/chinese/mobile/js/core/orderCommon.js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部JS-->
+<script src="/chinese/mobile/js/banner.js"></script><!--焦点图-->
+</body>
+</html>

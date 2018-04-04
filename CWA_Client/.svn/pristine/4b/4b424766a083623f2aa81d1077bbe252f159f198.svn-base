@@ -1,0 +1,135 @@
+package com.cwa.client.utils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Properties;
+
+ 
+
+
+public class GobalProperties {
+
+	/** 密码  */
+	private String goldwin_pwd_key;
+
+	
+	/** 配置文件中的密码 */
+	public static final String GOLDWIN_PWD_KEY= "goldwin_pwd_key";
+	
+	
+	/** 操作对象. */
+	private static GobalProperties gobalConfig;
+	/** 属性文件对象. */
+	private Properties properties;
+	
+	
+	/**
+	 * 获取config对象.
+	 * 
+	 * @return
+	 */
+	public static GobalProperties getGobalConfig() {
+		if (null == gobalConfig) {
+			try {
+				synchronized(GobalProperties.class){
+					gobalConfig=new GobalProperties();
+				}
+			} catch (Exception e) {
+				 e.printStackTrace();
+			}
+		}
+		return gobalConfig;
+	}
+	
+	/**
+	 * 从properties文件加载
+	 * 
+	 * @param filepath  包含文件名的目录.
+	 */
+	public void loadPropertiesFromPath(String filepath) {
+		try {
+			//filepath="D:/stream-config.properties";
+			if (filepath!=null&&!"".equals(filepath)) {
+				File file = new File(filepath);
+				InputStream in = null;
+				if (file.exists()) {
+					try {
+						in = new FileInputStream(file);
+						BufferedReader bf = new BufferedReader(
+								new InputStreamReader(in, "utf-8"));
+						properties = new Properties();
+						properties.load(bf);
+						loadProperties(properties);
+						LogWriteUtil.getSingleton().writeLog("", filepath+"Properties load success ", Constant.LOGLEVEL_INFO, GobalProperties.class);
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						if (null != in) {
+							try {
+								in.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				} else {
+					// 由于此时可能还没有完成LOG的加载，因此采用标准输出来打印日志信息
+					LogWriteUtil.getSingleton().writeLog("", filepath+" file path is not find ", Constant.LOGLEVEL_INFO, GobalProperties.class);
+				}
+			} else {
+				LogWriteUtil.getSingleton().writeLog("",  " file path is null ", Constant.LOGLEVEL_INFO, GobalProperties.class);
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	/**
+	 * 根据传入的 {@link #load(java.util.Properties)}对象设置配置参数
+	 * 
+	 * @param pro
+	 */
+	public void loadProperties(Properties pro) {
+		try {
+			String value = null;
+			value = pro.getProperty("goldwin_pwd_key");
+			if (value!=null&&!"".equals(value)) {
+				this.goldwin_pwd_key=value.trim();
+				LogWriteUtil.getSingleton().writeLog("",  " goldwin_pwd_key has load ", Constant.LOGLEVEL_INFO, GobalProperties.class);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	public String getValueByKey(String key){
+		String value = null;
+		try {
+			value = properties.getProperty(key);
+			if (value!=null&&!"".equals(value)) {
+				value=value.trim();
+			}
+		} catch (Exception e) {
+			 e.printStackTrace();
+		}
+		return value;
+	}
+	
+	public String getGoldwin_pwd_key() {
+		return goldwin_pwd_key;
+	}
+
+	public void setGoldwin_pwd_key(String goldwin_pwd_key) {
+		this.goldwin_pwd_key = goldwin_pwd_key;
+	}
+	
+}

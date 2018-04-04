@@ -1,0 +1,177 @@
+package com.cwa.client.dao;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
+
+import com.cwa.client.dto.OrderDto;
+import com.cwa.client.model.Tb_Order;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+/**
+ * 查询广告信息数据层
+ */
+public class AdvertiseOrderDao extends BaseDao<Tb_Order, OrderDto> implements Constant{
+
+private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 批量生成订单
+	 * @param batchInsertOrder 生成订单数据
+	 * @return
+	 */
+	public int[] batchInsertOrder(final List<Object[]> batchInsertOrder)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"INSERT INTO tb_order(SERIAL_NUMBER,DEVICE_ID,ORDER_STATUS,vedio_id,ACCOUNT_ID,ACCOUNT_IP,COMMIT_TIME,PAY_TYPE,PLAY_BEGIN_TIME,PLAY_END_TIME,SHOP_NAME,TOTAL_PRICE,PRICE,RESULT,ADVERTISER_ID,old_total_price,total_day_number,order_type,file_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	 				batchInsertOrder);
+			
+			
+			
+			/*updateCounts = jdbcTemplate.batchUpdate(
+	 				"INSERT INTO tb_order(SERIAL_NUMBER,DEVICE_ID,ORDER_STATUS,vedio_id,ACCOUNT_ID,ACCOUNT_IP,COMMIT_TIME,PAY_TYPE,PLAY_BEGIN_TIME,PLAY_END_TIME,SHOP_NAME,TOTAL_PRICE,PRICE,RESULT,ADVERTISER_ID,old_total_price,total_day_number) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	 				new BatchPreparedStatementSetter() {
+		        @Override
+		        public void setValues(PreparedStatement ps, int i) throws SQLException {
+		            Object[] args = batchInsertOrder.get(i);
+		            ps.setString(1, (String) args[0]);
+		            ps.setString(2, (String) args[1]);
+		            ps.setString(3, (String) args[2]);
+		        }
+
+		        @Override
+		        public int getBatchSize() {
+		            return 0;
+		        }
+		    });*/
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	/**
+	 * 批量删除订单
+	 * @param batchInsertOrder 批量删除订单
+	 * @return
+	 */
+	public int[] batchDeleteOrder(List<Object[]> batchDeleteOrder)throws Exception {
+		int[] updateCounts=null; 
+		try {
+			updateCounts = jdbcTemplate.batchUpdate(
+	 				"delete from tb_order where SERIAL_NUMBER=?",
+	 				batchDeleteOrder);
+		} catch (Exception e) {
+			 throw e;
+		}
+		return updateCounts;
+	}
+	
+	public void updateOrderVedio(String orderNo,Integer vedioId){
+		String sql="update tb_order set vedio_id=?,order_status=3 where SERIAL_NUMBER=?";
+		this.jdbcTemplate.update(sql,vedioId,orderNo);
+		logWriteUtil.writeLog("", "update order vedio_id success!", LOGLEVEL_INFO, AdvertiseOrderDao.class);
+	}
+	
+	public List<OrderDto> queryTimeoutOrder(){
+		String sql="select o.id,o.serial_number,o.device_id,o.order_type,o.order_status,o.account_id,o.commit_time,o.play_end_time,o.shop_name,o.advertiser_id,d.begin_time,d.end_time,d.play_date play_begin_time from tb_order o,tb_order_detail d where o.SERIAL_NUMBER=d.SERIAL_NUMBER and order_status=1 and unix_timestamp(now())-unix_timestamp(o.COMMIT_TIME)>300";
+		RowMapper<OrderDto> rowmapper= BeanPropertyRowMapper.newInstance(OrderDto.class);
+		List<OrderDto> list = this.jdbcTemplate.query(sql, rowmapper);
+		logWriteUtil.writeLog("", "queryTimeoutOrder success! listSize:"+list.size(), LOGLEVEL_INFO, AdvertiseOrderDao.class);
+		return list;
+	}
+	
+	public List<Tb_Order> queryOrderByOrderNo(String orderNo){
+		String sql="select * from tb_order where 1=1 and order_status=1 ";
+		String[] strArr = orderNo.split(",");
+		logWriteUtil.writeLog("", "orderNo:"+orderNo+"==strArr:"+strArr.length, LOGLEVEL_INFO, AdvertiseOrderDao.class);
+		for (int i = 0; i < strArr.length; i++) {
+			if(i==0){
+				sql+="and serial_number in(?";
+			}else{
+				sql+=",?";
+			}
+			if(i==strArr.length-1){
+				sql+=")";
+			}
+		}
+		RowMapper<Tb_Order> rowmapper= BeanPropertyRowMapper.newInstance(Tb_Order.class);
+		List<Tb_Order> list = this.jdbcTemplate.query(sql, rowmapper,strArr);
+		logWriteUtil.writeLog("", "queryTimeoutOrder success! listSize:"+list.size()+"==sql:"+sql, LOGLEVEL_INFO, AdvertiseOrderDao.class);
+		return list;
+	}
+
+	//支付批量修改订单状态
+	public void batchUpdate(List<Object[]> objList) {
+		String sql="update tb_order set order_status=2,pay_type=? where SERIAL_NUMBER=?";
+		int[] batchUpdate = this.jdbcTemplate.batchUpdate(sql, objList);
+		logWriteUtil.writeLog("", "update order status success! updateLength:"+batchUpdate.length, LOGLEVEL_INFO, AdvertiseOrderDao.class);
+	}
+	
+	//支付批量修改订单状态
+	public void updateOrderType(String orderNo) {
+		String sql="update tb_order set order_type=3 where SERIAL_NUMBER=?";
+		this.jdbcTemplate.update(sql, orderNo);
+	}
+	
+	//批量插入支付订单和广告订单关系
+	public void batchInsertNumber(List<Object[]> objList) {
+		String sql="insert into tb_order_number(DEPOSIT_NUMBER,SERIAL_NUMBER) values(?,?)";
+		int[] batchUpdate = this.jdbcTemplate.batchUpdate(sql, objList);
+		logWriteUtil.writeLog("", "update order status success! updateLength:"+batchUpdate.length, LOGLEVEL_INFO, AdvertiseOrderDao.class);
+	}
+	/**
+	 * 查询所有订单
+	 * @param param
+	 * @return
+	 */
+	public List<Tb_Order> queryAllOrder(OrderDto param){
+		Integer pageNo = param.getPageNo();// 显示的页码
+		Integer pageSize = param.getPageSize();// 每页显示的数量
+		List<Object> params = null;
+		StringBuffer sql = new StringBuffer(
+				"SELECT A.ID,A.SERIAL_NUMBER,A.DEVICE_ID,A.ACCOUNT_ID,A.COMMIT_TIME,A.SHOP_NAME,A.TOTAL_PRICE,A.PRICE FROM TB_ORDER A WHERE A.ORDER_STATUS=4 ORDER BY A.COMMIT_TIME DESC ");
+		// 判断是否分页
+		if(pageNo!=null&&pageNo!=0&&pageSize!=null&&pageSize!=0){
+			params = new ArrayList<Object>();
+			sql.append("LIMIT ?,? ");
+			params.add((pageNo-1)*pageSize);
+			params.add(pageSize);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "sql:"+sql+";params:"+params, LOGLEVEL_INFO, AdvertiseOrderDao.class);
+		List<Tb_Order> list = null;
+		try {
+			if(params.size()>0){
+				list = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(Tb_Order.class),params.toArray());
+			}else{
+				list = this.jdbcTemplate.query(sql.toString(), BeanPropertyRowMapper.newInstance(Tb_Order.class));
+			}
+		} catch (Exception e) {
+			list = new ArrayList<Tb_Order>();
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_DBQUERY, "exception:"+e.getMessage(), LOGLEVEL_ERROR, AdvertiseOrderDao.class);
+		}
+		logWriteUtil.writeLog(LOGTYPE_DBQUERY, "size:"+list.size(), LOGLEVEL_INFO, AdvertiseOrderDao.class);
+		return list;
+	}
+	
+	public Tb_Order queryOrderBySerialNum(String orderId)throws Exception{
+		  Tb_Order order=null;
+		 try {
+				   String sql="select * from tb_order where SERIAL_NUMBER=?";
+				   RowMapper<Tb_Order> rowMapper = BeanPropertyRowMapper.newInstance(Tb_Order.class);
+				   order=getJdbcTemplate().queryForObject(sql, rowMapper,orderId);
+			} catch (Exception e) {
+				order=null;
+				throw e;
+			}
+			   return order;
+	}
+}

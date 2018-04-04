@@ -1,0 +1,85 @@
+var chineseError=["绑卡成功,正在前往出金页面...","信息填写不完整","手机号格式错误","卡号错误","签约姓名为2-20个字符","证件号码有误"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+$(function(){
+	$("#headerTitle").text("提现绑卡");
+	currError=currErrorArray(chineseError,englishError,twError);
+	initAddr();//加载省市区
+	// 提交按钮
+	submit();
+})
+
+/**
+ * 提交按钮
+ */
+function submit(){
+	$('#submit').on('click',function(){
+		disabledBtn("submit");//禁用提交按钮
+		var accountType=$(".accountType").val();
+		var cardType=$(".cardType").val();
+		var papersType=$(".papersType").val();
+		var bankCardName=$(".bankCardName").val();
+		var papersCode=$(".papersCode").val();
+		var mobile=$(".mobile").val();
+		var bankCardCode=$(".bankCardCode").val();
+		var openAccountBankName=$(".openAccountBankName").val();
+		var province=$(".province option:selected").text();
+		var city=$(".city option:selected").text();
+		var branchName=$(".branchName").val();
+      
+		if(bankCardName==""||papersCode==""||mobile==""||bankCardCode==""||branchName==""||province.indexOf("请选择")>=0||city.indexOf("请选择")>=0){
+			showJudegTip('fail',currError[1]);
+			startBtn("submit");
+			return;
+		}
+		if(bankCardName.length>20||bankCardName.length<2){//签约姓名
+			showJudegTip('fail',currError[4]);
+			startBtn("submit");
+			return;
+		}
+		/*if(validateIdCard(papersCode)){//证件号码 判断是否是身份证
+			showJudegTip('fail',currError[5]);
+			startBtn("submit");
+			return;
+		}*/
+		if(!REG_MOBILE.test(mobile)){//手机号码
+			showJudegTip('fail',currError[2]);
+			startBtn("submit");
+			return;
+		}
+		if(!checkCard(bankCardCode)){//银行卡号
+			showJudegTip('fail',currError[3]);
+			startBtn("submit");
+			return;
+		}
+		
+		var obj={
+			account_type:accountType,
+			card_type:cardType,
+			papers_type:papersType,
+			bank_card_name:bankCardName,
+			papers_code:papersCode,
+			mobile:mobile,
+			bank_card_code:bankCardCode,
+			open_account_bank_name:openAccountBankName,
+			bank_code:province+","+city,
+			branch_name:branchName,
+		}
+		// 发送请求
+		jsonAjax('/'+language+'/AD/bankCard.do',obj,
+		function(res){
+			var msg = res.msg;
+			if(msg!='10000'){
+				showJudegTip('fail',msg);
+				startBtn("submit");
+			}else{
+				showJudegTip('success',currError[0]);
+				setTimeout(function(){
+					window.location.href="chuj.html";
+				},3000);
+			}
+		},function(){startBtn("submit");});
+	});
+}
+

@@ -1,0 +1,21 @@
+package com.cwa.client.web;
+
+ 
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+ 
+/**
+ * 
+ * 不需要session过滤的请求，放入此controller
+ * 譬如：第三方异步通知
+ * @author javateam
+ *
+ */
+@Controller
+@RequestMapping("/user/withoutsession/")
+public class WithoutSessionController extends BaseController<GobalRespParameter>{
+
+	 
+}

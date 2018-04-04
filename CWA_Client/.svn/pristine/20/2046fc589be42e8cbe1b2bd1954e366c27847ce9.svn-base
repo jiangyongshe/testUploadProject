@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script src="/chinese/mobile/js/commonRel.js"></script>
+<link rel="stylesheet" href="/chinese/mobile/css/mlogin.css">
+</head>
+
+<body>
+<div class="header-bt pos-r font14 text-c">
+  <a href="javascript:;" onclick="javascript:history.back(-1);" title="返回" class="pos-a dis-in fanhui"><i class="fa fa-2x fa-angle-left" aria-hidden="true"></i></a>
+  <span>注册</span>
+</div>
+
+<div class="login login2 font12 pad-t10">
+  <div class="pos-r mar-t10 registerType">
+    <label class="radio dis-in"><input type="radio" name="radio" id="" checked value="1" ><i>✓</i> 广告主注册</label>
+    <label class="radio dis-in pad-l20"><input type="radio" name="radio" id="" value="2" ><i>✓</i> 合作商注册</label>
+  </div>
+
+  <div class="pos-r mar-t20">
+    <span class="pos-a pos-a login-tb col-999">手机号码</span>
+    <input type="text" class="wenb01 pad-l70 mobile" placeholder="请输入手机号" />
+  </div>
+    
+  <div class="pos-r mar-t10">
+    <span class="pos-a pos-a login-tb col-999">验证码</span>
+    <input type="text" class="wenb01 pad-l70 validCode" placeholder="请输入手机验证码" />
+    <input id="getValidCode" class="btn btn04 bg-blue pos-a login-yzm" type="button" value="获取验证码" />
+    <input id="getValidCode1" class="btn btn04 bg-blue pos-a login-yzm" type="button" value="" />
+  </div>
+        
+  <div class="pos-r mar-t10">
+    <span class="pos-a pos-a login-tb col-999">设置密码</span>
+    <input type="password" class="wenb01 pad-l70 passWord" placeholder="请输入密码" />
+  </div>
+    
+  <div class="pos-r mar-t10">
+    <span class="pos-a pos-a login-tb col-999">确认密码</span>
+    <input type="password" class="wenb01 pad-l70 passWord1" placeholder="请确认密码" />
+  </div>
+    
+  <div class="pos-r mar-t10">
+    <span class="pos-a pos-a login-tb col-999">邀请码</span>
+    <input type="text" class="wenb01 pad-l70 inviteCode" placeholder="请输入邀请码" />
+  </div>
+      
+  <div class="pad-t10 text-c yellow tishi01 error"></div>
+    
+  <div class="pad-t20">
+    <input id="registerNow" name="" type="button" value="立即注册" class="btn btn03 bg-blue font14 width100" />
+  </div>
+  
+  <div class="pad-t10 text-r">
+    已有账号，<a href="login.html" class="yellow">立即登录</a>
+  </div>
+</div>
+<script type="text/javascript" src="/chinese/mobile/js/core/register.js"></script>
+</body>
+</html>

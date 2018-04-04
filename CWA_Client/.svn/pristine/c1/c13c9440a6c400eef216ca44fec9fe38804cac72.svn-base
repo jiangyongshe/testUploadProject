@@ -1,0 +1,43 @@
+$(function(){
+	// 初始化
+	var init = {
+		// 成交速递初始页码
+		newestOrderPageNo:1,
+		// 成交速递每页显示的数量
+		newestOrderPageSize:10,
+		// 初始化成交速递的数据
+		loadingNewestOrder:function(){
+			jsonAjax('/'+language+'/user/queryNewestOrder.do',{pageNo:this.newestOrderPageNo,pageSize:this.newestOrderPageSize},
+			function(data){
+				// 清空数据
+				$('#newestOrder').empty();
+				if(data){
+					var newestOrderHTML = '';
+					for(var i=0;i<data.length;++i){
+						newestOrderHTML += ''+
+										   '<li>'+
+										   	   '<a>'+
+										           '<i class="fa fa-angle-double-right col-999" aria-hidden="true"></i>'+
+										           '用户<span class="red">'+data[i].account_id+'</span>在'+data[i].shop_name+
+										           '成交<span class="red">'+formatNumber(data[i].total_price,2,1)+'元</span>'+
+										           '订单'+
+										        '</a>'+
+										   '</li>';
+					}
+					$('#newestOrder').html(newestOrderHTML);
+				}
+			},function(){});
+		},
+		// 绑定页面图片放大事件
+		bindImgBig:function(){
+			$('.p7').find('img').on('click',function(){
+				var cloneImg = this.cloneNode(true);
+				cloneImg.style.height = '300px';
+				$(this).parents('li').find('.a1>img').remove();
+				$(this).parents('li').find('.a1').prepend(cloneImg);
+			});
+		}
+	}
+	init.loadingNewestOrder();
+	init.bindImgBig();
+})

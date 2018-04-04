@@ -1,0 +1,40 @@
+var page=1,beginTime,endTime,count=9;
+
+$(function(){
+	loadHistoryAdvertise({pageNo:page,pageSize:count});//加载广告商品
+	})
+//加载用户视频播放历史记录
+function loadHistoryAdvertise(obj){
+	obj.beginTime = beginTime;
+	obj.endTime = endTime;
+	// 清空数据和页码
+	$('#cPageTurn').empty();
+	$("#tableInfo tr").not("#tableHeader").remove();
+	jsonAjax("/"+language+"/customer/queryVedioPlayHistory.do",obj,function(res){
+		if(res.data.list.length>0){
+			var data=res.data,html="";
+			for (var i = 0; i < data.list.length; i++) {
+				var dto=data.list[i];
+				html+='<tr>';
+				html+='  <td>'+((Number(obj.pageNo)-1)*Number(count)+i+1)+'</td>';
+				html+='  <td>'+dto.device_id+'</td>';
+				html+='  <td>'+dto.shopName+'</td>';
+				html+='  <td>'+dto.vedio_name+'</td>';
+				html+='  <td>'+dto.beginTime+'</td>';
+				html+='  <td>'+dto.endTime+'</td>';
+				html+='</tr>';
+			}
+			$("#tableHeader").after(html);//展示列表数据
+			pageNumber(data.totalRecords,obj,loadHistoryAdvertise,count,'c');
+		}
+	},function(){},"get");
+}
+
+function search(){
+	beginTime=$(".beginTime").val(),endTime=$(".endTime").val();
+	loadHistoryAdvertise({
+		pageNo:page,
+		pageSize:count
+	});
+}
+

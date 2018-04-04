@@ -1,0 +1,108 @@
+$(function(){
+	// 绑定获取验证码按钮
+	sendVerification();
+	// 发送请求按钮
+	updateMobileBtn();
+	// 修改按钮
+	modifyMobileBtn();
+})
+
+/**
+ * 修改按钮
+ * @returns
+ */
+function modifyMobileBtn(){
+	$('#modifyMobile').on('click',function(){
+		var verificationDisabled = $('#verification').hasClass('disabled');
+		if(!verificationDisabled){
+			$('#verification').addClass('disabled');
+			$('#verification').removeAttr('placeholder');
+		}else{
+			$('#verification').removeClass('disabled');
+			$('#verification').attr('placeholder','发送至尾号'+userMobile+'的手机');
+		}
+		var verificationBtnDisabled = $('#verificationBtn').hasClass('disabled');
+		if(!verificationBtnDisabled){
+			$('#verificationBtn').addClass('disabled');
+		}else{
+			$('#verificationBtn').removeClass('disabled');
+		}
+		var mobileDisabled = $('#mobile').hasClass('disabled');
+		if(!mobileDisabled){
+			$('#mobile').addClass('disabled');
+			$('#mobile').removeAttr('placeholder');
+		}else{
+			$('#mobile').removeClass('disabled');
+			$('#mobile').attr('placeholder','请输入新的手机号');
+		}
+		var updateMobileDisabled = $('#updateMobile').hasClass('disabled');
+		if(!updateMobileDisabled){
+			$('#updateMobile').addClass('disabled');
+		}else{
+			$('#updateMobile').removeClass('disabled');
+		}
+		
+	});
+}
+
+/**
+ * 绑定获取验证码按钮
+ * @returns
+ */
+function sendVerification(){
+	$('#verificationBtn').on('click',function(){
+		// 发送请求
+		jsonAjax('/'+language+'/user/getMobileVerificationForUpdateMobile.do',{},
+		function(res){
+			var msg = res.msg;
+			if(msg=='10000'||msg=='60001'){
+				var tip = res.data.split('-')[0];
+				var time = Number(res.data.split('-')[1]);
+				// 提示
+				showJudegTip('success','',tip);
+				if(time>=0){
+					$('#verificationBtn').removeClass('bg-green').val(time--);
+				}
+				// 启动倒计时
+				interval = setInterval(function() {
+					if(time<0){
+						$('#verificationBtn').addClass('bg-green').val('获取验证码');
+						clearInterval(interval);
+						return;
+					}
+					$('#verificationBtn').removeClass('bg-green').val(time--);
+				}, 1000);
+			}else{
+				// 提示
+				showJudegTip('fail','',tip);
+			}
+		},function(){});
+	});
+} 
+
+/**
+ * 发送请求按钮
+ * @returns
+ */
+function updateMobileBtn(){
+	$('#updateMobile').on('click',function(){
+		// 发送请求
+		jsonAjax('/'+language+'/user/updateMobile.do',{mobile:$('#mobile').val(),verification:$('#verification').val()},
+		function(res){
+			var msg = res.msg;
+			var status = res.success;
+			if(status){
+				// 提示
+				showJudegTip('success','',msg);
+				// 清空数据
+				$('#mobile').val('');
+				$('#verification').val('');
+				$('#verificationBtn').addClass('bg-green').val('获取验证码');
+				clearInterval(interval);
+			}else{
+				// 提示
+				showJudegTip('fail','',msg);
+			}
+		},function(){});
+	});
+}

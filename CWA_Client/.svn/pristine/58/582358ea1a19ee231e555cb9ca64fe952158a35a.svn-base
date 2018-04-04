@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播共享广告新媒体</title>
+<link rel="shortcut icon" href="/chinese/mobile/images/logo.ico">
+<link rel="stylesheet" href="/chinese/mobile/css/font-awesome.min.css">
+<link rel="stylesheet" href="/chinese/mobile/css/public.css">
+<link rel="stylesheet" href="/chinese/mobile/css/global.css">
+<link rel="stylesheet" href="/chinese/mobile/css/mescroll.css">
+<script src="/chinese/mobile/js/jquery.min.js"></script>
+<script src="/chinese/mobile/js/banner.js"></script><!--焦点图-->
+<script src="/chinese/mobile/js/news.js"></script><!--消息公告-->
+</head>
+
+
+<body class="body2">
+<!-- <div id="mescroll" class="mescroll"> -->
+<div id="wrapper" class="mescroll mescroll1">
+		<div id="scroller">
+<header class="header">
+  <p class="logo2 pos-a"><i class="fa fa-map-marker pad-r5" aria-hidden="true"></i><span class="currCity"></span></p>
+  <!-- <a href="tfgg.html" class="search">请输入广告屏编号或店铺名称</a> 
+  <i class="fa fa-search pos-a col-fff font16" aria-hidden="true"></i>-->
+</header>
+
+<!--图片轮播开始-->
+<div id="slideBox" class="slideBox">
+	<div class="bd">
+		<ul>
+			<li><a class="pic" href="#"><img src="/chinese/mobile/images/banner01.jpg"/></a></li>
+			<li><a class="pic" href="#"><img src="/chinese/mobile/images/banner03.jpg"/></a></li>
+		</ul>
+	</div>
+	<div class="hd sc">
+		<ul>
+        </ul>
+	</div>
+</div>
+<script type="text/javascript">
+	TouchSlide({ 
+		slideCell:"#slideBox",
+		titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+		mainCell:".bd ul", 
+		effect:"leftLoop", 
+		autoPage:true,//自动分页
+		autoPlay:true //自动播放
+	});
+</script>
+
+<div class="box font12">
+  <b class="news-bt"><i class="fa fa-volume-up pad-r5" aria-hidden="true"></i>翔云动态 |</b>
+  <div class="t_news">
+    <ul class="news_li">
+       <li><span class="fl">广告投放低至每天5元</span><span class="fl"><img src="/chinese/mobile/images/rlqz.png" height="19" /><img src="/chinese/mobile/images/rlqz.png" height="19" /><img src="/chinese/mobile/images/rlqz.png" height="19" /></span></li>
+       </ul>
+    <ul class="swap"></ul>
+  </div>
+</div>
+<div class="ggdp-home font12">
+  <ul>
+    <li>
+    
+      <h3 class="font16 green">
+        <span>热门广告位</span>
+        <!-- <a href="tfgg.html" class="fr green font12"></a> -->
+      </h3>
+      <div class="index-sea clear" id="addressMenu">
+        <dl class="searchEv">
+          <dd>
+            <select name="province" class="xlb21 width100">
+           <!--  <option value="">请选择</option>
+            <option value="440000" data-code="440000">广东省</option> -->
+            </select>
+          </dd>
+        
+          <dd>
+            <select name="city" class="xlb21 width100">
+            </select>
+          </dd>
+          
+          <dd>
+            <select name="area" class="xlb21 width100">
+            </select>
+          </dd>
+        
+          <dd>
+            <select name="town" class="xlb21">
+            </select>
+          </dd>
+        
+          <dd>
+            <select name="" class="xlb21 width100 deviceIndustry">
+                <option value="">行业</option>
+			    <option value="1">超市便利店</option>
+			    <option value="2">餐饮</option>
+			    <option value="3">奶茶店</option>
+			    <option value="4">药店</option>
+			    <option value="5">娱乐休闲</option>
+			    <option value="6">美容院</option>
+			    <option value="7">地产中介</option>
+			    <option value="8">美容美发</option>
+			    <option value="9">婚纱摄影</option>
+			    <option value="10">面包店</option>
+			    <option value="11">培训机构</option>
+			    <option value="12">服饰</option>
+			    <option value="0">其它</option>
+            </select>
+          </dd>
+       </dl>
+      </div>
+      <dl class="ggdp-tj" id="dataList" style="min-height:300px">
+      </dl>
+    </li>
+  </ul>
+</div>
+			<div id="pullUp" style="display: none;">
+				<span class="pullUpIcon"></span> 
+				<span class="pullUpLabel">Pull up to refresh...</span>
+			</div>
+		</div>
+	</div>
+<script src="/chinese/mobile/js/globalVar.js"></script>
+<script src="/js/videoImgUrl.js"></script>
+<script src="/chinese/mobile/js/common.js"></script>
+<script src="/chinese/mobile/js/jquery.citys.js"></script><!-- 省市区街道 -->
+<script src="/chinese/mobile/js/commonScrollRel.js"></script><!--通用上拉滚动引用-->
+<script src="https://int.dpool.sina.com.cn/iplookup/iplookup.php?format=js"></script>
+<script src="/chinese/mobile/js/footer.js"></script><!--公用底部菜单-->
+<script type="text/javascript" src="/chinese/mobile/js/core/customer_index.js"></script>
+
+</body>
+</html>

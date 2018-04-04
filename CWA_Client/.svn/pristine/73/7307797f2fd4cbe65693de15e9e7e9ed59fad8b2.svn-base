@@ -1,0 +1,373 @@
+package com.cwa.client.service;
+
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dao.ADCommissionDao;
+import com.cwa.client.dao.AdvertiserCommReportDao;
+import com.cwa.client.dao.ClientInOutMoneyDao;
+import com.cwa.client.dao.CustomerCommReportDao;
+import com.cwa.client.dao.CustomerCommissionDao;
+import com.cwa.client.dto.AdvertiserCommissionDto;
+import com.cwa.client.dto.ClientInOutMoneyDto;
+import com.cwa.client.dto.CustomerCommissionDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.model.Tb_client_in_out_money;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.DateUtils;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.Tools;
+import com.cwa.client.utils.UniqId;
+import com.cwa.client.web.ADCapitalController;
+import com.cwa.client.web.BaseController;
+import com.cwa.client.web.GobalRespParameter;
+
+/**
+ * 出金逻辑
+ * @author HZK
+ */
+@Service
+public class WithdrawService extends BaseController<GobalRespParameter> implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton() ;
+	
+	@Resource
+	private SystemService systemService;
+	
+	@Resource
+	private ClientInOutMoneyDao clientInOutMoneyDao;
+	
+	@Resource
+	private ADCommissionDao adCommissionDao;
+	
+	@Resource
+	private CustomerCommissionDao customerCommissionDao;
+	
+	@Resource
+	private AdvertiserCommReportDao advertiserCommReportDao;
+	
+	@Resource
+	private CustomerCommReportDao customerCommReportDao;
+	
+	/**
+	 * 出金
+	 * @param req
+	 * @param res
+	 * @param userType 用户类型
+	 * @throws Exception
+	 */
+	public void withdraw(HttpServletRequest req, HttpServletResponse res,String userType) throws Exception{
+		// 返回的消息对象
+		RuturnMessageDto rt = new RuturnMessageDto();
+		// 语言包
+		RequestContext reqCt= new RequestContext(req);
+		// session 数据
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_SERVICE, "User "+userName+" withdraw .", LOGLEVEL_INFO, ADCapitalController.class);
+		
+		/**********************判断广告商(客户)能否出金 start*******************/
+		boolean withdrawLimit = judgeWithdrawLimit(userType);
+		if(!withdrawLimit){
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Commission type "+(userType.equals(USERTYPE_CUSTOMER)?"customer":"customer&&advertiser")+" withdraw limit.", LOGLEVEL_INFO, ADCapitalController.class);
+			rt.setMsg(reqCt.getMessage("withdraw.tip.limit"));
+			writeJSON(res, rt);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_SERVICE, "Commission type "+(userType.equals(USERTYPE_CUSTOMER)?"customer":"customer&&advertiser")+" withdraw not limit.", LOGLEVEL_INFO, ADCapitalController.class);
+		/**********************判断广告商(客户)能否出金 end*******************/
+		
+		/**********************判断是否在出金时间 start*******************/
+		// 获取出金开始时间
+		String withdrawBeginTime = systemService.getKeyByValue(SYSTEM_KEY_WITHDRAW_BEGIN_TIME);
+		// 获取出金结束时间
+		String withdrawEndTime = systemService.getKeyByValue(SYSTEM_KEY_WITHDRAW_END_TIME);
+		// 获取当前时间
+		Calendar calendar = Calendar.getInstance();
+		StringBuffer nowSb = new StringBuffer("");
+		nowSb.append(calendar.get(Calendar.HOUR_OF_DAY));
+		nowSb.append(":");
+		nowSb.append(calendar.get(Calendar.MINUTE));
+		String now = nowSb.toString();
+		// 不在出金时间范围内
+		if(time_to_sec(now) < time_to_sec(withdrawBeginTime) || time_to_sec(now) > time_to_sec(withdrawEndTime)){
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Not withdraw time,now time is "+now +",withdraw is "+withdrawBeginTime+"-"+withdrawEndTime+".", LOGLEVEL_INFO, WithdrawService.class);
+			rt.setMsg(reqCt.getMessage("withdraw.tip.notSection")+withdrawBeginTime+"-"+withdrawEndTime);
+			writeJSON(res, rt);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_SERVICE, "Now time is "+now+",withdraw time is "+withdrawBeginTime+"-"+withdrawEndTime+".", LOGLEVEL_INFO, WithdrawService.class);
+		/**********************判断是否在出金时间 end*******************/
+		
+		/*********************出金金额是否合法 start*******************/
+		// 获取出金金额
+		String withdrawMoney = ServletRequestUtils.getStringParameter(req, "withdrawMoney","");
+		// 判断金额格式是否合法
+		if(!Pattern.matches(REG_POSITIVE_REALNUMBER, withdrawMoney)){
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Withdraw('"+withdrawMoney+"') money format mistake", LOGLEVEL_INFO, WithdrawService.class);
+			rt.setMsg(reqCt.getMessage("withdraw.tip.moneyFormatMistake"));
+			writeJSON(res, rt);
+			return;
+		}
+		withdrawMoney = withdrawMoney.replace("+","");
+		logWriteUtil.writeLog(LOGTYPE_SERVICE, "Withdraw money is "+withdrawMoney, LOGLEVEL_INFO, WithdrawService.class);
+		/*********************出金金额是否合法 end*******************/
+		
+		/*********************判断是否有那么金额可出 start*******************/
+		Object sessionUser = req.getSession().getAttribute(SESSION_USER);
+		Field accountIdField = sessionUser.getClass().getDeclaredField("account_id");
+		accountIdField.setAccessible(true);
+		String accountId = accountIdField.get(sessionUser).toString();
+		BigDecimal allowMoney = getAvailableComm(userType,accountId);
+		if(subtract(allowMoney.toString(),withdrawMoney)<0){
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Allow withdraw is "+allowMoney+",less than withdrawMoney("+withdrawMoney+").", LOGLEVEL_INFO, WithdrawService.class);
+			rt.setMsg(reqCt.getMessage("withdraw.tip.notAllowCommission"));
+			writeJSON(res, rt);
+			return;
+		}
+		/*********************判断是否有那么金额可出 end*******************/
+		
+		/*********************判断出金金额是否小于最小金额 start*******************/
+		// 获取出金最小金额
+		String withdrawMinMoney = systemService.getKeyByValue(SYSTEM_KEY_MIN_WITHDRAW_VALUE);
+		// 判断是否小于最小金额
+		if(subtract(withdrawMoney,withdrawMinMoney)<0){
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Withdraw money less than "+withdrawMinMoney+".", LOGLEVEL_INFO, WithdrawService.class);
+			rt.setMsg(reqCt.getMessage("withdraw.tip.minMoney")+withdrawMinMoney);
+			writeJSON(res, rt);
+			return;
+		}
+		/*********************判断出金金额是否小于最小金额 end*******************/
+		
+		/*********************判断出金金额是否大于最大金额 start*******************/
+		// 获取出金最大金额
+		String withdrawMaxMoney = systemService.getKeyByValue(SYSTEM_KEY_MAX_WITHDRAW_VALUE);
+		// 判断是否大于最大金额
+		if(subtract(withdrawMoney,withdrawMaxMoney)>0){
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Withdraw money greater than "+withdrawMaxMoney+".", LOGLEVEL_INFO, WithdrawService.class);
+			rt.setMsg(reqCt.getMessage("withdraw.tip.maxMoney")+withdrawMaxMoney);
+			writeJSON(res, rt);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_SERVICE, "withdraw max money is "+withdrawMaxMoney+",withdraw mmin money is "+withdrawMinMoney+".", LOGLEVEL_INFO, WithdrawService.class);
+		/*********************判断出金金额是否大于最大金额 end*******************/
+		
+		try {
+			// 修改广告商(用户)的佣金数据,扣除相应金额
+			Field idField = sessionUser.getClass().getDeclaredField("id");
+			idField.setAccessible(true);
+			Integer id = Integer.parseInt(idField.get(sessionUser).toString());
+			updateCommission(userType,accountId,id,Double.parseDouble("-"+withdrawMoney));
+			// 创建订单
+			String payType = WECHATTPAY1_TYPE;// TODO 订单支付方式
+			String currDate=DateUtils.TimestamptoString(new Timestamp(System.currentTimeMillis()),DateUtils.DATE_FORMAT_YYYYMMDDHHMMSSSSS);
+			String serialNumber=currDate+id+COMMISSION_WITHDRAW+payType+UniqId.getallSymbolArrayStr(2); 
+			//String serialNumber = Tools.createSerialNumber(accountId.substring(accountId.length()-4),Tools.changeUserType(userType),payType);
+			Tb_client_in_out_money tb_client_in_out_money = new Tb_client_in_out_money();
+			tb_client_in_out_money.setSerial_number(serialNumber);
+			tb_client_in_out_money.setAccount_id(accountId);
+			tb_client_in_out_money.setIn_out_type(IN_OUT_TYPE_WITHDRAW);
+			tb_client_in_out_money.setAmount(new BigDecimal(withdrawMoney));
+			tb_client_in_out_money.setOpen_date(new Timestamp(new Date().getTime()));
+			tb_client_in_out_money.setCommit_account_id(accountId);
+			tb_client_in_out_money.setRemark("出金");
+			tb_client_in_out_money.setPay_type(payType);
+			tb_client_in_out_money.setAccount_type(Integer.parseInt(Tools.changeUserType(userType)));
+			// 获取审核阈值
+			String auditThresholdValue = getAuditThresholdValue(userType);
+			// 判断是否大于审核阈值
+			if(subtract(withdrawMoney,auditThresholdValue)>=0){
+				tb_client_in_out_money.setStatus(SERIAL_STATUS_APPLY);
+				clientInOutMoneyDao.insert(tb_client_in_out_money);
+				logWriteUtil.writeLog(LOGTYPE_SERVICE, "Create serial success,serial number is '"+serialNumber+"'.", LOGLEVEL_INFO, WithdrawService.class);
+				rt.setMsg(reqCt.getMessage("withdraw.tip.withdrawApply"));
+				rt.setSuccess(true);
+				writeJSON(res, rt);
+				return;
+			}
+			tb_client_in_out_money.setStatus(SERIAL_STATUS_PROCESSING);
+			clientInOutMoneyDao.insert(tb_client_in_out_money);
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "Create serial success,serial number is '"+serialNumber+"'.", LOGLEVEL_INFO, WithdrawService.class);
+			
+			// 调用接口进行出金 TODO
+			
+			/*************出金成功 start********************/
+			// 订单状态修改为通过
+			withdrawSuccess(serialNumber);
+			rt.setMsg(reqCt.getMessage("withdraw.tip.withdrawSuccess"));
+			rt.setSuccess(true);
+			writeJSON(res, rt);
+			/*************出金成功 end********************/
+			
+			/*************出金失败 start********************/
+			/*
+			withdrawFail(userType, accountId, id, withdrawMoney, serialNumber);
+			rt.setMsg(reqCt.getMessage("withdraw.tip.withdrawFail"));
+			rt.setSuccess(false);
+			writeJSON(res, rt);
+			*/
+			/*************出金失败 end********************/
+		} catch (Exception e) {
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_SERVICE, "withdraw exception "+e.getMessage()+".", LOGLEVEL_INFO, WithdrawService.class);
+			rt.setMsg(reqCt.getMessage("system.exception"));
+			rt.setSuccess(false);
+			writeJSON(res, rt);
+		}
+	}
+	
+	/**
+	 * 根据用户类型判断出金是否受限制
+	 * @param userType
+	 * @return
+	 */
+	public boolean judgeWithdrawLimit(String userType){
+		boolean limit = false;
+		if(userType.equals(USERTYPE_CUSTOMER)){
+			// 获取客户能否出金
+			String customerWithdrawLimit = systemService.getKeyByValue(SYSTEM_KEY_CUSTOMER_WITHDRAW_LIMIT);
+			if(customerWithdrawLimit.equals("1")){
+				limit = true;
+			}
+		}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			// 获取广告商能否出金
+			String adWithdrawLimit = systemService.getKeyByValue(SYSTEM_KEY_ADVERTISER_WITHDRAW_LIMIT);
+			if(adWithdrawLimit.equals("1")){
+				limit = true;
+			}
+		}
+		return limit;
+	}
+	
+	/**
+	 * 时:分 转为秒
+	 * @param str
+	 * @return
+	 */
+	public long time_to_sec(String str){
+		return Long.parseLong(str.split(":")[0])*3600+Long.parseLong(str.split(":")[1])*60;
+	}
+	
+	/**
+	 * 计算参数一减去参数二数的差
+	 * @param str1
+	 * @param str2
+	 * @return
+	 */
+	public double subtract(String str1,String str2){
+		return new BigDecimal(str1).subtract(new BigDecimal(str2)).doubleValue();
+	}
+	
+	/**
+	 * 根据用户类型获和登录账号取可出佣金
+	 * @param userType
+	 * @param accountId
+	 * @return
+	 */
+	public BigDecimal getAvailableComm(String userType,String accountId){
+		BigDecimal money = null;
+		if(userType.equals(USERTYPE_CUSTOMER)){
+			// 获取客户可出金额
+			CustomerCommissionDto customerCommissionDto = customerCommissionDao.queryCustomerCommission(accountId);
+			if(customerCommissionDto==null){
+				money = new BigDecimal(0);
+			}else{
+				money = customerCommissionDto.getAvailable_comm();
+			}
+		}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			// 获取广告商可出金额
+			AdvertiserCommissionDto advertiserCommissionDto = adCommissionDao.queryADCommission(accountId);
+			if(advertiserCommissionDto==null){
+				money = new BigDecimal(0);
+			}else{
+				money = advertiserCommissionDto.getAvailable_comm();
+			}
+		}
+		return money;
+	}
+	
+	/**
+	 * 根据用户类型获取审核阈值
+	 * @param userType
+	 * @return
+	 */
+	public String getAuditThresholdValue(String userType){
+		String thresholdValue = null;
+		if(userType.equals(USERTYPE_CUSTOMER)){
+			// 获取客户出金审核金额阈值
+			String customerWithdrawAuditThresholdValue = systemService.getKeyByValue(SYSTEM_KEY_CUSTOMER_WITHDRAW_THRESHOLD);
+			thresholdValue = customerWithdrawAuditThresholdValue;
+		}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			// 获取广告商出金审核金额阈值
+			String adWithdrawAuditThresholdValue = systemService.getKeyByValue(SYSTEM_KEY_ADVERTISERS_WITHDRAW_THRESHOLD);
+			thresholdValue = adWithdrawAuditThresholdValue;
+		}
+		return thresholdValue;
+	}
+
+	/**
+	 * 根据用户类型修改佣金数据
+	 * @param userType 用户类型
+	 * @param accountId 登录账号
+	 * @param userId 广告商（客户）Id
+	 * @param money 金额
+	 * @throws Exception
+	 */
+	public void updateCommission(String userType,String accountId,Integer userId,Double money) throws Exception{
+		if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+			// 修改佣金表
+			adCommissionDao.updateADCommission(accountId, money);
+			// 修改佣金报表
+			advertiserCommReportDao.updateWithdraw(accountId, money*(-1));
+		}else if(userType.equals(USERTYPE_CUSTOMER)){
+			// 修改佣金表
+			customerCommissionDao.updateCustomerCommission(accountId, money);
+			// 修改佣金报表
+			customerCommReportDao.updateWithdraw(accountId, money*(-1));
+		}
+	}
+	
+	/**
+	 * 出金成功，修改订单状态为通过
+	 * @param serialNumber 订单号
+	 * @throws Exception
+	 */
+	public void withdrawSuccess(String serialNumber) throws Exception{
+		ClientInOutMoneyDto whereParam = new ClientInOutMoneyDto();
+		whereParam.setSerial_number(serialNumber);
+		Tb_client_in_out_money updateParam = new Tb_client_in_out_money();
+		updateParam.setStatus(SERIAL_STATUS_PASS);
+		clientInOutMoneyDao.updateData(whereParam, updateParam);
+	}
+	
+	/**
+	 * 出金失败，将金额返回去，修改订单状态为需冲正
+	 * @param userType
+	 * @param accountId
+	 * @param id
+	 * @param withdrawMoney
+	 * @param serialNumber
+	 * @throws Exception
+	 */
+	public void withdrawFail(String userType,String accountId,Integer id,String withdrawMoney,String serialNumber) throws Exception{
+		// 将金额返回去
+		updateCommission(userType,accountId,id,Double.parseDouble(withdrawMoney));
+		// 订单状态修改为需冲正
+		ClientInOutMoneyDto whereParam = new ClientInOutMoneyDto();
+		whereParam.setSerial_number(serialNumber);
+		Tb_client_in_out_money updateParam = new Tb_client_in_out_money();
+		updateParam.setStatus(SERIAL_STATUS_NEEDREVERSAL);
+		clientInOutMoneyDao.updateData(whereParam, updateParam);
+	}
+}

@@ -1,0 +1,152 @@
+package com.cwa.client.utils;
+
+import java.net.URLEncoder;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.cwa.client.redis.UserRedis;
+
+import net.sf.json.JSONObject;
+
+/**
+ * 微信相关
+ */
+public class WeChatUtil implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	private static final String ACCESS_TOKEN = "accessToken";
+	
+	private static final String JSAPI_TICKET = "jsapiTicket";
+	
+	/**
+	 * 获取ACCESS_TOKEN URL
+	 */
+	private static final String API_ACCESS_TOKEN = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";
+	
+	/**
+	 * 获取JSAPI_TICKET URL
+	 */
+	private static final String API_JSAPI_TICKET = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=jsapi";
+	
+	/**
+	 * 5400秒，90分钟
+	 */
+	private static final int SECONDS_5400 = 5400;
+	
+	/**
+	 * 获取openId的code的URL
+	 * @param req
+	 * @throws Exception
+	 */
+	public static String getOpenIdCodeUrl(HttpServletRequest req) throws Exception{
+		
+		logWriteUtil.writeLog(LOGTYPE_UTIL, "Getting openId code url...", LOGLEVEL_INFO, WeChatUtil.class);
+		
+		// 接收用于获取openId的code的URL
+		String receiveCodeUrl = req.getScheme()+"://"+req.getServerName()+"/chinese/exclude/weChat/openIdCallBack.do";
+		
+		// 获取openId的code的URL
+		String getOpenIdCodeUrl = API_OPENID_CODE.replace("APPID", APPID).replace("REDIRECT_URI", URLEncoder.encode(receiveCodeUrl, "UTF-8"));
+
+		logWriteUtil.writeLog(LOGTYPE_UTIL, "openId code url is"+getOpenIdCodeUrl, LOGLEVEL_INFO, WeChatUtil.class);
+		
+		return getOpenIdCodeUrl;
+	}
+	
+	/**
+	 * 获取openId的code的URL
+	 * @param req
+	 * @throws Exception
+	 */
+	public static String getAutoLoginOpenIdCodeUrl(HttpServletRequest req) throws Exception{
+		
+		logWriteUtil.writeLog(LOGTYPE_UTIL, "Getting openId code url...", LOGLEVEL_INFO, WeChatUtil.class);
+		
+		// 接收用于获取openId的code的URL
+		String receiveCodeUrl = req.getScheme()+"://"+req.getServerName()+"/chinese/exclude/weChat/autoLoginOpenIdCallBack.do";
+		
+		// 获取openId的code的URL
+		String getOpenIdCodeUrl = API_OPENID_CODE.replace("APPID", APPID).replace("REDIRECT_URI", URLEncoder.encode(receiveCodeUrl, "UTF-8"));
+
+		logWriteUtil.writeLog(LOGTYPE_UTIL, "openId code url is"+getOpenIdCodeUrl, LOGLEVEL_INFO, WeChatUtil.class);
+		
+		return getOpenIdCodeUrl;
+	}
+	
+	/**
+	 * 获取jsapi_ticket
+	 * jsapi_ticket是公众号用于调用微信JS接口的临时票据
+	 * @param userRedis
+	 * @return
+	 */
+	public static synchronized String getJsapiTicket(UserRedis userRedis){
+		
+		logWriteUtil.writeLog(LOGTYPE_UTIL, "Getting jsapi ticket...", LOGLEVEL_INFO, WeChatUtil.class);
+		
+		// 判断REDIS是否存在
+		Object  jsapiTicket = userRedis.getObj(JSAPI_TICKET);
+		
+		// 如果不存在则调用API获取
+		if(jsapiTicket == null || jsapiTicket.toString().equals("")){
+
+			logWriteUtil.writeLog(LOGTYPE_UTIL, "Jsapi ticket lose efficacy", LOGLEVEL_INFO, WeChatUtil.class);
+			
+			String resText = HttpUtil.sendGet(API_JSAPI_TICKET.replace("ACCESS_TOKEN", WeChatUtil.getAccessToken(userRedis)));
+			
+			logWriteUtil.writeLog(LOGTYPE_UTIL, "Response text is "+resText, LOGLEVEL_INFO, WeChatUtil.class);
+			
+			JSONObject json = JSONObject.fromObject(resText);
+			
+			jsapiTicket = json.getString("ticket");
+			
+			// 刷新REDIS的JSAPI TICKET
+			userRedis.set(JSAPI_TICKET, jsapiTicket, SECONDS_5400);
+
+			logWriteUtil.writeLog(LOGTYPE_UTIL, "Refresh redis jsapi ticket success", LOGLEVEL_INFO, WeChatUtil.class);
+		}
+		
+		
+		logWriteUtil.writeLog(LOGTYPE_UTIL, "Jsapi ticket is "+jsapiTicket, LOGLEVEL_INFO, WeChatUtil.class);
+		
+		return jsapiTicket.toString();
+	}
+	
+	/**
+	 * 获取access_token 
+	 * access_token是公众号的全局唯一接口调用凭据，公众号调用各接口时都需使用access_token
+	 * @param userRedis
+	 * @return
+	 */
+	public static synchronized String getAccessToken(UserRedis userRedis){
+		
+		logWriteUtil.writeLog(LOGTYPE_UTIL, "Getting access token...", LOGLEVEL_INFO, WeChatUtil.class);
+		
+		// 判断REDIS是否存在
+		Object  accessToken = userRedis.getObj(ACCESS_TOKEN);
+		
+		// 如果不存在则调用API获取
+		if(accessToken == null || accessToken.toString().equals("")){
+
+			logWriteUtil.writeLog(LOGTYPE_UTIL, "Access token lose efficacy", LOGLEVEL_INFO, WeChatUtil.class);
+			
+			String resText = HttpUtil.sendGet(API_ACCESS_TOKEN.replace("APPID", APPID).replace("APPSECRET", APPSECRET));
+			
+			logWriteUtil.writeLog(LOGTYPE_UTIL, "Response text is "+resText, LOGLEVEL_INFO, WeChatUtil.class);
+			
+			JSONObject json = JSONObject.fromObject(resText);
+			
+			accessToken = json.getString("access_token");
+			
+			// 刷新REDIS的Access token
+			userRedis.set(ACCESS_TOKEN, accessToken, SECONDS_5400);
+
+			logWriteUtil.writeLog(LOGTYPE_UTIL, "Refresh redis access token success", LOGLEVEL_INFO, WeChatUtil.class);
+		}
+		
+		logWriteUtil.writeLog(LOGTYPE_UTIL, "Access token is "+accessToken, LOGLEVEL_INFO, WeChatUtil.class);
+		
+		return accessToken.toString();
+	}
+	
+}

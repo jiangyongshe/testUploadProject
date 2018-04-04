@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+    
+   <!--右侧内容-->
+    <div class="right bg-ff">
+      <h2 class="clear font18 pad-b10 bor-b">翔云宝</h2>
+      
+      <p class="font14 pad-t30">
+        <span class="dis-in">账户余额：<span class="font20 yellow">50000.00</span> 元</span>
+        
+        <span class="dis-in pad-l20 mar-l15">
+          <a href="qianbao-ch.html" class="btn btn03 bg-red font14" />充值</a>
+          <a href="qianbao-ti.html" class="btn btn03 bg-yellow font14 mar-l10" />提现</a>
+        </span>
+      </p>
+      
+      <div class="mar-t30 pad-t20 bor-t">
+       <div class="font14 rmgg-ss">
+         <span class="pad-l10">
+           <label class="checkbox"><input type="checkbox" name="checkbox" id=""><i>✓</i> 全选</label>
+           <input name="" type="button" value="删除" class="btn btn03 bg-999 font14 mar-l15" />
+         </span>
+         
+         <span class="fr">
+           类型<select name="" class="font14 xlb06 mar-l10">
+             <option>全部</option>
+             <option>充值</option>
+             <option>提现</option>
+           </select>
+         </span>
+       </div>
+      
+       <div class="rmgg-table rmgg-table2 font13">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th width="42"></th>
+    <th>序号</th>
+    <th>时间</th>
+    <th>类型</th>
+    <th>金额（元）</th>
+    <th>状态</th>
+    <th>操作</th>
+  </tr>
+  <tr>
+    <td><label class="checkbox"><input type="checkbox" name="checkbox" id="" checked><i>✓</i></label></td>
+    <td>1</td>
+    <td>2017-10-13</td>
+    <td>充值</td>
+    <td>500.00元</td>
+    <td>交易成功</td>
+    <td><a href="#"><i class="fa fa-trash-o" aria-hidden="true"></i> 删除</a></td>
+  </tr>
+  <tr>
+    <td><label class="checkbox"><input type="checkbox" name="checkbox" id=""><i>✓</i></label></td>
+    <td>2</td>
+    <td>2017-09-26</td>
+    <td>提现</td>
+    <td>1000.00元</td>
+    <td>审核中</td>
+    <td><a href="#"><i class="fa fa-trash-o" aria-hidden="true"></i> 删除</a></td>
+  </tr>
+</table>
+       </div>
+      
+       <div class="fenye font14 text-c">
+        <a href="#" class="btn-fy"><i class="fa fa-chevron-left"></i></a>
+        <a href="#" class="btn-fy active">1</a>
+        <a href="#" class="btn-fy">2</a>
+        <a href="#" class="btn-fy">3</a>
+        <a href="#" class="btn-fy">...</a>
+        <a href="#" class="btn-fy">9</a>
+        <a href="#" class="btn-fy">10</a>
+        <a href="#" class="btn-fy"><i class="fa fa-chevron-right"></i></a>
+       </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

@@ -1,0 +1,68 @@
+var	html='<script src="'+languageMobile+'/js/iscroll.js"></script>\n';// 全局变量
+ 	
+document.write(html);
+
+/********** ISCROLL ****************/
+
+var myScroll,
+pullUpEl, 
+pullUpOffset,
+generatedCount = 0,
+pageNo=1;
+
+function pullUpAction () {
+	pageNo ++;
+	if(isData){
+		upCallback();
+	}
+	myScroll.refresh();
+}
+
+function loaded() {
+pullUpEl = document.getElementById('pullUp');	
+pullUpOffset = 10;
+myScroll = new iScroll('wrapper', {
+	useTransition: true,
+	onRefresh: function () {
+		if (pullUpEl.className.match('loading')) {
+			pullUpEl.className = '';
+			pullUpEl.querySelector('.pullUpLabel').innerHTML = 'Pull up to load more...';
+		}
+		
+		document.getElementById("pullUp").style.display="none";
+	},
+	onScrollMove: function () {
+		if ( this.scrollerH < this.wrapperH && this.y < (this.minScrollY-pullUpOffset) || this.scrollerH > this.wrapperH && this.y < (this.maxScrollY - pullUpOffset) ) {
+			document.getElementById("pullUp").style.display="";
+			pullUpEl.className = 'flip';
+			pullUpEl.querySelector('.pullUpLabel').innerHTML = '';
+		} 
+		 if (this.scrollerH < this.wrapperH && this.y > (this.minScrollY-pullUpOffset) && pullUpEl.className.match('flip') || this.scrollerH > this.wrapperH && this.y > (this.maxScrollY - pullUpOffset) && pullUpEl.className.match('flip')) {
+			document.getElementById("pullUp").style.display="none";
+			pullUpEl.className = '';
+			pullUpEl.querySelector('.pullUpLabel').innerHTML = 'Pull up to load more...';
+		}
+	},
+	onScrollEnd: function () {
+		 if (pullUpEl.className.match('flip')) {
+			pullUpEl.className = 'loading';
+			pullUpEl.querySelector('.pullUpLabel').innerHTML = 'Loading...';		
+			pullUpAction();	// Execute custom function (ajax call?)
+		}
+	}
+});
+
+}
+
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+document.addEventListener('DOMContentLoaded', function () { setTimeout(loaded, 200); }, false);
+
+
+function scrollCommonMethod(){
+	turnoff('tc-eject');
+	hideEmplyDiv();
+	$("#dataList").html("");
+	pageNo=0;
+	pullUpAction();//初始化下拉控件
+}

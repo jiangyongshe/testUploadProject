@@ -1,0 +1,11 @@
+package com.cwa.client.dao;
+
+import com.cwa.client.dto.FileManagerDto;
+import com.cwa.client.model.Tb_file_manager;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+public class FileManagerDao extends BaseDao<Tb_file_manager, FileManagerDto> implements Constant {
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+}

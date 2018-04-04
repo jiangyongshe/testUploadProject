@@ -1,0 +1,130 @@
+package com.cwa.client.service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.stereotype.Service;
+
+import com.cwa.client.dao.AdvertiseInfoDao;
+import com.cwa.client.dto.AdvertiseInfoDto;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.PageModel;
+import com.cwa.client.utils.PageVars;
+import com.cwa.client.utils.RegUtil;
+
+@Service
+public class AdvertiseInfoService implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private AdvertiseInfoDao advertiseInfoDao;
+	
+	public PageModel<AdvertiseInfoDto> getPageModel(AdvertiseInfoDto dto){
+    	PageVars pvNm=this.getVars(dto,1);
+		PageVars pvlist=this.getVars(dto,0);
+		PageModel<AdvertiseInfoDto> pm=advertiseInfoDao.getPageModel(pvlist.getSbstr().toString(), pvNm.getSbstr().toString(),pvNm.getParams(),dto.getPageNo(),dto.getPageSize());
+		return pm;
+    	
+    }
+    
+    
+    private PageVars getVars(AdvertiseInfoDto dto,int type){
+    	 PageVars pv=new PageVars();
+		 StringBuffer sbStr=new StringBuffer(); 
+		 HashMap<String,Object> params = new HashMap<String,Object>();
+    	 if(type==1){
+    		 sbStr.append("select count(1) as cnum  from tb_advertiser A,tb_advertiser_device B,tb_device_vedio_plan C  where A.AUDIT_STATUS=2 and trim(B.device_id)<>'' and C.ad_sell_status=1 and A.id=B.ADVERTISER_ID and B.DEVICE_ID=C.DEVICE_ID ");
+    	 } else {
+    		 sbStr.append("select A.id,B.DEVICE_AD_NAME SHOP_NAME,B.device_code,B.DEVICE_ID,B.DEVICE_ADDRESS MAILING_ADDRESS,C.AD_PRICE ,C.AD_LENGTH,C.PLAY_NUMBER,CONCAT(C.BEGIN_TIME,\"-\",C.END_TIME) as idle_time, "
+    				 +"C.inter_cut_price,C.inter_cut_length,C.inter_cut_number,C.html_price,C.html_length,C.pic_price,C.pic_length,C.inter_cut_html_price,C.inter_cut_html_length,C.inter_cut_pic_price,C.inter_cut_pic_length,"
+    				 +"(SELECT Group_concat(PIC ) FROM tb_advertiser_pic WHERE device_id=B.device_id) pics, "
+    				 +"(SELECT play_number FROM tb_device_vedio_count WHERE device_id=C.device_id and begin_time=C.begin_time and end_time=C.end_time and date_format(play_date,'%Y-%m-%d')=date_format(now(),'%Y-%m-%d') ) toDaySell,"
+    				 + "if(D.id is not null,true,false) ifSubBuy "
+    				 +"from tb_advertiser A inner join tb_advertiser_device B on A.id=B.ADVERTISER_ID "
+    				 + "inner join tb_device_vedio_plan C on B.DEVICE_ID=C.DEVICE_ID "
+    				 + "left join tb_cart D on D.device_id=C.device_id and D.account_id=:account_id where A.AUDIT_STATUS=2 and trim(B.device_id)<>'' and C.ad_sell_status=1");
+    	 }
+    	 params.put("account_id", dto.getAccount_id());
+    	 if(!RegUtil.getUtil().isNull(dto.getMailing_address())){
+    		 if(dto.getMailing_address().split("\\*").length>=4){
+    			 sbStr.append(" and substring_index(B.DEVICE_ADDRESS,\"&\","+1+")=:MAILING_ADDRESS");
+    		 }else{
+    			 sbStr.append(" and substring_index(B.DEVICE_ADDRESS,\"*\","+dto.getMailing_address().split("\\*").length+")=:MAILING_ADDRESS");
+    		 }
+    		 params.put("MAILING_ADDRESS", dto.getMailing_address());
+    	 }     
+    	 if(!RegUtil.getUtil().isNull(dto.getAdName())){
+    		 sbStr.append(" and (B.DEVICE_AD_NAME like CONCAT('%',CONCAT(:adName,'%')) || B.device_code like CONCAT('%',CONCAT(:adName,'%'))) ");
+    		 params.put("adName", dto.getAdName());
+    	 }
+    	 
+    	 if(!RegUtil.getUtil().isNull(dto.getDevice_industry())){
+    		 sbStr.append(" and B.DEVICE_INDUSTRY=:DEVICE_INDUSTRY ");
+    		 params.put("DEVICE_INDUSTRY", dto.getDevice_industry());
+    	 }
+    	      
+    	  if (type!=1) {
+				sbStr.append(" ORDER BY id desc LIMIT " + (dto.getPageNo() - 1) * dto.getPageSize() + "," + dto.getPageSize());
+		  }
+    	  System.out.println("sql:"+sbStr.toString());
+    	  pv.setSbstr(sbStr);
+	      pv.setParams(params);
+		 
+		 return pv;
+    }	
+  
+    public List<AdvertiseInfoDto> findAdvertiseInfoByAdvertiserId(Map<String,String[]> map,boolean isFor) throws Exception{
+    	 String [] isInterCut= map.get("isInterCut");
+    	 String ids=map.get("checkAdvertiseId")[0],deviceIds=map.get("deviceId")[0],timeInterval=map.get("timeInterval")[0],singAdvertiseBuyCount=map.get("buyCount")==null?"":map.get("buyCount")[0];
+    	 List<AdvertiseInfoDto> list = advertiseInfoDao.queryAdvertiseInfo(ids,deviceIds,!RegUtil.getUtil().isNull(isInterCut)&&"2".equals(isInterCut[0])?isInterCut[0]:null);
+    	 List<AdvertiseInfoDto> list1=new ArrayList<>();
+    	 //筛选相同设备时段不同的数据
+    	 String[] strs = timeInterval.split(",");
+    	 String[] strs1 = ids.split(",");
+    	 String[] strs2 = deviceIds.split(",");
+    	 String[] strs3 = singAdvertiseBuyCount.split(",");
+    	 for (int i = 0; i < strs.length; i++) {
+    		 for (AdvertiseInfoDto dto : list) {
+				if((dto.getId()+"").equals(strs1[i])&&dto.getDevice_id().equals(strs2[i])&&dto.getIdle_time().equals(strs[i])){
+					int count=1;
+					if(isFor){
+						if(!RegUtil.getUtil().isNull(strs3[i])&&RegUtil.getUtil().isNumber(strs3[i])&&Integer.parseInt(strs3[i])<=SING_ADVERTISE_PORDER_COUNT){
+							count=Integer.parseInt(strs3[i]);
+						}
+					}
+					for (int j = 0; j < count; j++) {
+						AdvertiseInfoDto newDto=new AdvertiseInfoDto();
+						dto.setDisCount(new BigDecimal(1));//不为空
+						dto.setUnified_serial_number((j<10?"0":"")+j);
+						BeanUtils.copyProperties(newDto, dto);
+						newDto.setBuyCount(count);
+						list1.add(newDto);
+					}
+					/*if(list1.contains(dto)){
+						AdvertiseInfoDto newDto=new AdvertiseInfoDto();
+						dto.setDisCount(new BigDecimal(1));//不为空
+						BeanUtils.copyProperties(newDto, dto);
+						list1.add(newDto);
+					}else{
+						list1.add(dto);
+					}*/
+					break;
+				}
+    		 }
+    	 }
+    	 logWriteUtil.writeLog("", "listSize:"+list.size()+"===list1Size:"+list1.size(), LOGLEVEL_INFO, AdvertiseInfoService.class);
+    	 return list1;
+    }
+    
+    public List<AdvertiseInfoDto> queryAdvertiseLength(String orderNo) throws Exception{
+    	return advertiseInfoDao.queryAdvertiseLength(orderNo);
+    }
+}

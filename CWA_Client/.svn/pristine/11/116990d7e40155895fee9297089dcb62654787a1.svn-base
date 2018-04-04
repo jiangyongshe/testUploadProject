@@ -1,0 +1,253 @@
+var chineseError=["修改成功","信息填写不完整","电子邮箱格式错误","手机号格式错误","两次输入密码不一致"];
+var englishError=["register success"];
+var twError=[];
+var currError=[];
+var addr="",currPage=1,totolPage=1,checkAdvertiseId=""/*选中广告id*/,checkTimes=""/*选中时间间隔*/,selectTimePeriod/*时间间隔*/,minDate/*最小选择日期*/,maxDate//最大选择日期;
+var mescroll;
+var disCount="1";
+
+/*上拉加载的回调 page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+function upCallback(page){
+	//联网加载数据
+	console.log("page.num="+page.num);
+	loadAdvertiseInfo(page.num, page.size);
+}
+
+
+$(function(){
+	currError=currErrorArray(chineseError,englishError,twError);
+	initAddr();//加载省市区
+	$(".advArea select").bind("change",function(){//省市区条件查询改变
+		if($(this).attr("name")!="province"){//选择省份不做查询
+			var province=$(".advArea select[name='province']").find("option:selected").text();
+			var city=$(".advArea select[name='city']").find("option:selected").text();
+			var area=$(".advArea select[name='area']").find("option:selected").text();
+			var town=$(".advArea select[name='town']").find("option:selected").text();
+			if($(this).attr("name")=="city"){//改变城市
+				if(city.indexOf("请选择")>0){
+					addr=province;
+				}else{
+					addr=province+"*"+city;
+				}
+			}else if($(this).attr("name")=="area"){//改变地区
+				if(area.indexOf("请选择")>0){
+					addr=province+"*"+city;
+				}else{
+					addr=province+"*"+city+"*"+area;
+				}
+			}else if($(this).attr("name")=="town"){//改变街道
+				if(town.indexOf("请选择")>0){
+					addr=province+"*"+city+"*"+area;
+				}else{
+					addr=province+"*"+city+"*"+area+"*"+town;
+				}
+				
+			}
+			$("#tableHeader tr:gt(0)").remove();
+			loadAdvertiseInfo();//加载
+			checkSum();
+		}
+	})
+	
+	//创建MeScroll对象
+	mescroll = initMeScroll("mescroll", {
+		down:{
+			auto:false,//是否在初始化完毕之后自动执行下拉回调callback; 默认true
+			callback:function(){
+				
+			}//下拉刷新的回调
+		},
+		up: {
+			auto:true,//初始化完毕,是否自动触发上拉加载的回调
+			isBoth: false, //上拉加载时,如果滑动到列表顶部是否可以同时触发下拉刷新;默认false,两者不可同时触发; 这里为了演示改为true,不必等列表加载完毕才可下拉;
+			callback: upCallback //上拉加载的回调
+		}
+	});
+	
+	//禁止PC浏览器拖拽图片,避免与下拉刷新冲突;如果仅在移动端使用,可删除此代码
+	document.ondragstart=function() {return false;}
+	
+	$(document).on("change",".endDate",function(){//时间选择变化时间
+		var startDate=$(this).parent().find(".startDate").val();//开始时间
+		var endDate=$(this).val();//结束时间
+		if(endDate<minDate||endDate>maxDate||endDate<startDate){//判断时间选择是否正确
+			showJudegTip("fail","错误提示","日期选择有误！")
+			$(this).val("");
+			return;
+		}
+		if(startDate!=""){
+			startDate=new Date(startDate);
+			endDate=new Date(endDate);
+			selectTimePeriod=parseInt((endDate-startDate)/1000/60/60/24)+1;//得到时间相差的天数
+			var sumPrice=$(this).parents("tr").find(".sumPrice");
+			sumPrice.text(eval(sumPrice.attr("data-price")*selectTimePeriod));//汇总
+			checkSum();
+		}
+	})
+	$(document).on("change",".startDate",function(){//时间选择变化时间
+		var startDate=$(this).val();//开始时间
+		var endDate=$(this).parent().find(".endDate").val();//结束时间
+		if(startDate<minDate||startDate>maxDate||(endDate<startDate&&endDate!="")){//判断时间选择是否正确
+			showJudegTip("fail","错误提示","日期选择有误！")
+			$(this).val("");
+			return;
+		}
+		if(endDate!=""){
+			startDate=new Date(startDate);
+			endDate=new Date(endDate);
+			selectTimePeriod=parseInt((endDate-startDate)/1000/60/60/24)+1;//得到时间相差的天数
+			var sumPrice=$(this).parents("tr").find(".sumPrice");
+			sumPrice.text(eval(sumPrice.attr("data-price")*selectTimePeriod));//汇总
+			checkSum();
+		}
+	})
+	
+	//复选框
+	$(document).on("click","#checkAd",function(){
+		checkSum();//汇总
+	})
+	
+	//加入购物车
+	$(document).on("click",".joinCart",function(){
+		joinCart();//加入购物车
+	})
+	//全选
+	$(document).on("click","#ckAll",function(){
+		$("table tr").find("input[name='checkbox']").prop("checked",this.checked);
+		checkSum();//汇总
+	})
+})
+//加载广告商品
+function loadAdvertiseInfo(pageNo,pageSize){
+	jsonAjax("/"+language+"/customer/queryAdvertiseInfo.do",{pageNo:pageNo,pageSize:pageSize,mailingAddress:addr},function(res){
+		//联网成功的回调,隐藏上拉加载的状态
+		if(res.data==null||res.data==[]){
+			mescroll.endSuccess(0);
+			return;
+		}
+		mescroll.endSuccess(res.data.list.length);//传参:数据的总数; mescroll会自动判断列表如果无任何数据,则提示空;列表无下一页数据,则提示无更多数据;
+		if(res.data!=null&&res.data!=[]){
+			var data=res.data,pageMenu='',date=new Date();
+			disCount=res.msg;
+			date.setDate(date.getDate()+1);
+			minDate=date.format(DATE_FORMAT_YTD);
+			if(eval(date.getMonth()+7)>12){//计算可选择的最大日期
+				maxDate=eval(date.getFullYear()+1)+'-0'+eval(date.getMonth()+7-12)+'-'+date.getDate();
+			}else{
+				if(eval(date.getMonth()+7)<10){
+					maxDate=date.getFullYear()+'-0'+eval(date.getMonth()+7)+'-'+date.getDate();
+				}else{
+					maxDate=date.getFullYear()+'-'+eval(date.getMonth()+7)+'-'+date.getDate();
+				}
+			}
+			for (var i = 0; i < data.list.length; i++) {
+				var dto=data.list[i],html="";
+				html+='  <td><label class="checkbox"><input type="checkbox" data-id="'+dto.id+'" name="checkbox" id="checkAd" ><i>√</i></label></td>';
+				html+='	<td>'+dto.rowNo+'</td>';
+				html+='  <td class="deviceId">'+dto.device_id+'</td>';
+				html+='  <td><span class="red dian-bt" onclick="showShopDetail(\''+dto.shop_name+'\',\''+dto.mailing_address+'\',\''+dto.pics+'\')">'+dto.shop_name+'</span></td>';
+				html+='  <td>'+dto.idle_time+'</td>';
+				html+='  <td>'+dto.ad_length+'秒</td>';
+				html+='  <td>'+dto.play_number+'次</td>';
+				html+='  <td>'+dto.ad_price+'</td>';
+				html+='  <td>';
+				html+='   <input id="" type="date" min="'+date.format(DATE_FORMAT_YTD)+'" max="'+maxDate+'" class="dis-in startDate" style="width:135px" /> - <input id="" type="date" class="dis-in endDate" min="'+date.format(DATE_FORMAT_YTD)+'" max="'+maxDate+'" style="width:135px"/>';
+				html+='  </td>';
+				html+='  <td class="sumPrice" data-price="'+dto.ad_price+'">--</td>';
+				var liDom=document.createElement("tr");
+				liDom.innerHTML=html;
+				document.getElementById("tableHeader").appendChild(liDom);//加在列表的后面,上拉加载
+			}
+			checkSum();
+		}
+	},function(){
+		//联网失败的回调,隐藏上拉加载的状态
+		mescroll.endErr();
+		},"get");
+}
+//汇总
+function checkSum(){
+	var objs=$("table input[type='checkbox']:checked").not("#ckAll");//得到所有选中数据
+	var ckAll=$("table tr").find("input[name='checkbox']:checked");
+	var totalBal=0;
+	checkTimes="",checkAdvertiseId="",deviceIds="";
+	if(ckAll.length==objs.length+1){
+		$("#ckAll")[0].checked=true;
+	}else{
+		$("#ckAll")[0].checked=false;
+	}
+	for (var i = 0; i < objs.length; i++) {
+		var sumPrice=$(objs[i]).parents("tr").find(".sumPrice").text();//汇总
+		if(isNaN(sumPrice)){
+			showJudegTip("fail","错误提示","播放周期有误！(播放周期只能大于当前日期并且在往后半年内)");
+			if(ckAll.length==objs.length+1){
+				ckAll.prop("checked",false);
+			}
+			objs[i].checked=false;
+			return;
+		}
+		totalBal=totalBal+parseInt(sumPrice);
+		checkTimes+=$(objs[i]).parents("tr").find(".startDate").val()+"@"+$(objs[i]).parents("tr").find(".endDate").val()+",";
+		checkAdvertiseId+=$(objs[i]).attr("data-id")+",";
+		deviceIds+=$(objs[i]).parents("tr").find(".deviceId").text()+",";
+	}  
+	if(disCount!="1"&&totalBal!=0){
+		$(".totalBal").text(totalBal+"元  折后价:"+eval(totalBal*disCount)+"元");//计算总金额
+	}else{
+		$(".totalBal").text(eval(totalBal*disCount)+"元");//计算总金额
+	}
+	checkTimes=checkTimes.substring(0,checkTimes.length-1);
+	deviceIds=deviceIds.substring(0,deviceIds.length-1);
+	checkAdvertiseId=checkAdvertiseId.substring(0,checkAdvertiseId.length-1);
+}
+
+function submit(){
+	checkSum();
+	var objs=$("table input[type='checkbox']:checked").not("#ckAll");//得到所有选中数据
+	if(objs.length>0){
+		window.location.href="/"+language+"/customer/queryConfimBuyAdvertiseInfo.do?checkTimes="+checkTimes+"&checkAdvertiseId="+checkAdvertiseId+"&deviceId="+deviceIds;
+	}else{
+		showJudegTip("normal","提示","请选择广告播放时段！");
+	}
+}
+
+//加入购物车
+function joinCart(){
+	checkSum();
+	var objs=$("table input[type='checkbox']:checked").not("#ckAll");//得到所有选中数据
+	if(objs.length>0){
+		jsonAjax("/"+language+"/shoppCart/joinShoppCart.do",{checkTimes:checkTimes,checkAdvertiseId:checkAdvertiseId,deviceId:deviceIds},function(res){
+			if(res.respCode=="10000"){
+				showJudegTip("SUCCESS","加入购物车","加入成功，您可要通过点击 <a href='/"+language+"/forward/shoppCart.do' class='red'>我的购物车</a> 完成支付");
+				//startBtn("commitUpdate");
+			}else{
+				$(".error").html(res.respMessge);//注册回调显示
+				//startBtn("commitUpdate");
+			}
+		},function(){});
+	}else{
+		showJudegTip("normal","提示","请选择广告播放时段！");
+	}
+}
+
+//点击店铺名店铺详情信息
+function showShopDetail(shopName,addr,imgs){
+	$(".shopName").text(shopName);
+	if(addr!=null){
+		var addrList=addr.split("*");
+		if(addrList[0]==addrList[1]){
+			addr=addr.replace(addrList[0],"");
+		}
+	}
+	$(".addrDetail").text(addr.replace(/\*/g,"").replace(/&/g,""));
+	$(".imgs").html("");
+	if(imgs!="null"){
+		var imgList=imgs.split(","),str="";
+		for (var i = 0; i < imgList.length; i++) {
+			str+='<img src="'+imagePath+imgList[i]+'" />';
+		}
+		$(".imgs").html(str);
+	}
+	$("#diandiv").show();
+}
+

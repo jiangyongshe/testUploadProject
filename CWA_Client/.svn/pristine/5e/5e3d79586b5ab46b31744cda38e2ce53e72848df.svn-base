@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>翔云播</title>
+<script type="text/javascript">
+	document.write('<scr'+'ipt type="text/javascript" src="/chinese/mobile/js/commonRel.js"></sc'+'ript>');
+</script>
+<script src="/chinese/mobile/js/top.js"></script><!--返回顶部-->
+</head>
+
+<body>
+
+    <div class="zhifu font12 pad-l20 pad-r20" style="line-height: 1.3rem;">
+       <p class="text-c pad-t30 font14 green"><i class="fa fa-2x fa-check" aria-hidden="true"></i><br />充值成功</p>
+       <p class="text-c pad-t20 font13">充值可能存在网络延迟，请稍等几分钟可到<a href="qianbao.html" class="red font14">翔云余额</a>查看您的余额.</p>
+       
+      <!--  <p class="text-c pad-t30 font14 red"><i class="fa fa-2x fa-remove" aria-hidden="true"></i><br />支付失败</p>
+       <p class="text-c pad-t20 font13">支付宝余额不足，<a href="#" class="red font14">返回继续支付</a></p> -->
+    </div>
+    
+</body>
+</html>

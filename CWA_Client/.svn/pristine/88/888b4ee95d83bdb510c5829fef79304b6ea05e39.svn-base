@@ -1,0 +1,239 @@
+<li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="images/lun01.jpg"/>
+						<div class="rmgg-xx font12">
+							<p class="p1 font16">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+						</div>
+					</div>
+					<div class="a2 text-c font12">
+							<p class="p4 font16">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</span>
+                            </p>
+							<p class="p7">
+                              <img src="images/lun01.jpg"/>
+                              <img src="images/lun02.jpg"/>
+                              <img src="images/lun03.jpg"/>
+                              <img src="images/lun04.jpg"/>
+                              <img src="images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+				<li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="images/lun02.jpg"/>
+						<div class="rmgg-xx font12">
+							<p class="p1 font16">KFC</p>
+							<p class="p2">价格：<span class="font16">800元/月</span></p>
+							<p class="p2">广告时长: <span class="font16">15秒</span></p>
+						</div>
+					</div>
+					<div class="a2 text-c font12">
+							<p class="p4 font16">KFC</p>
+							<p class="p5">地址：广东省深圳市罗湖区火车站广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0002</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>15秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>1000次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>800元/月</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</span>
+                            </p>
+							<p class="p7">
+                              <img src="images/lun01.jpg"/>
+                              <img src="images/lun02.jpg"/>
+                              <img src="images/lun03.jpg"/>
+                              <img src="images/lun04.jpg"/>
+                              <img src="images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="images/lun03.jpg"/>
+						<div class="rmgg-xx font12">
+							<p class="p1 font16">奥尔玛超市</p>
+							<p class="p2">价格：<span class="font16">500元/月</span></p>
+							<p class="p2">广告时长: <span class="font16">10秒</span></p>
+						</div>
+					</div>
+					<div class="a2 text-c font12">
+							<p class="p4 font16">奥尔玛超市</p>
+							<p class="p5">地址：广东省深圳市罗湖区</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0003</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>10秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>398次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>500元/月</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</span>
+                            </p>
+							<p class="p7">
+                              <img src="images/lun01.jpg"/>
+                              <img src="images/lun02.jpg"/>
+                              <img src="images/lun03.jpg"/>
+                              <img src="images/lun04.jpg"/>
+                              <img src="images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                 
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="images/lun05.jpg"/>
+						<div class="rmgg-xx font12">
+							<p class="p1 font16">福田高铁站</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+						</div>
+					</div>
+					<div class="a2 text-c font12">
+							<p class="p4 font16">福田高铁站</p>
+							<p class="p5">地址：广东省深圳市福田区</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0005</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</span>
+                            </p>
+							<p class="p7">
+                              <img src="images/lun01.jpg"/>
+                              <img src="images/lun02.jpg"/>
+                              <img src="images/lun03.jpg"/>
+                              <img src="images/lun04.jpg"/>
+                              <img src="images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="images/lun06.jpg"/>
+						<div class="rmgg-xx font12">
+							<p class="p1 font16">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+						</div>
+					</div>
+					<div class="a2 text-c font12">
+							<p class="p4 font16">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</span>
+                            </p>
+							<p class="p7">
+                              <img src="images/lun01.jpg"/>
+                              <img src="images/lun02.jpg"/>
+                              <img src="images/lun03.jpg"/>
+                              <img src="images/lun04.jpg"/>
+                              <img src="images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="images/lun07.jpg"/>
+						<div class="rmgg-xx font12">
+							<p class="p1 font16">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+						</div>
+					</div>
+					<div class="a2 text-c font12">
+							<p class="p4 font16">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</span>
+                            </p>
+							<p class="p7">
+                              <img src="images/lun01.jpg"/>
+                              <img src="images/lun02.jpg"/>
+                              <img src="images/lun03.jpg"/>
+                              <img src="images/lun04.jpg"/>
+                              <img src="images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+                <li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="images/lun08.jpg"/>
+						<div class="rmgg-xx font12">
+							<p class="p1 font16">天虹商场</p>
+							<p class="p2">价格：<span class="font16">30元/天</span></p>
+							<p class="p2">广告时长: <span class="font16">20秒</span></p>
+						</div>
+					</div>
+					<div class="a2 text-c font12">
+							<p class="p4 font16">天虹商场</p>
+							<p class="p5">地址：广东省深圳市罗湖区金光华广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0001</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>20秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>200次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>30元/天</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</span>
+                            </p>
+							<p class="p7">
+                              <img src="images/lun01.jpg"/>
+                              <img src="images/lun02.jpg"/>
+                              <img src="images/lun03.jpg"/>
+                              <img src="images/lun04.jpg"/>
+                              <img src="images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>
+                
+				<li>
+					<a href="#" class="btn btn01 bg-red pos-a font16 rmgg-goum"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 购买</a>
+                    <div class="a1">
+						<img src="images/lun09.jpg"/>
+						<div class="rmgg-xx font12">
+							<p class="p1 font16">KFC</p>
+							<p class="p2">价格：<span class="font16">800元/月</span></p>
+							<p class="p2">广告时长: <span class="font16">15秒</span></p>
+						</div>
+					</div>
+					<div class="a2 text-c font12">
+							<p class="p4 font16">KFC</p>
+							<p class="p5">地址：广东省深圳市罗湖区火车站广场</p>
+							<p class="p6">
+                              <span class="dis-in"><b class="col-999">设备编号：</b>GGKZQ0002</span>
+                              <span class="dis-in"><b class="col-999">广告时长：</b>15秒</span>
+                              <span class="dis-in"><b class="col-999">播放次数：</b>1000次</span>
+                              <span class="dis-in"><b class="col-999">价格：</b>800元/月</span>
+                              <span class="dis-b"><b class="col-999">空闲时段：</b>19:00:00-20:00:00</span>
+                            </p>
+							<p class="p7">
+                              <img src="images/lun01.jpg"/>
+                              <img src="images/lun02.jpg"/>
+                              <img src="images/lun03.jpg"/>
+                              <img src="images/lun04.jpg"/>
+                              <img src="images/lun05.jpg"/>
+                           </p>
+					</div>
+				</li>

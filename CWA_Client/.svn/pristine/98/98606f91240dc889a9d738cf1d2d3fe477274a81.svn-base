@@ -1,0 +1,197 @@
+package com.cwa.client.web;
+
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.RequestContext;
+
+import com.cwa.client.dao.AdvertiserDao;
+import com.cwa.client.dto.AdDto;
+import com.cwa.client.dto.AdvertiserDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.service.FileService;
+import com.cwa.client.service.UserService;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.cwa.client.utils.Tools;
+
+@Controller
+@RequestMapping("/*/AD/")
+public class ADController extends BaseController<GobalRespParameter> implements Constant{
+	
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	@Resource
+	private AdvertiserDao advertiserDao;
+	
+	@Resource// 普通用户service层
+	private UserService userService;
+	
+	@Resource
+	private FileService fileService;
+	
+	/**
+	 * 查询广告
+	 */
+	@RequestMapping("/query.do")
+	public void query(HttpServletRequest req, HttpServletResponse res,AdDto param) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" query AD .", LOGLEVEL_INFO, ADController.class);
+		AdvertiserDto sessionUser = (AdvertiserDto)req.getSession().getAttribute(SESSION_USER);
+		param.setAdvertiser_id(sessionUser.getId());
+		// 查询并返回数据
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("data", advertiserDao.queryAD(param));
+		map.put("count", advertiserDao.queryADCount(param));// 数据总量
+		writeJSON(res, map);
+	}
+	
+	/**
+	 * 更新用户信息
+	 */
+	@RequestMapping("/updUserInfo.do")
+	public void updateUserInfo(HttpServletRequest req, HttpServletResponse res,AdDto param) throws Exception{
+		userService.updUserInfo(req, res);
+	}
+	
+	/**
+	 * 上传图片(用于“成为广告商”)
+	 * @param req
+	 * @param res
+	 * @param file
+	 * @throws Exception
+	 */
+	@RequestMapping("/uploadADPic.do")
+	public void uploadPicForChangeAD(HttpServletRequest req,HttpServletResponse res,MultipartFile file) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" upload pic .", LOGLEVEL_INFO, ADController.class);
+		RuturnMessageDto rmt = fileService.uploadPicFile(req, file, Tools.readConfig("adPicDir"));
+		writeJSON(res, rmt);
+	}
+	
+	/**
+	 * 加载图片(用于“成为广告商”)
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/loadADPic.do")
+	public void loadADPic(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" load pic .", LOGLEVEL_INFO, ADController.class);
+		fileService.loadPicFile(res, ServletRequestUtils.getStringParameter(req, "filePath",""));
+	}
+	
+	/**
+	 * 成为广告商
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/applyAD.do")
+	public void applyAD(HttpServletRequest req,HttpServletResponse res) throws Exception{
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" apply advertiser .", LOGLEVEL_INFO, ADController.class);
+		// 返回的消息对象
+		RuturnMessageDto rt = new RuturnMessageDto();
+		// 语言包
+		RequestContext reqCt= new RequestContext(req);
+		// 获取前台参数-店铺经营范围
+		String managerScope = ServletRequestUtils.getStringParameter(req,"managerScope","").trim();
+		// 判断是否输入店铺经营范围
+		if("".equals(managerScope)){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store manager scope param is empty.", LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.store.managerScope.empty"));
+			writeJSON(res, rt);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store manager scope param is "+managerScope+".", LOGLEVEL_INFO, ADController.class);
+		// 判断店铺经营范围字符是否过长
+		if(managerScope.length()>20){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store manager scope too long.", LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.store.managerScope.tooLong"));
+			writeJSON(res, rt);
+			return;
+		}
+		// 获取前台参数-设备使用方式
+		String deviceWay = ServletRequestUtils.getStringParameter(req,"deviceWay","").trim();
+		// 判断是否输入设备使用方式
+		if("".equals(deviceWay)){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Device way param is empty.", LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.device.way.nochoose"));
+			writeJSON(res, rt);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Device way param is "+deviceWay+".", LOGLEVEL_INFO, ADController.class);
+		// 判断设备使用方式参数是否合法
+		Integer deviceWayInt = 0;
+		try {
+			deviceWayInt = Integer.parseInt(deviceWay);
+			if(deviceWayInt!=ONE&&deviceWayInt!=TWO&&deviceWayInt!=THREE){
+				logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Device way param is illegality.", LOGLEVEL_INFO, ADController.class);
+				rt.setMsg(reqCt.getMessage("apply.advertiser.tip.device.way.param.illegality"));
+				writeJSON(res, rt);
+				return;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Exception "+e.getMessage(), LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.device.way.param.illegality"));
+			writeJSON(res, rt);
+			return;
+		}
+		// 获取前台参数-店铺名称
+		String storeName = ServletRequestUtils.getStringParameter(req,"storeName","").trim();
+		// 判断是否输入店铺名称
+		if("".equals(storeName)){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store name param is empty.", LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.store.name.epmty"));
+			writeJSON(res, rt);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store name param is "+storeName+".", LOGLEVEL_INFO, ADController.class);
+		// 判断店铺名称字符是否过长
+		if(storeName.length()>40){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store name too long.", LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.store.name.tooLong"));
+			writeJSON(res, rt);
+			return;
+		}
+		// 获取前台参数-店铺详细地址
+		String storeDetailAddr = ServletRequestUtils.getStringParameter(req,"storeDetailAddr","").trim();
+		// 判断是否输入店铺详细地址
+		if("".equals(storeDetailAddr)||storeDetailAddr.split("&").length!=2||storeDetailAddr.split("&")[1].trim().equals("")){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store detail addr param is empty.", LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.store.detailAddr.empty"));
+			writeJSON(res, rt);
+			return;
+		}
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store detail addr is "+storeName+".", LOGLEVEL_INFO, ADController.class);
+		// 判断店铺详细地址字符是否过长
+		if(storeName.length()>80){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store detail addr too long.", LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.store.detailAddr.tooLong"));
+			writeJSON(res, rt);
+			return;
+		}
+		// 获取前台参数-店铺图片路径
+		String filePaths =  ServletRequestUtils.getStringParameter(req,"filePaths","").trim();
+		// 判断是否上传图片
+		if("".equals(filePaths)){
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Store detail addr param is empty.", LOGLEVEL_INFO, ADController.class);
+			rt.setMsg(reqCt.getMessage("apply.advertiser.tip.store.detailAddr.empty"));
+			writeJSON(res, rt);
+			return;
+		}
+		// 获取前台参数-是否同意协议
+		String agreement = ServletRequestUtils.getStringParameter(req,"agreement","").trim();
+		
+	}
+	
+}

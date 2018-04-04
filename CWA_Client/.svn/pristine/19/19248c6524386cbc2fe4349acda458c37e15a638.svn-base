@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Cache-Control" content="no-Cache" />
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" name="viewport" id="viewport" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="keywords" content="">
+<meta name="description" content="" />
+<title>橱窗广告</title>
+<link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/public.css">
+<link rel="stylesheet" href="css/neiye.css">
+<script src="js/jquery.min.js"></script>
+<script src="js/top.js"></script><!--返回顶部-->
+</head>
+
+<body>
+<script src="js/header.js"></script><!--公用头部JS-->
+
+<div class="neiye bg-f9 bor-t">
+  <div class="mar-auto pos-r">
+    <!--左侧菜单-->
+    <script src="js/left1.js"></script>
+
+   <!--右侧内容-->
+    <div class="right bg-ff font14">
+      <h2 class="clear font18 pad-b10 bor-b">推荐好友</h2>
+      
+      <p class="pad-t20">
+        方法一、选中并复制下列链接给您的好友:<br>
+        https://www.baidu.com/
+      </p>
+      
+      <p class="pad-t40">
+        方法二、将下列二维码转发给好友:<br />
+        <img src="images/ewm.jpg" />
+      </p>
+      
+      <p class="pad-t40"><i class="fa fa-share-alt" aria-hidden="true"></i> 分享到</p>
+      
+      <p class="pad-t20 share-icon">
+        <a href="#" class="dis-in"><i class="fa fa-weibo2" aria-hidden="true"></i><br><span class="">新浪微博</span></a>
+        <a href="#" class="dis-in"><i class="fa fa-weixin2" aria-hidden="true"></i><br><span class="">微信好友</span></a>
+        <a href="#" class="dis-in"><i class="fa fa-pengyouquan" aria-hidden="true"></i><br><span class="">朋友圈</span></a>
+        <a href="#" class="dis-in"><i class="fa fa-qq2" aria-hidden="true"></i><br><span class="">QQ好友</span></a>
+        <a href="#" class="dis-in"><i class="fa fa-kongjian" aria-hidden="true"></i><br><span class="">QQ空间</span></a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="js/footer.js"></script><!--公用底部JS-->
+</body>
+</html>

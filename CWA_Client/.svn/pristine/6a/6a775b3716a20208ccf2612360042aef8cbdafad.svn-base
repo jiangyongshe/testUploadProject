@@ -1,0 +1,96 @@
+package com.cwa.client.web.nettytcpsocket;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+
+
+import com.cwa.client.dto.BankServerTcpDto;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+
+
+
+/**
+ * 在线支付请求
+ * @author java team
+ *
+ */
+public class PayApiTcpClient {
+
+	  private BankServerTcpDto bankApiServer;
+      
+	   
+	  public PayApiTcpClient(BankServerTcpDto bankApiServer){
+		  this.bankApiServer=bankApiServer;
+	  }
+	      
+	    /**
+	     * 同步发送并且接收数据
+	     * @param requestData
+	     * @return
+	     */
+		public String send(String requestData) {  
+	    	String receivedString=null;
+	    	InetSocketAddress inetSocketAddress=null;
+	    	SocketChannel  socketChannel=null;
+	        try {  
+	        	 inetSocketAddress = new InetSocketAddress(bankApiServer.getServerIp(), bankApiServer.getServerPort()); 
+	        	 
+	        	 
+	        	 LogWriteUtil.getSingleton().writeLog("", " inetSocketAddress  new success ", Constant.LOGLEVEL_INFO, PayApiTcpClient.class);
+	 			
+	        	 
+	        	 socketChannel = SocketChannel.open(inetSocketAddress);  
+	        	 
+	        	 LogWriteUtil.getSingleton().writeLog("", " inetSocketAddress open success ", Constant.LOGLEVEL_INFO, PayApiTcpClient.class);
+		 			
+	            socketChannel.configureBlocking(false);  
+	            ByteBuffer byteBuffer = ByteBuffer.allocate(requestData.getBytes().length);//分配缓冲区大小   
+	            socketChannel.write(ByteBuffer.wrap(requestData.getBytes()));  
+	            
+	            LogWriteUtil.getSingleton().writeLog("", " socketChannel write success ", Constant.LOGLEVEL_INFO, PayApiTcpClient.class);
+		 		
+	            
+	            while (true) {  
+	                byteBuffer.clear();  
+	                int readBytes = socketChannel.read(byteBuffer);  
+	                if (readBytes > 0) {  
+	                    byteBuffer.flip();  
+	                    receivedString=new String(byteBuffer.array(), 0, readBytes,"UTF-8");
+	                    break;  
+	                }  
+	            }  
+	  
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	            receivedString=null;
+	            
+	            LogWriteUtil.getSingleton().writeLog("", " PayApiTcpClient IOException "+e.getMessage(), Constant.LOGLEVEL_ERROR, PayApiTcpClient.class);
+		 		
+	        } catch (Exception e) {  
+	            e.printStackTrace(); 
+	             
+	            LogWriteUtil.getSingleton().writeLog("", " PayApiTcpClient Exception "+e.getMessage(), Constant.LOGLEVEL_ERROR, PayApiTcpClient.class);
+		 		
+	            receivedString=null;
+	        }finally{
+	        	 if(socketChannel!=null&&(socketChannel.isConnected()||socketChannel.isOpen())){
+	        		try {
+						socketChannel.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+	        	} 
+	        	 
+	        	if(inetSocketAddress!=null){
+	        		inetSocketAddress=null;
+	        	}
+	        }
+	        
+	        LogWriteUtil.getSingleton().writeLog("", " Client received data "+receivedString, Constant.LOGLEVEL_ERROR, PayApiTcpClient.class);
+	 		
+	         return receivedString;
+	    } 
+}

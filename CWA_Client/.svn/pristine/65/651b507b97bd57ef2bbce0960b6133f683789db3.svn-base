@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       classpath:spring-beans-4.3.xsd
+       http://www.springframework.org/schema/context 
+       classpath:spring-context-4.3.xsd
+       http://www.springframework.org/schema/tx 
+       classpath:spring-tx-4.3.xsd
+       http://www.springframework.org/schema/aop
+        classpath:spring-aop-4.3.xsd">
+  
+ 
+  <!-- 常用配置，支付，短信-->
+  
+  <!-- 阿里大于 短信接口 -->
+  <bean id="aliyunPhone" class="com.cwa.client.sendSMS.AliYunSMSBaseDto" >
+       <property name="apiProduct" value="Dysmsapi"></property>
+        <property name="apiDomain">
+         <value>dysmsapi.aliyuncs.com</value>
+       </property>
+       <property name="accessKeyId">
+          <value>LTAI0OtPm3V34rhl</value>
+       </property>
+       <property name="accessKeySecret">
+          <value>9eupK3x6EmlE4QIsJob5Em6vKjQSo9</value>
+       </property>
+       <property name="signName">
+          <value>翔云播</value>
+       </property>
+          <property name="connectTimeOut">
+          <value>15000</value>
+       </property>
+       <property name="readTimeOut">
+          <value>15000</value>
+       </property>
+        <property name="ascClientRegion" value="cn-hangzhou">
+          
+       </property>
+       <!--0=disable,1=enable  -->
+       <property name="isSend" >
+          <value>1</value>
+       </property>
+      <property name="templateCodelist">
+          <list value-type="java.lang.String"> 
+             <value>SMS_114380012</value><!-- reg -->
+            <value>SMS_114390008</value><!-- update pwd -->
+           </list>
+       </property>
+     
+     
+ </bean>
+ 
+ <!-- pay server  -->
+ <bean id="bankApiServer" class="com.cwa.client.dto.BankServerTcpDto" >
+   <property name="serverIp">
+      <value>172.16.16.239</value>
+   </property>
+   <property name="serverPort">
+      <value>55008</value>
+   </property>
+   <property name="charSet">
+      <value>UTF-8</value>
+   </property>
+   <property name="webType">
+      <value>from client</value>
+   </property>
+    <property name="baseUrl">
+      <value>http://www.luckicloud.com</value>
+   </property>
+   <property name="initByteBufferSize">
+      <value>512000</value>
+   </property>
+   <property name="soTimeout">
+      <value>15000</value>
+   </property>
+   <property name="blocking">
+      <value>true</value>
+   </property>
+ </bean>
+
+</beans>

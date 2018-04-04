@@ -1,0 +1,64 @@
+package com.cwa.client.web;
+
+import java.util.HashMap;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import com.cwa.client.dto.AdvertiserDto;
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.utils.Constant;
+import com.cwa.client.utils.LogWriteUtil;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+
+/**
+ * 推荐好友
+ * @author HZK
+ */
+@Controller
+@RequestMapping("/*/recommend/")
+public class RecommendFriendController extends BaseController<GobalRespParameter> implements Constant{
+
+	private static final LogWriteUtil logWriteUtil = LogWriteUtil.getSingleton();
+	
+	/**
+	 * 获取用户的推荐好友二维码
+	 * @param req
+	 * @param res
+	 * @throws Exception
+	 */
+	@RequestMapping("/QR-code.do")
+	public void QR_code(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		// 用户名
+		String userName = req.getSession().getAttribute(SESSION_USER_NAME).toString();
+		logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" get QR-code", LOGLEVEL_INFO, RecommendFriendController.class);
+		try {
+			// 获取用户ID
+			int id = 0;
+			String userType = req.getSession().getAttribute(SESSION_USER_TYPE).toString();
+			Object userObj = req.getSession().getAttribute(SESSION_USER);
+			if(userType.equals(USERTYPE_CUSTOMER)){
+				id = ((CustomerDto)userObj).getId();
+			}else if(userType.equals(USERTYPE_CUSTOMER_ADVERTISER)){
+				id = ((AdvertiserDto)userObj).getId();
+			}
+	        String content = req.getRequestURL().toString().replace("recommend/QR-code.do", "user/reg.do?referrals_id="+id);  
+	        int width = 300; // 图像宽度  
+	        int height = 300; // 图像高度  
+	        Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>();  
+	        hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");  
+	        BitMatrix bitMatrix = new MultiFormatWriter().encode(content,BarcodeFormat.QR_CODE, width, height, hints);// 生成矩阵  
+	        MatrixToImageWriter.writeToStream(bitMatrix, PIC_TYPE_PNG, res.getOutputStream());
+	        logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "User "+userName+" create QR-code success", LOGLEVEL_INFO, RecommendFriendController.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logWriteUtil.writeLog(LOGTYPE_CONTROLLER, "Read QR-code exception "+e.getMessage(), LOGLEVEL_ERROR, RecommendFriendController.class);
+		}
+	
+	}
+}

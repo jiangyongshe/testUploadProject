@@ -1,0 +1,109 @@
+package com.cwa.client.web;
+
+
+import java.io.File;
+import java.sql.Timestamp;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cwa.client.dto.CustomerDto;
+import com.cwa.client.dto.RuturnMessageDto;
+import com.cwa.client.dto.VideoDto;
+import com.cwa.client.model.Tb_Vedio_Audit;
+import com.cwa.client.service.AdvertiseInfoService;
+import com.cwa.client.service.AdvertiseVideoService;
+import com.cwa.client.utils.Constant;
+
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/*/video")
+public class AdVideoController extends BaseController<GobalRespParameter> implements Constant{
+
+	@Resource// 普通用户service层
+	private AdvertiseInfoService advertiseInfoService;
+	
+	@Resource// 普通用户service层
+	private AdvertiseVideoService advertiseVideoService;
+	
+	@RequestMapping("/queryAdVideoInfo.do")
+	public void queryAdVideoInfo(HttpServletRequest req, HttpServletResponse res) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		//获取请求参数并判断是否为空getPageModel
+		String adNo= getParameter(req, "adNo");
+		try {
+			if(adNo!=null){//判断参数是否正确
+				//dto.setPageNo(Integer.parseInt(pageNo));
+				VideoDto dto = advertiseVideoService.findByOrderNo(adNo);
+				writeLog("", "==== mailingAddress:"+getParameter(req, "mailingAddress"), LOGLEVEL_INFO, AdVideoController.class);
+				parameter.setData(dto);
+				parameter.setSuccess(true);
+				writeLog("", "query advertise info success! data:"+dto, LOGLEVEL_INFO, AdVideoController.class);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+	@RequestMapping("/operateAdVideo.do")
+	public void operateAdVideo(HttpServletRequest req, HttpServletResponse res, VideoDto dto) throws Exception{
+		RuturnMessageDto parameter=new RuturnMessageDto();
+		parameter.setSuccess(false);
+		//获取请求参数并判断是否为空getPageModel
+		try {
+			writeLog("", "operateAdVideo.do  data:"+JSONObject.fromObject(dto), LOGLEVEL_INFO, AdVideoController.class);
+			CustomerDto customerDto=(CustomerDto)req.getSession().getAttribute(SESSION_USER);//session得到user信息
+			VideoDto dto1 = advertiseVideoService.findByOrderNo(dto.getSerial_number());
+			
+			writeLog("", dto.getSerial_number()+" ==== findById Tb_Vedio_Audit  entity:"+(dto1==null?"":dto1.toString()), LOGLEVEL_INFO, AdVideoController.class);
+			
+			if(dto1==null){
+				Tb_Vedio_Audit entity=new Tb_Vedio_Audit();
+				entity.setCommit_id(customerDto.getAccount_id());
+				entity.setCommit_time(new Timestamp(System.currentTimeMillis()));
+				entity.setFile_name(dto.getFile_name());
+				entity.setFile_path(dto.getFile_path()+File.separator+dto.getFile_name());
+				entity.setIntroduction(dto.getIntroduction());
+				entity.setName(dto.getName());
+				entity.setPlay_path("");//留空
+				entity.setSerial_number(dto.getSerial_number());
+				entity.setVedio_type(dto.getVedio_type());
+				entity.setAudit_id("");
+				entity.setAudit_status(ONE);
+				entity.setOld_file_name(dto.getOld_file_name());
+				entity.setAudit_datetime(new Timestamp(System.currentTimeMillis()));
+				advertiseVideoService.saveVedioAndUpdateOrder(entity);
+				writeLog("", dto.getSerial_number()+" ==== insert success entity:"+entity.toString(), LOGLEVEL_INFO, AdVideoController.class);
+			}else{
+				Tb_Vedio_Audit entity=new Tb_Vedio_Audit();
+				BeanUtils.copyProperties(entity,dto1);
+				entity.setIntroduction(util.isNull(dto.getIntroduction())?entity.getIntroduction():dto.getIntroduction());
+				entity.setName(util.isNull(dto.getName())?entity.getName():dto.getName());
+				entity.setVedio_type(util.isNull(dto.getVedio_type()+"")?entity.getVedio_type():dto.getVedio_type());
+				entity.setFile_name(util.isNull(dto.getFile_name())?entity.getFile_name():dto.getFile_name());
+				entity.setFile_path(util.isNull(dto.getFile_path())?entity.getFile_path():dto.getFile_path()+File.separator+dto.getFile_name());
+				entity.setOld_file_name(util.isNull(dto.getOld_file_name())?entity.getFile_path():dto.getOld_file_name());
+				entity.setPlay_path("");//留空
+				entity.setAudit_status(ONE);
+				advertiseVideoService.update(entity);
+				writeLog("", "==== update success entity:"+entity.toString(), LOGLEVEL_INFO, AdVideoController.class);
+			}
+			parameter.setData(null);//RespCodeEnum.SUCCESS.getCode()
+			parameter.setSuccess(true);
+			writeLog("", "query advertise info success! ", LOGLEVEL_INFO, AdVideoController.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		writeJSON(res, parameter);
+		parameter=null;
+	}
+
+}
